@@ -1,0 +1,58 @@
+Building and installing Siren
+-----------------------------
+
+Siren is built and installed with the following commands.
+
+	./configure [option=value ...]
+	make
+	make install
+
+The configure script supports the following options.
+
+prefix=path
+	Install Siren in <path>. The default is "/usr/local".
+
+bindir=path
+	Install the binary in <path>. The default is "<prefix>/bin".
+
+mandir=path
+	Install the manual page in <path>. The default is "<prefix>/man".
+
+plugindir=path
+	Install the plug-ins in <path>. Input plug-ins will be installed in
+	"<path>/ip" and output plug-ins in "<path>/op". The default is
+	"<prefix>/lib/siren".
+
+debug=yes|no
+	Whether to build a debug version of Siren. The debug version is built
+	with debug symbols and, if Siren is run with the -l option, provides
+	additional debug messages in the log file. The default is "no".
+
+flac=yes|no
+	Whether to build the FLAC input plug-in. The default is "yes".
+
+mad=yes|no
+	Whether to build the mad input plug-in. The default is "yes".
+
+sndfile=yes|no
+	Whether to build the sndfile input plug-in. The default is "yes".
+
+vorbis=yes|no
+	Whether to build the Ogg Vorbis input plug-in. The default is "yes".
+
+ao=yes|no
+	Whether to build the ao output plug-in. The default is "yes".
+
+pulse=yes|no
+	Whether to build the PulseAudio output plug-in. The default is "yes".
+
+sndio=yes|no
+	Whether to build the sndio output plug-in. sndio is available on
+	OpenBSD. On OpenBSD the default is "yes"; on other systems it is "no".
+
+Uninstalling Siren
+------------------
+
+Siren can be uninstalled with the following command.
+
+	make uninstall

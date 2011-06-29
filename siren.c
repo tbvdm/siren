@@ -1,0 +1,120 @@
+/*
+ * Copyright (c) 2011 Tim van der Molen <tbvdm@xs4all.nl>
+ *
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+#include "siren.h"
+
+int quit;
+
+static void
+handle_input(void)
+{
+	int key;
+
+	while (!quit) {
+		key = screen_get_key();
+		msg_clear();
+
+		if (bind_execute(view_get_bind_scope(), key) == -1 &&
+		    bind_execute(BIND_SCOPE_COMMON, key) == -1)
+			msg_errx("Key not bound");
+	}
+}
+
+NORETURN static void
+usage(void)
+{
+	extern char *__progname;
+
+	(void)fprintf(stderr, "usage: %s [-lv] [-c directory]\n", __progname);
+	exit(1);
+}
+
+NORETURN static void
+version(void)
+{
+	(void)printf("siren %s\n", VERSION);
+	exit(0);
+}
+
+int
+main(int argc, char **argv)
+{
+	int			 c, lflag;
+	char			*confdir;
+#if defined(DEBUG) && defined(__OpenBSD__)
+	extern const char	*malloc_options;
+
+	malloc_options = "AFGJPR";
+#endif
+
+	confdir = NULL;
+	lflag = 0;
+	while ((c = getopt(argc, argv, "c:lv")) != -1)
+		switch (c) {
+		case 'c':
+			confdir = optarg;
+			break;
+		case 'l':
+			lflag = 1;
+			break;
+		case 'v':
+			version();
+			break;
+		default:
+			usage();
+			break;
+		}
+
+	if (argc - optind)
+		usage();
+
+	opterr = 0;
+
+	log_init(lflag);
+	option_init();
+	bind_init();
+	conf_init(confdir);
+	screen_init();
+	plugin_init();
+	library_init();
+	queue_init();
+	browser_init();
+	player_init();
+	prompt_init();
+
+	screen_print();
+	conf_read_file();
+	library_read_file();
+	handle_input();
+
+	prompt_end();
+	player_end();
+	browser_end();
+	queue_end();
+	library_end();
+	plugin_end();
+	screen_end();
+	conf_end();
+	bind_end();
+	option_end();
+	log_end();
+
+	return 0;
+}

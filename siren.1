@@ -1,0 +1,798 @@
+.\" Copyright (c) 2011 Tim van der Molen <tbvdm@xs4all.nl>
+.\"
+.\" Permission to use, copy, modify, and distribute this software for any
+.\" purpose with or without fee is hereby granted, provided that the above
+.\" copyright notice and this permission notice appear in all copies.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+.\" WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+.\" MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+.\" ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+.\" WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+.\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+.\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+.\"
+.Dd June 29, 2011
+.Dt SIREN 1
+.Os
+.Sh NAME
+.Nm siren
+.Nd text-based audio player
+.Sh SYNOPSIS
+.Nm siren
+.Op Fl lv
+.Op Fl c Ar directory
+.Sh DESCRIPTION
+.Nm
+is a text-based audio player.
+.Pp
+The options are as follows.
+.Bl -tag -width Ds
+.It Fl c Ar directory
+Use
+.Ar directory
+as the configuration directory.
+The default is
+.Pa ~/.siren .
+.It Fl l
+Log error and informational messages to a file.
+If
+.Nm
+is compiled with debugging support, then debugging messages are saved to this
+file, too.
+The file is created in the current directory and named
+.Pa siren-%d.log ,
+where
+.Pa %d
+is replaced with
+.Nm Ap s
+process ID.
+.It Fl v
+Print version information and exit.
+.El
+.Sh USER INTERFACE
+.Nm Ap s
+user interface consists of three areas.
+The bottom line is the status line, which is used to display error and
+informational messages and to enter commands and search queries.
+The two lines above the status line show playback-related information, such as
+the metadata of the currently playing track and the sound volume.
+The remainder of the screen is used to display a view.
+A view displays a specific type of information.
+Only one view can be displayed at a time, but each view can be selected by
+using the
+.Ic select-view
+command or the default key bindings.
+The available views are as follows.
+.Bl -tag -width Ds
+.It Sy Library view
+The library view shows all tracks that have been added to the library.
+It can be displayed by pressing the
+.Ic 1
+key.
+.It Sy Queue view
+The queue view shows all tracks that have been added to the queue.
+Tracks in the queue will be played back before those in the library.
+A track will be removed from the queue as soon as it is being played back.
+The queue view can be displayed by pressing the
+.Ic 2
+key.
+.It Sy Browser view
+The browser view shows the contents of a directory.
+By default only directories and supported audio-files are shown.
+The browser view can be used to browse through the file system and play back
+audio files or add them to the library or queue.
+The browser view can be displayed by pressing the
+.Ic 3
+key.
+.El
+.Sh KEY BINDINGS
+The default key bindings are as follows.
+They can be changed with the
+.Ic bind-key
+and
+.Ic unbind-key
+commands
+.Po
+see
+.Sx COMMANDS
+below
+.Pc .
+.Ss Common key bindings
+.Bl -tag -width "^F, page-down" -compact
+.It q
+Quit
+.Nm .
+.It x
+Play.
+.It c
+Pause.
+.It v
+Stop.
+.It z
+Play the previous track in the library.
+.It b
+Play the next track in the library.
+.It left
+Skip backward 5 seconds.
+.It ,
+Skip backward 1 minute.
+.It right
+Skip forward 5 seconds.
+.It .
+Skip forward 1 minute.
+.It -
+Decrease the sound volume by 5%.
+.It =
+Increase the sound volume by 5%.
+.It 1
+Select the library view.
+.It 2
+Select the play queue view.
+.It 3
+Select the file browser view.
+.It enter
+Activate the selected entry.
+.It k, up
+Select the previous entry.
+.It j, down
+Select the next entry.
+.It g, home
+Select the first entry.
+.It G, end
+Select the last entry.
+.It ^B, page-up
+Scroll up one page.
+.It ^U
+Scroll up half a page.
+.It ^Y
+Scroll up one line.
+.It ^F, page-down
+Scroll down one page.
+.It ^D
+Scroll down half a page.
+.It ^E
+Scroll down one line.
+.It ^L
+Refresh the screen.
+.It :
+Enter the command prompt.
+.It /
+Enter the search prompt to search forward.
+.It \&?
+Enter the search prompt to search backward.
+.It N, p
+Search for the previous occurrence.
+.It n
+Search for the next occurrence.
+.El
+.Ss Library-view key-bindings
+.Bl -tag -width "^F, page-down" -compact
+.It a
+Add the selected entry to the queue.
+.It d, delete
+Delete the selected entry.
+.It l
+Delete all entries.
+.El
+.Ss Queue-view key-bindings
+.Bl -tag -width "^F, page-down" -compact
+.It J
+Move the selected entry downward.
+.It K
+Move the selected entry upward.
+.It d, delete
+Delete the selected entry.
+.It l
+Delete all entries.
+.El
+.Ss Browser-view key-bindings
+.Bl -tag -width "^F, page-down" -compact
+.It a
+Add the selected entry to the queue.
+.It h
+Toggle the display of hidden files.
+.It r
+Refresh the current directory.
+.It backspace
+Enter the parent directory.
+.El
+.Sh COMMANDS
+.Nm
+is controlled by issuing commands.
+Commands can be entered in the command prompt, bound to a key or added to the
+configuration file.
+The following commands are available.
+.Bl -tag -width Ds
+.It Ic activate-entry
+Activate the selected entry in the current view.
+In the library view, an activated entry is played back.
+In the queue view, an activated entry is played back and removed from the
+queue.
+In the browser view, if the activated entry is a directory, it is entered.
+Otherwise, if it is a file, it is played back.
+.It Ic add-entry Op Fl l | q
+Add the selected entry to the library or the queue.
+The options are as follows.
+.Pp
+.Bl -tag -width Ds -compact
+.It Fl l
+Add the selected entry to the library.
+This is the default.
+.It Fl q
+Add the selected entry to the queue.
+.El
+.It Xo Ic add-path
+.Op Fl l | q
+.Ar path Ar ...
+.Xc
+Add an audio file or a directory to the library or the queue.
+The options are as follows.
+.Pp
+.Bl -tag -width Ds -compact
+.It Fl l
+Add
+.Ar path
+to the library.
+.It Fl q
+Add
+.Ar path
+to the queue.
+.El
+.Pp
+The default is to add
+.Ar path
+to the current view.
+If
+.Ar path
+is a directory, then all audio files in it are added.
+.It Ic bind-key Ar scope key command
+Bind a key to a command.
+.Pp
+The
+.Ar scope
+argument specifies the scope of the key binding.
+It should be one of
+.Ar browser ,
+.Ar library ,
+.Ar queue
+or
+.Ar common .
+A key binding is first looked up in the scope of the current view.
+If no key binding is found in that scope, then it is looked up in the
+.Ar common
+scope.
+If a key is bound in both the
+.Ar common
+scope and the scope of the current view, then the scope of the current view
+takes precedence.
+.Pp
+The
+.Ar key
+argument specifies the key to bind.
+The following three types of keys can be bound.
+.Bl -dash
+.It
+The printable ASCII characters: these are the ASCII character codes between 32
+and 126 decimal.
+They are represented by themselves.
+.It
+The ASCII control characters: these are the ASCII character codes between 0 and
+31 decimal.
+They are represented by case-insensitive caret notation.
+For example,
+.Ar ^A
+and
+.Ar ^a
+denote the same control character.
+.It
+The following case-insensitive key-names are recognised:
+.Ar backspace ,
+.Ar backtab ,
+.Ar delete ,
+.Ar down ,
+.Ar end ,
+.Ar enter ,
+.Ar escape ,
+.Ar home ,
+.Ar insert ,
+.Ar left ,
+.Ar page-down ,
+.Ar page-up ,
+.Ar right ,
+.Ar space ,
+.Ar tab ,
+.Ar up
+and
+.Ar f1
+to
+.Ar f20 .
+.El
+.Pp
+The
+.Ar command
+argument can be any command.
+.It Ic cd Op Ar directory
+Open
+.Ar directory
+in the browser view.
+If
+.Ar directory
+is not specified, the browser view will open the user's home directory.
+.It Ic clear-history Op Fl cs
+Clear one or more histories.
+The options are as follows.
+.Pp
+.Bl -tag -width Ds -compact
+.It Fl c
+Clear the command history.
+.It Fl s
+Clear the search history.
+.El
+.Pp
+If no history is specified, all histories are cleared.
+.It Ic command-prompt Op Fl p Ar prompt
+Enter the command prompt.
+The command prompt can be used to enter and execute commands.
+The options are as follows.
+.Pp
+.Bl -tag -width Ds -compact
+.It Fl p Ar prompt
+Use the string
+.Ar prompt
+as the prompt.
+The default is
+.Sq \&: .
+.El
+.It Xo Ic confirm
+.Op Fl p Ar prompt
+.Ar command
+.Xc
+Ask for confirmation before executing
+.Ar command .
+The options are as follows.
+.Pp
+.Bl -tag -width Ds -compact
+.It Fl p Ar prompt
+Use the string
+.Ar prompt
+as the prompt.
+The default is
+.Sq Execute Qq Ar command .
+The prompt will be followed by the string
+.Sq Qq ? ([y]/n): .
+.El
+.It Ic delete-entry Op Fl a
+Delete the selected entry in the current view.
+This command is supported in the library and queue views only.
+The options are as follows.
+.Pp
+.Bl -tag -width Ds -compact
+.It Fl a
+Delete all entries in the current view.
+.El
+.It Ic move-entry-down
+Move the selected entry below its succeeding entry.
+This command is supported in the queue view only.
+.It Ic move-entry-up
+Move the entry before its preceding entry.
+This command is supported in the queue view only.
+.It Ic pause
+Pause or, if already paused, resume playback.
+.It Ic play
+Start, restart or resume playback.
+.It Ic play-next
+Play the next track in the library.
+.It Ic play-prev
+Play the previous track in the library.
+.It Ic quit
+Quit
+.Nm .
+.It Ic refresh-screen
+Refresh the screen.
+.It Ic reread-directory
+Reread the current directory in the browser view.
+.It Ic save-library
+Save the library to disc.
+The library is saved in the file
+.Pa ~/.siren/library .
+The library is automatically saved when
+.Nm
+quits.
+.It Xo
+.Ic scroll-down
+.Op Fl h | l | p
+.Xc
+Scroll down in the current view.
+The options are as follows.
+.Pp
+.Bl -tag -width Ds -compact
+.It Fl h
+Scroll half a page.
+.It Fl l
+Scroll one line.
+This is the default.
+.It Fl p
+Scroll one page.
+.El
+.It Xo
+.Ic scroll-up
+.Op Fl h | l | p
+.Xc
+Scroll up in the current view.
+The options are analogous to those of the
+.Ic scroll-down
+command.
+.It Ic search-next
+Search for the next occurrence of the text earlier specified with the
+.Ic search-prompt
+command.
+.It Ic search-prev
+Search for the previous occurrence of the text earlier specified with the
+.Ic search-prompt
+command.
+.It Xo Ic search-prompt
+.Op Fl b
+.Op Fl p Ar prompt
+.Xc
+Enter the search prompt.
+The search prompt can be used to search in the current view.
+The options are as follows.
+.Pp
+.Bl -tag -width Ds -compact
+.It Fl b
+Search backward.
+The default is to search forward.
+.It Fl p Ar prompt
+Use
+.Ar prompt
+as the prompt.
+The default is
+.Sq /
+if searching forward
+and
+.Sq \&?
+if searching backward.
+.El
+.It Ic seek Ar position
+Seek to a given position in the currently playing track.
+The
+.Ar position
+argument is specified in seconds.
+If the first character of
+.Ar position
+is
+.Sq -
+or
+.Sq + ,
+then
+.Ar position
+is considered to be relative and will be subtracted from or added to the
+current position.
+.It Ic select-first-entry
+Select the first entry in the current view.
+.It Ic select-last-entry
+Select the last entry in the current view.
+.It Ic select-next-entry
+Select the next entry in the current view.
+.It Ic select-prev-entry
+Select the previous entry in the current view.
+.It Ic select-view Ar name
+Select a view.
+The
+.Ar name
+argument must be one of
+.Em library ,
+.Em queue
+or
+.Em browser .
+.It Ic set Ar option Op Ar value
+Set
+.Ar option
+to
+.Ar value .
+If
+.Ar option
+is a Boolean one and
+.Ar value
+is not specified, it is toggled.
+See
+.Sx OPTIONS
+below.
+.It Ic set-volume Ar level
+Set or adjust the volume.
+The
+.Ar level
+argument should be an integer value between 0 and 100 inclusive.
+If the first character of
+.Ar level
+is
+.Sq -
+or
+.Sq + ,
+then
+.Ar level
+is considered a relative value and will be subtracted from or added to the
+current volume.
+Otherwise,
+.Ar level
+is considered an absolute value.
+.Pp
+Not all output plug-ins support setting the volume.
+.It Ic stop
+Stop playback.
+.It Ic unbind-key Ar scope key
+Unbind
+.Ar key .
+The
+.Ar scope
+and
+.Ar key
+arguments are analogous to those of the
+.Ic bind
+command.
+.El
+.Sh OPTIONS
+The appearance and behaviour of
+.Nm
+may be modified by changing the value of various options.
+Options are changed with the
+.Ic set
+command.
+There are five different types of options.
+They are as follows.
+.Bl -tag -width Ds
+.It Sy Attribute options
+Attribute options control the character attributes of a user-interface element.
+Valid values are
+.Em blink ,
+.Em bold ,
+.Em dim ,
+.Em normal ,
+.Em reverse ,
+.Em standout
+and
+.Em underline .
+Two or more attributes can be specified by separating them by a comma.
+.It Sy Colour options
+Colour options control the foreground and background colour of a user-interface
+element.
+Valid values are
+.Em black ,
+.Em blue ,
+.Em cyan ,
+.Em default ,
+.Em green ,
+.Em magenta ,
+.Em red ,
+.Em white
+and
+.Em yellow .
+If supported by the terminal, the
+.Em default
+colour corresponds to the terminal's original background or foreground colour.
+Otherwise, the colour
+.Em default
+is equivalent to
+.Em black
+when used as a background colour and to
+.Em white
+when used as a foreground colour.
+.Pp
+Note that if you wish to change the foreground colour of a user-interface
+element for which the
+.Em reverse
+or
+.Em standout
+attribute is set, you should change the option controlling its background
+colour instead.
+The same applies to the background colour of such elements.
+.It Sy Boolean options
+Boolean options are used to enable or disable certain behaviour.
+Valid values are
+.Em true
+and
+.Em false .
+As a convenience, the values
+.Em on ,
+.Em off ,
+.Em yes
+and
+.Em no
+are accepted as well.
+.It Sy Number options
+Number options have numeric values.
+Their allowed range is option-specific.
+.It Sy String options
+String options have textual values.
+Their allowed values are option-specific.
+.El
+.Pp
+The following options are available.
+.Bl -tag -width Ds
+.It Ic continue Ar boolean
+Whether to play the next track if the current track has finished.
+.It Ic error-attr Ar attributes
+Character attributes for error messages.
+.It Ic error-bg Ar colour
+Background colour for error messages.
+.It Ic error-fg Ar colour
+Foreground colour for error messages.
+.It Ic info-attr Ar attributes
+Character attributes for informational messages.
+.It Ic info-bg Ar colour
+Background colour for informational messages.
+.It Ic info-fg Ar colour
+Foreground colour for informational messages.
+.It Ic library-format Ar string
+The format used to display tracks in the library.
+.Pp
+The format string may contain format specifiers.
+A format specifier is introduced by the
+.Sq %
+character.
+It is optionally followed by the
+.Sq -
+character to specify that the format value is to be left-aligned instead of
+right-aligned.
+An optional digit string specifies the width of the format value.
+A width of 0
+.Pq zero
+indicates that the width should be as large as the remaining available space
+allows.
+If there are two or more 0-width format-specifiers, the remaining available
+space is divided equally between them.
+The last character of the format specifier specifies the value to display.
+It should be one of the following characters.
+.Pp
+.Bl -tag -width Ds -compact
+.It %
+Literal
+.Sq %
+character.
+.It a
+Artist.
+.It d
+Duration.
+.It f
+File name.
+.It g
+Genre.
+.It l
+Album.
+.It n
+Track number.
+.It t
+Title.
+.It y
+Date or year.
+.El
+.It Ic max-history-entries Ar number
+The maximum number of entries saved in the command and search histories.
+.It Ic output-plugin Ar string
+The name of the output plug-in to use.
+If the special name
+.Ar default
+is specified, the output plug-in with the highest priority will be used.
+.It Ic player-attr Ar attributes
+Character attributes for the player area.
+.It Ic player-bg Ar colour
+Background colour for the player area.
+.It Ic player-fg Ar colour
+Foreground colour of the player area.
+.It Ic player-track-format Ar string
+The format for displaying the metadata of the track currently playing.
+See the
+.Ic library-format
+option for a description of the format specification.
+.It Ic prompt-attr Ar attributes
+Character attributes for the command, confirmation and search prompts.
+.It Ic prompt-bg Ar colour
+Background colour for the command, confirmation and search prompts.
+.It Ic prompt-fg Ar colour
+Foreground colour for the command, confirmation and search prompts.
+.It Ic queue-format Ar string
+The format for displaying tracks in the queue.
+See the
+.Ic library-format
+option for a description of the format specification.
+.It Ic selection-attr Ar attributes
+Character attributes for the selection indicator.
+.It Ic selection-bg Ar colour
+Background colour for the selection indicator.
+.It Ic selection-fg Ar colour
+Foreground colour for the selection indicator.
+.It Ic show-all-files Ar boolean
+Whether to show all files in the file browser.
+If set to
+.Em false ,
+only directories and supported audio files are shown.
+.It Ic show-cursor Ar boolean
+Whether to always show the cursor.
+.It Ic show-dirs-before-files Ar boolean
+Whether to list directories before files in the file browser.
+.It Ic show-hidden-files Ar boolean
+Whether to show hidden files and directories in the file browser.
+.It Ic status-attr Ar attributes
+Character attributes for the status line.
+.It Ic status-bg Ar colour
+Background colour for the status line.
+.It Ic status-fg Ar colour
+Foreground colour for the status line.
+.It Ic view-attr Ar attributes
+Character attributes for the view.
+.It Ic view-bg Ar colour
+Background colour for the view.
+.It Ic view-fg Ar colour
+Foreground colour for the view.
+.It Ic view-title-attr Ar attributes
+Character attributes for the view title.
+.It Ic view-title-bg Ar colour
+Background colour for the view title.
+.It Ic view-title-fg Ar colour
+Foreground colour for the view title.
+.El
+.Pp
+The following options are specific to the
+.Em ao
+output plug-in.
+.Bl -tag -width Ds
+.It Ic ao-buffer-size Ar number
+The size of the output buffer.
+.It Ic ao-driver Ar string
+The name of the driver to use.
+If empty, the default driver will be used.
+See
+.Xr libao.conf 5
+and
+.Lk http://www.xiph.org/ao/doc/drivers.html
+for possible values.
+.It Ic ao-file Ar string
+The path of the file to write the audio output to.
+If the file already exists, it is not overwritten.
+This option is relevant only if using a file output driver.
+.El
+.Pp
+The following options are specific to the
+.Em pulse
+output plug-in.
+.Bl -tag -width Ds
+.It Ic pulse-buffer-size Ar number
+The size of the output buffer.
+.El
+.Pp
+The following options are specific to the
+.Em sndio
+output plug-in.
+.Bl -tag -width Ds
+.It Ic sndio-device Ar string
+The name of the device to use.
+If empty, the default device will be used.
+See
+.Xr sndio 7
+for possible values.
+.El
+.Sh CONFIGURATION FILE
+Upon start-up
+.Nm
+reads the configuration file
+.Pa ~/.siren/config .
+Each line in the configuration file should contain a command
+.Pq see Sx COMMANDS .
+Empty lines and lines beginning with the
+.Sq #
+character are ignored.
+.Sh FILES
+.Bl -tag -width Ds -compact
+.It Pa ~/.siren/config
+Configuration file.
+.It Pa ~/.siren/library
+Library file.
+.El
+.Sh SEE ALSO
+.Xr libao.conf 5 ,
+.Xr sndio 7
+.Pp
+.Lk http://www.kariliq.nl/siren/
+.Sh AUTHORS
+.An Tim van der Molen Aq Mt tbvdm@xs4all.nl
