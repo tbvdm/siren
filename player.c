@@ -21,6 +21,10 @@
 
 #include "siren.h"
 
+#ifdef HAVE_FREEBSD_BSWAP16
+#include <sys/endian.h>
+#endif
+
 #ifdef HAVE_NETBSD_BSWAP16
 #include <sys/types.h>
 #include <machine/bswap.h>
@@ -30,7 +34,9 @@
 #include <sys/types.h>
 #endif
 
-#if defined(HAVE_NETBSD_BSWAP16)
+#ifdef HAVE_FREEBSD_BSWAP16
+#define PLAYER_SWAP16(i)	bswap16((uint16_t)(i))
+#elif defined(HAVE_NETBSD_BSWAP16)
 #define PLAYER_SWAP16(i)	bswap16((u_int16_t)(i))
 #elif defined(HAVE_OPENBSD_SWAP16)
 #define PLAYER_SWAP16(i)	swap16((u_int16_t)(i))
