@@ -48,7 +48,7 @@ INSTALL_MAN=	install -m 444
 CDIAGFLAGS+=	-Wall -W -Wbad-function-cast -Wcast-align -Wcast-qual \
 		-Wformat=2 -Wpointer-arith -Wshadow -Wundef -Wwrite-strings
 CFLAGS+=	${CDIAGFLAGS}
-CPPFLAGS+=	-D_POSIX_C_SOURCE=200809L -DVERSION=\"${VERSION}\"
+CPPFLAGS+=	-DVERSION=\"${VERSION}\"
 LDFLAGS+=	-lcurses -pthread -Wl,--export-dynamic
 LINTFLAGS?=	-hx
 MKDEPFLAGS?=	-a

@@ -147,7 +147,7 @@ Linux)
 	[ "$enable_sndio" != yes ] && enable_sndio=no
 
 	makefile_append CFLAGS -std=c99
-	makefile_append CPPFLAGS "-D_BSD_SOURCE -D_GNU_SOURCE"
+	makefile_append CPPFLAGS "-D_POSIX_C_SOURCE=200809L -D_GNU_SOURCE"
 	;;
 
 NetBSD)
@@ -166,9 +166,6 @@ NetBSD)
 	have_use_default_colors=1
 
 	[ "$enable_sndio" != yes ] && enable_sndio=no
-
-	makefile_append CFLAGS -std=c99
-	makefile_append CPPFLAGS -D_NETBSD_SOURCE
 	;;
 
 OpenBSD)
@@ -188,8 +185,6 @@ OpenBSD)
 	have_strtonum=1
 	have_tree_h=1
 	have_use_default_colors=1
-
-	makefile_append CPPFLAGS -D_BSD_SOURCE
 	;;
 
 *)
