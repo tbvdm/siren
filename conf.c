@@ -40,8 +40,9 @@ conf_init(const char *dir)
 		conf_dir = path_normalise(dir);
 	else {
 		if ((home = path_get_home_dir(NULL)) == NULL)
-			LOG_FATALX("cannot determine home directory");
-		(void)xasprintf(&tmp, "%s/%s", home, CONF_DIR);
+			(void)xasprintf(&tmp, "/%s", CONF_DIR);
+		else
+			(void)xasprintf(&tmp, "%s/%s", home, CONF_DIR);
 		conf_dir = path_normalise(tmp);
 		free(home);
 		free(tmp);
