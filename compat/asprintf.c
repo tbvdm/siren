@@ -18,6 +18,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "../siren.h"
+
 int
 asprintf(char **buf, const char *fmt, ...)
 {
