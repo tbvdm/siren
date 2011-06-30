@@ -564,7 +564,9 @@ player_seek(int seekpos, int relative)
 
 	error = NULL;
 
-	if (relative) {
+	if (!relative)
+		pos = seekpos;
+	else {
 		XPTHREAD_MUTEX_LOCK(&player_track_mtx);
 		ret = player_track->ip->get_position(player_track, &pos,
 		    &error);
