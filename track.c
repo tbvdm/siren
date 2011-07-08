@@ -146,6 +146,9 @@ track_init(const char *path, const struct ip *ip)
 	t->track = NULL;
 	t->duration = 0;
 
+	if (cache_get_metadata(t) == 0)
+		return t;
+
 	error = NULL;
 	if ((ret = t->ip->get_metadata(t, &error)) != 0) {
 		msg_ip_err(ret, error, "%s: Cannot read metadata", path);
@@ -153,6 +156,8 @@ track_init(const char *path, const struct ip *ip)
 		free(t);
 		return NULL;
 	}
+
+	cache_add_metadata(t);
 
 	return t;
 }

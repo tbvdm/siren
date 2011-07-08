@@ -93,6 +93,7 @@ main(int argc, char **argv)
 	conf_init(confdir);
 	screen_init();
 	plugin_init();
+	cache_init();
 	library_init();
 	queue_init();
 	browser_init();
@@ -109,6 +110,7 @@ main(int argc, char **argv)
 	browser_end();
 	queue_end();
 	library_end();
+	cache_end();
 	plugin_end();
 	screen_end();
 	conf_end();
