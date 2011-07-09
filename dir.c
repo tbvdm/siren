@@ -189,6 +189,7 @@ dir_open(const char *dir)
 	struct dir	*d;
 	DIR		*dirp;
 	size_t		 dirent_size, name_max;
+	int		 oerrno;
 
 	if ((dirp = opendir(dir)) == NULL) {
 		LOG_ERR("opendir: %s", dir);
@@ -199,7 +200,9 @@ dir_open(const char *dir)
 	name_max = NAME_MAX;
 #else
 	if ((name_max = dir_get_name_max(dirp, dir)) == 0) {
+		oerrno = errno;
 		while (closedir(dirp) == -1 && errno == EINTR);
+		errno = oerrno;
 		return NULL;
 	}
 #endif
