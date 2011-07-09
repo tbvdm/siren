@@ -89,13 +89,20 @@ path_get_cwd(void)
 	pathsize = PATH_MAX;
 #else
 	errno = 0;
-	if ((pathsize = pathconf(".", _PC_PATH_MAX)) == -1) {
+	if ((pathsize = pathconf("/", _PC_PATH_MAX)) == -1) {
 		if (errno)
 			LOG_ERR("pathconf");
 		else
 			LOG_ERRX("pathconf() failed");
 		return xstrdup("/");
 	}
+
+	/*
+	 * The size returned by pathconf() is relative to the root directory,
+	 * so add 1 for the root directory itself. Also add 1 for the null
+	 * character since some systems do not include space for it.
+	 */
+	pathsize += 2;
 #endif
 
 	path = xmalloc(pathsize);
