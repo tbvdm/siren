@@ -268,14 +268,8 @@ screen_disable_dsusp(void)
 	struct termios	tio;
 	long int	vdisable;
 
-	errno = 0;
-	if ((vdisable = fpathconf(STDIN_FILENO, _PC_VDISABLE)) == -1) {
-		if (errno)
-			LOG_ERR("fpathconf");
-		else
-			LOG_ERRX("fpathconf() failed");
+	if ((vdisable = XFPATHCONF(STDIN_FILENO, _PC_VDISABLE)) == -1)
 		return;
-	}
 
 	if (tcgetattr(STDIN_FILENO, &tio) == -1) {
 		LOG_ERR("tcgetattr");

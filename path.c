@@ -88,14 +88,8 @@ path_get_cwd(void)
 #ifdef PATH_MAX
 	pathsize = PATH_MAX;
 #else
-	errno = 0;
-	if ((pathsize = pathconf("/", _PC_PATH_MAX)) == -1) {
-		if (errno)
-			LOG_ERR("pathconf");
-		else
-			LOG_ERRX("pathconf() failed");
+	if ((pathsize = XPATHCONF("/", _PC_PATH_MAX)) == -1)
 		return xstrdup("/");
-	}
 
 	/*
 	 * The size returned by pathconf() is relative to the root directory,
@@ -130,14 +124,9 @@ path_get_home_dir(const char *user)
 	if (user == NULL && (home = getenv("HOME")) && home[0] != '\0')
 		return xstrdup(home);
 
-	errno = 0;
-	if ((bufsize = sysconf(_SC_GETPW_R_SIZE_MAX)) == -1) {
-		if (errno)
-			LOG_ERR("sysconf");
-		else
-			LOG_ERRX("sysconf() failed");
+	if ((bufsize = XSYSCONF(_SC_GETPW_R_SIZE_MAX)) == -1)
 		return NULL;
-	}
+
 	buf = xmalloc(bufsize);
 
 	if (user == NULL) {

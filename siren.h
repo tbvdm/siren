@@ -145,6 +145,14 @@
 #endif
 
 /*
+ * Wrappers for xfpathconf(), xpathconf() and xsysconf().
+ */
+
+#define XFPATHCONF(fd, name)	xfpathconf(fd, name, #name)
+#define XPATHCONF(path, name)	xpathconf(path, name, #name)
+#define XSYSCONF(name)		xsysconf(name, #name)
+
+/*
  * Wrappers for pthreads functions.
  */
 
@@ -588,6 +596,10 @@ int		 xvasprintf(char **, const char *, va_list) NONNULL()
 		    PRINTFLIKE(2, 0);
 int		 xvsnprintf(char *, size_t, const char *, va_list) NONNULL()
 		    PRINTFLIKE(3, 0);
+
+long int	 xfpathconf(int, int, const char *) NONNULL();
+long int	 xpathconf(const char *, int, const char *) NONNULL();
+long int	 xsysconf(int, const char *) NONNULL();
 
 #ifndef HAVE_ASPRINTF
 int		 asprintf(char **, const char *, ...) NONNULL()

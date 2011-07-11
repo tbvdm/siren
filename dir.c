@@ -23,7 +23,6 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 
 #include "siren.h"
 
@@ -122,28 +121,15 @@ dir_get_name_max(const char *dir, UNUSED DIR *dirp)
 		return 0;
 	}
 
-	errno = 0;
-	if ((name_max = fpathconf(fd, _PC_NAME_MAX)) == -1) {
-		if (errno)
-			LOG_ERR("fpathconf: %s", dir);
-		else {
-			LOG_ERRX("%s: fpathconf() failed", dir);
-			errno = ENOTSUP;
-		}
-		return 0;
-	}
+	if ((name_max = XFPATHCONF(fd, _PC_NAME_MAX)) == -1) {
 #else
-	errno = 0;
-	if ((name_max = pathconf(dir, _PC_NAME_MAX)) == -1) {
-		if (errno)
-			LOG_ERR("pathconf: %s", dir);
-		else {
-			LOG_ERRX("%s: pathconf() failed", dir);
+	if ((name_max = XPATHCONF(dir, _PC_NAME_MAX)) == -1) {
+#endif
+		if (errno == 0)
 			errno = ENOTSUP;
-		}
 		return 0;
 	}
-#endif
+
 	return (size_t)name_max;
 }
 #endif

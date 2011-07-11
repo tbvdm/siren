@@ -22,7 +22,7 @@ VERSION=	$(shell cat version)
 SRCS+=		bind.c browser.c cache.c command.c conf.c dir.c format.c \
 		history.c library.c log.c menu.c msg.c option.c path.c \
 		player.c plugin.c prompt.c queue.c screen.c siren.c track.c \
-		view.c xmalloc.c
+		view.c xmalloc.c xpathconf.c
 OBJS=		${SRCS:.c=.o}
 LOBJS=		${SRCS:.c=.ln}
 
