@@ -360,11 +360,8 @@ cache_write_index(const char *path, long int ptr)
 		return;
 
 	hash = cache_hash(path);
-	if (fwrite(&hash, sizeof hash, 1, cache_idx_fp) != 1 ||
-	    fwrite(&ptr, sizeof ptr, 1, cache_idx_fp) != 1) {
-		LOG_ERR("fwrite: %s", cache_idx_file);
-		cache_handle_error();
-	}
+	(void)cache_write(cache_idx_fp, &hash, sizeof hash);
+	(void)cache_write(cache_idx_fp, &ptr, sizeof ptr);
 }
 
 static long int
