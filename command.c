@@ -840,7 +840,7 @@ command_move_entry_up_exec(UNUSED void *datap)
 
 int
 command_parse_string(const char *str, struct command **cmd,
-    void **command_data, char **error)
+    void **cmd_data, char **error)
 {
 	size_t		  i;
 	int		  argc, ret;
@@ -868,7 +868,7 @@ command_parse_string(const char *str, struct command **cmd,
 		ret = -1;
 	} else {
 		optind = optreset = 1;
-		ret = (*cmd)->parse(argc, argv, command_data, error);
+		ret = (*cmd)->parse(argc, argv, cmd_data, error);
 	}
 
 	command_free_argv(argc, argv);
@@ -906,14 +906,14 @@ command_play_prev_exec(UNUSED void *datap)
 int
 command_process(const char *line, char **error)
 {
-	struct command	 *e;
-	void		 *data;
+	struct command	 *cmd;
+	void		 *cmd_data;
 
-	if (command_parse_string(line, &e, &data, error))
+	if (command_parse_string(line, &cmd, &cmd_data, error))
 		return -1;
 
-	command_execute(e, data);
-	command_free_data(e, data);
+	command_execute(cmd, cmd_data);
+	command_free_data(cmd, cmd_data);
 	return 0;
 }
 
