@@ -907,40 +907,13 @@ int
 command_process(const char *line, char **error)
 {
 	struct command	 *e;
-	size_t		  i;
-	int		  argc;
-	char		**argv;
 	void		 *data;
 
-	argc = command_string_to_argv(line, &argv);
-	if (argc == 0)
-		return 0;
-	if (argc == -1) {
-		*error = xstrdup("Syntax error");
+	if (command_parse_string(line, &e, &data, error))
 		return -1;
-	}
-
-	e = NULL;
-	for (i = 0; i < NELEMENTS(command_list); i++)
-		if (!strcmp(argv[0], command_list[i].name)) {
-			e = &command_list[i];
-			break;
-		}
-	if (e == NULL) {
-		(void)xasprintf(error, "Invalid command: %s", argv[0]);
-		command_free_argv(argc, argv);
-		return -1;
-	}
-
-	optind = optreset = 1;
-	if (e->parse(argc, argv, &data, error)) {
-		command_free_argv(argc, argv);
-		return -1;
-	}
 
 	command_execute(e, data);
 	command_free_data(e, data);
-	command_free_argv(argc, argv);
 	return 0;
 }
 
