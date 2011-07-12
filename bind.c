@@ -203,6 +203,7 @@ bind_init(void)
 	bind_add(BIND_SCOPE_COMMON, '3', "select-view browser");
 	bind_add(BIND_SCOPE_COMMON, ':', "command-prompt");
 	bind_add(BIND_SCOPE_COMMON, '=', "set-volume +5");
+	bind_add(BIND_SCOPE_COMMON, 'C', "set continue");
 	bind_add(BIND_SCOPE_COMMON, 'G', "select-last-entry");
 	bind_add(BIND_SCOPE_COMMON, 'N', "search-prev");
 	bind_add(BIND_SCOPE_COMMON, 'b', "play-next");
