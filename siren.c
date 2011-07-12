@@ -61,7 +61,7 @@ main(int argc, char **argv)
 #if defined(DEBUG) && defined(__OpenBSD__)
 	extern const char	*malloc_options;
 
-	malloc_options = "AFGJPR";
+	malloc_options = "AFGJPRS";
 #endif
 
 	confdir = NULL;
