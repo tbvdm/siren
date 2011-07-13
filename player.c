@@ -462,7 +462,7 @@ player_print(void)
 }
 
 /*
- * The player_track_mtx mutex must be locked before calling this function.
+ * The player_state_mtx mutex must be locked before calling this function.
  */
 static void
 player_print_status(void)
