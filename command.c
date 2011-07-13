@@ -846,13 +846,8 @@ command_parse_string(const char *str, struct command **cmd,
 	int		  argc, ret;
 	char		**argv;
 
-	argc = command_string_to_argv(str, &argv);
-	if (argc == -1) {
+	if ((argc = command_string_to_argv(str, &argv)) < 1) {
 		*error = xstrdup("Syntax error");
-		return -1;
-	}
-	if (argc == 0) {
-		*error = xstrdup("Command error");
 		return -1;
 	}
 
