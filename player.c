@@ -557,54 +557,44 @@ player_quit(void)
 }
 
 void
-player_seek(int seekpos, int relative)
+player_seek(int pos, int relative)
 {
-	unsigned int	 pos;
+	unsigned int	 curpos;
 	int		 ret;
 	char		*error;
 
 	XPTHREAD_MUTEX_LOCK(&player_state_mtx);
+	XPTHREAD_MUTEX_LOCK(&player_track_mtx);
 
 	if (player_state == PLAYER_STATE_STOPPED)
 		goto out;
 
 	error = NULL;
 
-	if (!relative)
-		pos = seekpos;
-	else {
-		XPTHREAD_MUTEX_LOCK(&player_track_mtx);
-		ret = player_track->ip->get_position(player_track, &pos,
-		    &error);
-		XPTHREAD_MUTEX_UNLOCK(&player_track_mtx);
-
-		if (ret < 0) {
+	if (relative) {
+		if ((ret = player_track->ip->get_position(player_track,
+		    &curpos, &error))) {
 			msg_ip_err(ret, error, "Cannot get current position");
 			free(error);
 			goto out;
 		}
 
-		XPTHREAD_MUTEX_LOCK(&player_track_mtx);
-		if (seekpos < 0 && pos < (unsigned int)-seekpos)
-			pos = 0;
-		else if (pos + seekpos > player_track->duration)
-			pos = player_track->duration;
-		else
-			pos += seekpos;
-		XPTHREAD_MUTEX_UNLOCK(&player_track_mtx);
+		pos += curpos;
 	}
 
-	XPTHREAD_MUTEX_LOCK(&player_track_mtx);
-	ret = player_track->ip->seek(player_track, pos, &error);
-	XPTHREAD_MUTEX_UNLOCK(&player_track_mtx);
+	if (pos < 0)
+		pos = 0;
+	else if ((unsigned int)pos > player_track->duration)
+		pos = player_track->duration;
 
-	if (ret) {
+	if ((ret = player_track->ip->seek(player_track, pos, &error))) {
 		msg_ip_err(ret, error, "Cannot seek");
 		free(error);
-	} else
-		player_print_status();
+	}
 
 out:
+	XPTHREAD_MUTEX_UNLOCK(&player_track_mtx);
+	player_print_status();
 	XPTHREAD_MUTEX_UNLOCK(&player_state_mtx);
 }
 
