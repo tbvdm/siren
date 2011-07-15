@@ -121,6 +121,7 @@ prompt_get_answer(const char *question)
 	while (answer == -1);
 
 	prompt_mode_end();
+	free(prompt_line);
 	free(prompt);
 	return answer;
 }

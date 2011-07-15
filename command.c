@@ -1020,7 +1020,7 @@ static void
 command_search_prompt_exec(void *datap)
 {
 	struct command_search_prompt_data *data;
-	const char *search;
+	char *search;
 
 	data = datap;
 	if ((search = prompt_get_search(data->prompt)) != NULL) {
@@ -1029,6 +1029,8 @@ command_search_prompt_exec(void *datap)
 		else
 			view_search_next(search);
 	}
+
+	free(search);
 }
 
 static int
@@ -1204,6 +1206,7 @@ command_set_free(void *datap)
 	struct command_set_data *data;
 
 	data = datap;
+	free(data->name);
 	if (data->type == OPTION_TYPE_STRING)
 		free(data->value.string);
 	free(data);

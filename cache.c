@@ -113,6 +113,9 @@ cache_end(void)
 {
 	if (!cache_error)
 		cache_close_files();
+
+	free(cache_dat_file);
+	free(cache_idx_file);
 }
 
 /*
