@@ -211,6 +211,7 @@ queue_search_next(const char *search)
 {
 	XPTHREAD_MUTEX_LOCK(&queue_menu_mtx);
 	menu_search_next(queue_menu, search);
+	XPTHREAD_MUTEX_UNLOCK(&queue_menu_mtx);
 	queue_print();
 }
 
