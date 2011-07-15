@@ -234,6 +234,7 @@ player_get_track(void)
 		return -1;
 
 	XPTHREAD_MUTEX_LOCK(&player_track_mtx);
+	track_free(t);
 	player_track = t;
 	XPTHREAD_MUTEX_UNLOCK(&player_track_mtx);
 	return 0;
