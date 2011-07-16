@@ -88,17 +88,15 @@ history_free(struct history *h)
 const char *
 history_get_next(struct history *h)
 {
-	struct history_entry *e;
-
 	if (h->current_entry == NULL) {
 		if ((h->current_entry = TAILQ_FIRST(&h->list)) == NULL)
 			/* History is empty. */
 			return NULL;
 	} else {
-		if ((e = TAILQ_NEXT(h->current_entry, entries)) == NULL)
+		if (h->current_entry == TAILQ_LAST(&h->list, history_list))
 			/* End of history reached. */
 			return NULL;
-		h->current_entry = e;
+		h->current_entry = TAILQ_NEXT(h->current_entry, entries);
 	}
 
 	return h->current_entry->line;
