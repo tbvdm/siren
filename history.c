@@ -107,15 +107,13 @@ history_get_next(struct history *h)
 const char *
 history_get_prev(struct history *h)
 {
-	struct history_entry *e;
-
 	if (h->current_entry == NULL)
 		return NULL;
 
-	if ((e = TAILQ_PREV(h->current_entry, history_list, entries)) == NULL)
+	if ((h->current_entry = TAILQ_PREV(h->current_entry, history_list,
+	    entries)) == NULL)
 		return NULL;
 
-	h->current_entry = e;
 	return h->current_entry->line;
 }
 
