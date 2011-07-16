@@ -223,6 +223,7 @@ prompt_handle_input(struct history *history)
 				free(prompt_line);
 				prompt_line = xstrdup(line);
 				prompt_linelen = strlen(prompt_line);
+				prompt_linesize = prompt_linelen + 1;
 				prompt_linepos = prompt_linelen;
 			}
 			break;
@@ -248,6 +249,7 @@ prompt_handle_input(struct history *history)
 				free(prompt_line);
 				prompt_line = xstrdup(line);
 				prompt_linelen = strlen(prompt_line);
+				prompt_linesize = prompt_linelen + 1;
 				prompt_linepos = prompt_linelen;
 			}
 			break;
