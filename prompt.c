@@ -195,14 +195,15 @@ prompt_handle_input(struct history *history)
 			while (prompt_linepos - i > 0 &&
 			    !isalnum((int)prompt_line[prompt_linepos - i - 1]))
 				i++;
+
 			while (prompt_linepos - i > 0 &&
 			    isalnum((int)prompt_line[prompt_linepos - i - 1]))
 				i++;
 
 			prompt_linepos -= i;
-			for (j = prompt_linepos; j < prompt_linelen; j++)
-				prompt_line[j] = prompt_line[j + i];
 			prompt_linelen -= i;
+			for (j = prompt_linepos; j <= prompt_linelen; j++)
+				prompt_line[j] = prompt_line[j + i];
 			break;
 		case K_BACKSPACE:
 			if (prompt_linepos == 0)
