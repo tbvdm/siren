@@ -500,7 +500,7 @@ player_print_status(void)
 	XPTHREAD_MUTEX_UNLOCK(&player_track_mtx);
 
 	if (ret < 0) {
-		msg_ip_err(ret , error, "Cannot get current position");
+		msg_ip_err(ret, error, "Cannot get current position");
 		free(error);
 	}
 
