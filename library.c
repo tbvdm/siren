@@ -47,6 +47,7 @@ library_activate_entry(void)
 		player_play_track(t);
 	}
 	XPTHREAD_MUTEX_UNLOCK(&library_menu_mtx);
+	library_print();
 }
 
 void
@@ -157,6 +158,7 @@ library_get_next_track(void)
 		}
 	}
 	XPTHREAD_MUTEX_UNLOCK(&library_menu_mtx);
+	library_print();
 	return t;
 }
 
@@ -179,6 +181,7 @@ library_get_prev_track(void)
 		}
 	}
 	XPTHREAD_MUTEX_UNLOCK(&library_menu_mtx);
+	library_print();
 	return t;
 }
 

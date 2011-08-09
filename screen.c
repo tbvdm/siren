@@ -32,14 +32,15 @@
 #include <sys/ioctl.h>
 #endif
 
-#define SCREEN_OBJ_ERROR	0
-#define SCREEN_OBJ_INFO		1
-#define SCREEN_OBJ_PLAYER	2
-#define SCREEN_OBJ_PROMPT	3
-#define SCREEN_OBJ_SELECTOR	4
-#define SCREEN_OBJ_STATUS	5
-#define SCREEN_OBJ_TITLE	6
-#define SCREEN_OBJ_VIEW		7
+#define SCREEN_OBJ_ACTIVE	0
+#define SCREEN_OBJ_ERROR	1
+#define SCREEN_OBJ_INFO		2
+#define SCREEN_OBJ_PLAYER	3
+#define SCREEN_OBJ_PROMPT	4
+#define SCREEN_OBJ_SELECTOR	5
+#define SCREEN_OBJ_STATUS	6
+#define SCREEN_OBJ_TITLE	7
+#define SCREEN_OBJ_VIEW		8
 
 #define SCREEN_PLAYER_NROWS	2
 #define SCREEN_STATUS_NROWS	1
@@ -151,14 +152,15 @@ static struct {
 	const char		*option_bg;
 	const char		*option_fg;
 } screen_objects[] = {
-	{ A_NORMAL, 1, "error-attr",	  "error-bg",	   "error-fg" },
-	{ A_NORMAL, 2, "info-attr",	  "info-bg",	   "info-fg" },
-	{ A_NORMAL, 3, "player-attr",	  "player-bg",	   "player-fg" },
-	{ A_NORMAL, 4, "prompt-attr",	  "prompt-bg",	   "prompt-fg" },
-	{ A_NORMAL, 5, "selection-attr",  "selection-bg",  "selection-fg" },
-	{ A_NORMAL, 6, "status-attr",	  "status-bg",	   "status-fg" },
-	{ A_NORMAL, 7, "view-title-attr", "view-title-bg", "view-title-fg" },
-	{ A_NORMAL, 8, "view-attr",	  "view-bg",	   "view-fg" }
+	{ A_NORMAL, 1, "active-attr",     "active-bg",     "active-fg" },
+	{ A_NORMAL, 2, "error-attr",      "error-bg",      "error-fg" },
+	{ A_NORMAL, 3, "info-attr",       "info-bg",       "info-fg" },
+	{ A_NORMAL, 4, "player-attr",     "player-bg",     "player-fg" },
+	{ A_NORMAL, 5, "prompt-attr",     "prompt-bg",     "prompt-fg" },
+	{ A_NORMAL, 6, "selection-attr",  "selection-bg",  "selection-fg" },
+	{ A_NORMAL, 7, "status-attr",     "status-bg",     "status-fg" },
+	{ A_NORMAL, 8, "view-title-attr", "view-title-bg", "view-title-fg" },
+	{ A_NORMAL, 9, "view-attr",       "view-bg",       "view-fg" }
 };
 
 static void
@@ -657,6 +659,15 @@ screen_view_print(const char *s)
 {
 	XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
 	bkgdset(screen_objects[SCREEN_OBJ_VIEW].attr);
+	screen_print_row(s);
+	XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
+}
+
+void
+screen_view_print_active(const char *s)
+{
+	XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
+	bkgdset(screen_objects[SCREEN_OBJ_ACTIVE].attr);
 	screen_print_row(s);
 	XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
 }

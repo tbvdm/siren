@@ -550,6 +550,7 @@ void		 screen_status_clear(void);
 unsigned int	 screen_view_get_nrows(void);
 void		 screen_view_move_cursor(unsigned int);
 void		 screen_view_print(const char *) NONNULL();
+void		 screen_view_print_active(const char *) NONNULL();
 void		 screen_view_print_begin(void);
 void		 screen_view_print_end(void);
 void		 screen_view_print_selected(const char *s) NONNULL();

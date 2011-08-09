@@ -344,6 +344,12 @@ option_init(void)
 	option_add_boolean("show-dirs-before-files", 0, browser_refresh_dir);
 	option_add_boolean("show-hidden-files", 0, browser_refresh_dir);
 
+	option_add_attrib("active-attr", ATTRIB_NORMAL,
+	    screen_configure_objects);
+	option_add_colour("active-bg", COLOUR_DEFAULT,
+	    screen_configure_objects);
+	option_add_colour("active-fg", COLOUR_YELLOW,
+	    screen_configure_objects);
 	option_add_attrib("error-attr", ATTRIB_NORMAL,
 	    screen_configure_objects);
 	option_add_colour("error-bg", COLOUR_DEFAULT,

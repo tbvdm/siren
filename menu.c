@@ -344,6 +344,8 @@ menu_print(struct menu *m)
 
 		if (i == m->sel_index - m->scroll_offset)
 			screen_view_print_selected(buf);
+		else if (i == m->active_index - m->scroll_offset)
+			screen_view_print_active(buf);
 		else
 			screen_view_print(buf);
 
