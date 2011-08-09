@@ -134,14 +134,7 @@ menu_get_prev_entry(const struct menu_entry *e)
 struct menu_entry *
 menu_get_selected_entry(const struct menu *m)
 {
-	struct menu_entry	*e;
-	unsigned int		 i;
-
-	e = TAILQ_FIRST(&m->list);
-	for (i = 0; i < m->sel_index; i++)
-		e = TAILQ_NEXT(e, entries);
-
-	return e;
+	return menu_get_entry_at_index(m, m->sel_index);
 }
 
 void *
