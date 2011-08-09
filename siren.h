@@ -400,8 +400,11 @@ void		 log_fatalx(const char *, const char *, ...) NORETURN
 void		 log_info(const char *, const char *, ...) PRINTFLIKE(2, 3);
 void		 log_init(int);
 
+void		 menu_activate_entry(struct menu *, struct menu_entry *)
+		    NONNULL();
 void		 menu_clear(struct menu *) NONNULL();
 void		 menu_free(struct menu *) NONNULL();
+struct menu_entry *menu_get_active_entry(const struct menu *) NONNULL();
 void		*menu_get_entry_data(const struct menu_entry *) NONNULL();
 struct menu_entry *menu_get_first_entry(const struct menu *) NONNULL();
 unsigned int	 menu_get_nentries(const struct menu *) NONNULL();

@@ -30,7 +30,6 @@ static int		 library_search_entry(const void *, const char *);
 
 static pthread_mutex_t	 library_menu_mtx = PTHREAD_MUTEX_INITIALIZER;
 static struct menu	*library_menu;
-static struct menu_entry *library_active_entry = NULL;
 static unsigned int	 library_duration;
 static char		*library_print_format;
 
@@ -42,7 +41,7 @@ library_activate_entry(void)
 
 	XPTHREAD_MUTEX_LOCK(&library_menu_mtx);
 	if ((e = menu_get_selected_entry(library_menu)) != NULL) {
-		library_active_entry = e;
+		menu_activate_entry(library_menu, e);
 		t = menu_get_entry_data(e);
 		track_hold(t);
 		player_play_track(t);
@@ -108,8 +107,6 @@ library_delete_entry(void)
 	if ((e = menu_get_selected_entry(library_menu)) != NULL) {
 		t = menu_get_entry_data(e);
 		library_duration -= t->duration;
-		if (library_active_entry == e)
-			library_active_entry = NULL;
 		menu_remove_selected_entry(library_menu);
 	}
 	XPTHREAD_MUTEX_UNLOCK(&library_menu_mtx);
@@ -148,14 +145,14 @@ library_get_next_track(void)
 	struct track		*t;
 
 	XPTHREAD_MUTEX_LOCK(&library_menu_mtx);
-	if (library_active_entry == NULL)
+	if ((me = menu_get_active_entry(library_menu)) == NULL)
 		t = NULL;
 	else {
-		if ((me = menu_get_next_entry(library_active_entry)) == NULL)
+		if ((me = menu_get_next_entry(me)) == NULL)
 			t = NULL;
 		else {
-			library_active_entry = me;
-			t = menu_get_entry_data(library_active_entry);
+			menu_activate_entry(library_menu, me);
+			t = menu_get_entry_data(me);
 			track_hold(t);
 		}
 	}
@@ -170,14 +167,14 @@ library_get_prev_track(void)
 	struct track		*t;
 
 	XPTHREAD_MUTEX_LOCK(&library_menu_mtx);
-	if (library_active_entry == NULL)
+	if ((me = menu_get_active_entry(library_menu)) == NULL)
 		t = NULL;
 	else {
-		if ((me = menu_get_prev_entry(library_active_entry)) == NULL)
+		if ((me = menu_get_prev_entry(me)) == NULL)
 			t = NULL;
 		else {
-			library_active_entry = me;
-			t = menu_get_entry_data(library_active_entry);
+			menu_activate_entry(library_menu, me);
+			t = menu_get_entry_data(me);
 			track_hold(t);
 		}
 	}

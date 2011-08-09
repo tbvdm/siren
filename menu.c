@@ -25,9 +25,11 @@
 #include "compat/queue.h"
 #endif
 
-#define MENU_NENTRIES_MAX	UINT_MAX
+#define MENU_NENTRIES_MAX	(UINT_MAX - 1)
+#define MENU_NONE		UINT_MAX
 
 struct menu {
+	unsigned int	 active_index;
 	unsigned int	 sel_index;
 	unsigned int	 nentries;
 	unsigned int	 scroll_offset;
@@ -43,6 +45,29 @@ struct menu_entry {
 	void		*data;
 	TAILQ_ENTRY(menu_entry) entries;
 };
+
+static struct menu_entry *menu_get_entry_at_index(const struct menu *,
+    unsigned int);
+
+void
+menu_activate_entry(struct menu *m, struct menu_entry *ae)
+{
+	struct menu_entry	*e;
+	unsigned int		 i;
+
+	/*
+	 * Determine the index of the specified entry. This process also allows
+	 * us to ensure that the specified entry really exists in the menu.
+	 */
+	i = 0;
+	TAILQ_FOREACH(e, &m->list, entries) {
+		if (e == ae) {
+			m->active_index = i;
+			break;
+		}
+		i++;
+	}
+}
 
 static void
 menu_adjust_scroll_offset(struct menu *m)
@@ -90,6 +115,14 @@ menu_free(struct menu *m)
 {
 	menu_clear(m);
 	free(m);
+}
+
+struct menu_entry *
+menu_get_active_entry(const struct menu *m)
+{
+	if (m->active_index == MENU_NONE)
+		return NULL;
+	return menu_get_entry_at_index(m, m->active_index);
 }
 
 static struct menu_entry *
@@ -160,6 +193,7 @@ menu_init(void (*free_entry_data)(void *),
 
 	m = xmalloc(sizeof *m);
 
+	m->active_index = MENU_NONE;
 	m->sel_index = 0;
 	m->nentries = 0;
 	m->scroll_offset = 0;
@@ -352,6 +386,8 @@ menu_remove_selected_entry(struct menu *m)
 
 	if ((e = menu_get_entry_at_index(m, m->sel_index)) != NULL) {
 		menu_remove_entry(m, e);
+		if (m->active_index == m->sel_index)
+			m->active_index = MENU_NONE;
 		if (m->sel_index > 0 && m->sel_index == m->nentries)
 			m->sel_index--;
 	}
