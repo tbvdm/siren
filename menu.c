@@ -14,6 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <limits.h>
 #include <stdlib.h>
 
 #include "siren.h"
@@ -23,6 +24,8 @@
 #else
 #include "compat/queue.h"
 #endif
+
+#define MENU_NENTRIES_MAX	UINT_MAX
 
 struct menu {
 	unsigned int	 sel_index;
@@ -176,6 +179,9 @@ menu_insert_before(struct menu *m, struct menu_entry *le, void *data)
 	struct menu_entry	*e, *f;
 	unsigned int		 i;
 
+	if (m->nentries == MENU_NENTRIES_MAX)
+		return;
+
 	e = xmalloc(sizeof *e);
 	e->data = data;
 
@@ -203,6 +209,9 @@ menu_insert_head(struct menu *m, void *data)
 {
 	struct menu_entry *e;
 
+	if (m->nentries == MENU_NENTRIES_MAX)
+		return;
+
 	e = xmalloc(sizeof *e);
 	e->data = data;
 
@@ -217,6 +226,9 @@ void
 menu_insert_tail(struct menu *m, void *data)
 {
 	struct menu_entry *e;
+
+	if (m->nentries == MENU_NENTRIES_MAX)
+		return;
 
 	e = xmalloc(sizeof *e);
 	e->data = data;
