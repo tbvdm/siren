@@ -126,10 +126,13 @@ op_sndio_open(void)
 	char		*device;
 
 	device = option_get_string("sndio-device");
-	if (device[0] == '\0')
+	if (device[0] == '\0') {
+		LOG_INFO("using default device");
 		op_sndio_handle = sio_open(NULL, SIO_PLAY, 0);
-	else
+	} else {
+		LOG_INFO("using %s device", device);
 		op_sndio_handle = sio_open(device, SIO_PLAY, 0);
+	}
 	free(device);
 
 	if (op_sndio_handle == NULL) {
