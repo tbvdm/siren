@@ -15,6 +15,7 @@
  */
 
 #include <sndio.h>
+#include <stdlib.h>
 
 #include "../siren.h"
 
@@ -122,13 +123,16 @@ static int
 op_sndio_open(void)
 {
 	struct sio_par	 par;
-	const char	*device;
+	char		*device;
 
 	device = option_get_string("sndio-device");
 	if (device[0] == '\0')
-		device = NULL;
+		op_sndio_handle = sio_open(NULL, SIO_PLAY, 0);
+	else
+		op_sndio_handle = sio_open(device, SIO_PLAY, 0);
+	free(device);
 
-	if ((op_sndio_handle = sio_open(device, SIO_PLAY, 0)) == NULL) {
+	if (op_sndio_handle == NULL) {
 		LOG_ERRX("sio_open() failed");
 		return OP_SNDIO_ERROR_OPEN;
 	}

@@ -16,6 +16,7 @@
 
 #include <errno.h>
 #include <limits.h>
+#include <stdlib.h>
 
 #include <ao/ao.h>
 
@@ -122,21 +123,20 @@ static int
 op_ao_open(void)
 {
 	ao_info		*info;
-	const char	*driver;
+	char		*driver;
 
 	ao_initialize();
 
 	driver = option_get_string("ao-driver");
-	if (driver[0] == '\0')
-		op_ao_driver_id = ao_default_driver_id();
-	else
-		op_ao_driver_id = ao_driver_id(driver);
+	if (driver[0] == '\0') {
+		if ((op_ao_driver_id = ao_default_driver_id()) == -1)
+			LOG_ERRX("ao_default_driver_id() failed");
+	} else
+		if ((op_ao_driver_id = ao_driver_id(driver)) == -1)
+			LOG_ERRX("ao_driver_id() failed");
+	free(driver);
 
 	if (op_ao_driver_id == -1) {
-		if (driver[0] == '\0')
-			LOG_ERRX("ao_default_driver_id() failed");
-		else
-			LOG_ERRX("ao_driver_id() failed");
 		ao_shutdown();
 		return OP_AO_ERROR_DRIVER;
 	}
