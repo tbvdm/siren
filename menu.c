@@ -547,6 +547,13 @@ menu_search_prev(struct menu *m, const char *s)
 }
 
 void
+menu_select_active_entry(struct menu *m)
+{
+	if (m->active_index != MENU_NONE)
+		m->sel_index = m->active_index;
+}
+
+void
 menu_select_entry(struct menu *m, struct menu_entry *se)
 {
 	struct menu_entry	*e;

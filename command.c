@@ -137,6 +137,7 @@ COMMAND_FREE_PROTOTYPE(search_prompt);
 COMMAND_PARSE_PROTOTYPE(search_prompt);
 COMMAND_EXEC_PROTOTYPE(seek);
 COMMAND_PARSE_PROTOTYPE(seek);
+COMMAND_EXEC_PROTOTYPE(select_active_entry);
 COMMAND_EXEC_PROTOTYPE(select_first_entry);
 COMMAND_EXEC_PROTOTYPE(select_last_entry);
 COMMAND_EXEC_PROTOTYPE(select_next_entry);
@@ -302,6 +303,12 @@ static struct command command_list[] = {
 		command_seek_parse,
 		command_seek_exec,
 		free
+	},
+	{
+		"select-active-entry",
+		command_generic_parse,
+		command_select_active_entry_exec,
+		NULL
 	},
 	{
 		"select-first-entry",
@@ -1105,6 +1112,13 @@ command_seek_parse(int argc, char **argv, void **datap, char **error)
 
 	*datap = data;
 	return 0;
+}
+
+/* ARGSUSED */
+static void
+command_select_active_entry_exec(UNUSED void *datap)
+{
+	library_select_active_entry();
 }
 
 /* ARGSUSED */

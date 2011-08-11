@@ -308,6 +308,15 @@ library_search_entry(const void *e, const char *search)
 }
 
 void
+library_select_active_entry(void)
+{
+	XPTHREAD_MUTEX_LOCK(&library_menu_mtx);
+	menu_select_active_entry(library_menu);
+	XPTHREAD_MUTEX_UNLOCK(&library_menu_mtx);
+	library_print();
+}
+
+void
 library_select_first_entry(void)
 {
 	XPTHREAD_MUTEX_LOCK(&library_menu_mtx);

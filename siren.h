@@ -384,6 +384,7 @@ void		 library_search_next(const char *);
 void		 library_search_prev(const char *);
 void		 library_scroll_down(enum menu_scroll);
 void		 library_scroll_up(enum menu_scroll);
+void		 library_select_active_entry(void);
 void		 library_select_first_entry(void);
 void		 library_select_last_entry(void);
 void		 library_select_next_entry(void);
@@ -429,6 +430,7 @@ void		 menu_scroll_down(struct menu *, enum menu_scroll) NONNULL();
 void		 menu_scroll_up(struct menu *, enum menu_scroll) NONNULL();
 void		 menu_search_next(struct menu *, const char *) NONNULL();
 void		 menu_search_prev(struct menu *, const char *) NONNULL();
+void		 menu_select_active_entry(struct menu *) NONNULL();
 void		 menu_select_entry(struct menu *, struct menu_entry *)
 		    NONNULL();
 void		 menu_select_first_entry(struct menu *) NONNULL();
