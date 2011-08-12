@@ -180,7 +180,8 @@ dir_open(const char *dir)
 #endif
 
 	if ((dirp = opendir(dir)) == NULL) {
-		LOG_ERR("opendir: %s", dir);
+		if (errno != ENOENT)
+			LOG_ERR("opendir: %s", dir);
 		return NULL;
 	}
 
