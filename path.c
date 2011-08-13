@@ -48,27 +48,28 @@ path_absolutise(const char *path)
 static char *
 path_expand_tilde(const char *path)
 {
-	size_t	 i;
+	size_t	 userlen;
 	char	*home, *user, *newpath;
 
 	if (path[0] != '~')
-		return xstrdup(path);
+		return NULL;
 
-	for (i = 1; path[i] != '/' && path[i] != '\0'; i++)
-		;
-	if (i == 1)
-		user = NULL;
+	/* Skip tilde. */
+	path++;
+
+	if ((userlen = strcspn(path, "/")) == 0)
+		home = path_get_home_dir(NULL);
 	else {
-		user = xmalloc(i);
-		(void)strlcpy(user, path + 1, i);
+		user = xmalloc(userlen + 1);
+		(void)strlcpy(user, path, userlen + 1);
+		home = path_get_home_dir(user);
+		free(user);
 	}
 
-	home = path_get_home_dir(user);
-	free(user);
 	if (home == NULL)
-		return xstrdup(path);
+		return NULL;
 
-	(void)xasprintf(&newpath, "%s%s", home, path + i);
+	(void)xasprintf(&newpath, "%s%s", home, path + userlen);
 	free(home);
 
 	return newpath;
@@ -164,9 +165,9 @@ path_normalise(const char *path)
 	size_t	 i, j, pathlen;
 
 	tmp = NULL;
-	if (path[0] == '~')
-		path = tmp = path_expand_tilde(path);
-	else if (path[0] != '/')
+	if (path[0] == '~' && (tmp = path_expand_tilde(path)) != NULL)
+		path = tmp;
+	if (path[0] != '/')
 		path = tmp = path_absolutise(path);
 
 	pathlen = strlen(path);
