@@ -160,8 +160,10 @@ plugin_load_dir(const char *dir, const char *symbol,
 	char			*ext;
 	void			*handle, *plugin;
 
-	if ((d = dir_open(dir)) == NULL)
+	if ((d = dir_open(dir)) == NULL) {
+		LOG_ERR("dir_open: %s", dir);
 		return;
+	}
 
 	while (dir_get_entry(d, &de) == 0 && de != NULL) {
 		if (de->type != FILE_TYPE_REGULAR)
