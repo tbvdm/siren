@@ -229,6 +229,9 @@ player_get_track(void)
 	if (!option_get_boolean("continue"))
 		return -1;
 
+	if (option_get_boolean("repeat-track"))
+		return 0;
+
 	if ((t = queue_get_next_track()) == NULL &&
 	    (t = library_get_next_track()) == NULL)
 		return -1;
@@ -471,7 +474,7 @@ player_print_status(void)
 	unsigned int	 duration, position;
 	int		 ret, volume;
 	char		*error;
-	const char	*mode, *state;
+	const char	*mode, *repeat, *state;
 
 	error = NULL;
 
@@ -514,13 +517,20 @@ player_print_status(void)
 	XPTHREAD_MUTEX_UNLOCK(&player_op_mtx);
 
 	if (option_get_boolean("continue"))
-		mode = "continue";
+		mode = "  continue";
 	else
 		mode = "";
 
-	screen_player_status_printf("%-7s  %d:%02d / %u:%02u  %d%%  %s", state,
+	if (option_get_boolean("repeat-track"))
+		repeat = "  repeat-track";
+	else if (option_get_boolean("repeat-all"))
+		repeat = "  repeat-all";
+	else
+		repeat = "";
+
+	screen_player_status_printf("%-7s  %d:%02d / %u:%02u  %d%%%s%s", state,
 	    MINS(position), MSECS(position), MINS(duration), MSECS(duration),
-	    volume, mode);
+	    volume, mode, repeat);
 }
 
 /*

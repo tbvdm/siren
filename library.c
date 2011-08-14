@@ -149,7 +149,11 @@ library_get_next_track(void)
 	if ((me = menu_get_active_entry(library_menu)) == NULL)
 		t = NULL;
 	else {
-		if ((me = menu_get_next_entry(me)) == NULL)
+		if ((me = menu_get_next_entry(me)) == NULL &&
+		    option_get_boolean("repeat-all"))
+			me = menu_get_first_entry(library_menu);
+
+		if (me == NULL)
 			t = NULL;
 		else {
 			menu_activate_entry(library_menu, me);
@@ -172,7 +176,11 @@ library_get_prev_track(void)
 	if ((me = menu_get_active_entry(library_menu)) == NULL)
 		t = NULL;
 	else {
-		if ((me = menu_get_prev_entry(me)) == NULL)
+		if ((me = menu_get_prev_entry(me)) == NULL &&
+		    option_get_boolean("repeat-all"))
+			me = menu_get_last_entry(library_menu);
+
+		if (me == NULL)
 			t = NULL;
 		else {
 			menu_activate_entry(library_menu, me);

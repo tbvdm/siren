@@ -142,8 +142,7 @@ option_add_boolean(const char *name, int value, void (*callback)(void))
 }
 
 static void
-option_add_colour(const char *name, enum colour value,
-    void (*callback)(void))
+option_add_colour(const char *name, enum colour value, void (*callback)(void))
 {
 	struct option_entry *o;
 
@@ -180,8 +179,7 @@ option_add_number(const char *name, int value, int minvalue, int maxvalue,
 }
 
 void
-option_add_string(const char *name, const char *value,
-    void (*callback)(void))
+option_add_string(const char *name, const char *value, void (*callback)(void))
 {
 	struct option_entry *o;
 
@@ -339,6 +337,8 @@ option_init(void)
 	    player_print);
 	option_add_string("queue-format", "%-0a %-0t %5d",
 	    queue_print);
+	option_add_boolean("repeat-all", 1, player_print);
+	option_add_boolean("repeat-track", 0, player_print);
 	option_add_boolean("show-all-files", 0, browser_refresh_dir);
 	option_add_boolean("show-cursor", 0, screen_configure_cursor);
 	option_add_boolean("show-dirs-before-files", 0, browser_refresh_dir);

@@ -12,7 +12,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd August 11, 2011
+.Dd August 14, 2011
 .Dt SIREN 1
 .Os
 .Sh NAME
@@ -706,6 +706,13 @@ The format for displaying tracks in the queue.
 See the
 .Ic library-format
 option for a description of the format specification.
+.It Ic repeat-all Ar boolean
+Whether to repeat playback of the library.
+.It Ic repeat-track Ar boolean
+Whether to repeat playback of the current track.
+This option takes precedence over the
+.Ic repeat-all
+option.
 .It Ic selection-attr Ar attributes
 Character attributes for the selection indicator.
 .It Ic selection-bg Ar colour

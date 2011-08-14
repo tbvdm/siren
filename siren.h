@@ -408,6 +408,7 @@ void		 menu_free(struct menu *) NONNULL();
 struct menu_entry *menu_get_active_entry(const struct menu *) NONNULL();
 void		*menu_get_entry_data(const struct menu_entry *) NONNULL();
 struct menu_entry *menu_get_first_entry(const struct menu *) NONNULL();
+struct menu_entry *menu_get_last_entry(const struct menu *) NONNULL();
 unsigned int	 menu_get_nentries(const struct menu *) NONNULL();
 struct menu_entry *menu_get_next_entry(const struct menu_entry *) NONNULL();
 struct menu_entry *menu_get_prev_entry(const struct menu_entry *) NONNULL();

@@ -149,6 +149,12 @@ menu_get_first_entry(const struct menu *m)
 	return TAILQ_FIRST(&m->list);
 }
 
+struct menu_entry *
+menu_get_last_entry(const struct menu *m)
+{
+	return TAILQ_LAST(&m->list, menu_list);
+}
+
 unsigned int
 menu_get_nentries(const struct menu *m)
 {
