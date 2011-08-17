@@ -200,7 +200,7 @@ op_sndio_start(struct sample_format *sf)
 	    op_sndio_par.pchan, op_sndio_par.rate, op_sndio_par.appbufsz);
 
 	if (!sio_start(op_sndio_handle)) {
-		LOG_ERRX("cannot start stream");
+		LOG_ERRX("sio_start() failed");
 		return OP_SNDIO_ERROR_START;
 	}
 
