@@ -46,7 +46,7 @@ static int		 op_sndio_write(void *, size_t);
 
 struct op		 op = {
 	"sndio",
-	10,
+	OP_PRIORITY_SNDIO,
 	op_sndio_close,
 	op_sndio_error,
 	op_sndio_get_buffer_size,

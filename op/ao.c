@@ -46,7 +46,7 @@ static int		 op_ao_write(void *, size_t);
 
 const struct op		 op = {
 	"ao",
-	40,
+	OP_PRIORITY_AO,
 	op_ao_close,
 	op_ao_error,
 	op_ao_get_buffer_size,

@@ -55,6 +55,11 @@
 #define IP_ERROR_PLUGIN		-1
 #define IP_ERROR_SYSTEM		-2
 
+/* Priority of output plug-ins. */
+#define OP_PRIORITY_SNDIO	1
+#define OP_PRIORITY_PULSE	2
+#define OP_PRIORITY_AO		3
+
 /* Size of the buffer to be passed to strerror_r(). The value is arbitrary. */
 #define STRERROR_BUFSIZE	256
 
