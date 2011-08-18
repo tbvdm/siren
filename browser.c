@@ -51,13 +51,19 @@ browser_activate_entry(void)
 	if ((e = menu_get_selected_entry_data(browser_menu)) == NULL)
 		return;
 
-	if (e->type == FILE_TYPE_DIRECTORY)
+	switch (e->type) {
+	case FILE_TYPE_DIRECTORY:
 		browser_change_dir(e->name);
-	else if (e->type == FILE_TYPE_REGULAR) {
+		break;
+	case FILE_TYPE_REGULAR:
 		(void)xasprintf(&path, "%s/%s", browser_dir, e->name);
 		if ((t = track_init(path, e->ip)) != NULL)
 			player_play_track(t);
 		free(path);
+		break;
+	/* Silence gcc. */
+	default:
+		break;
 	}
 }
 
@@ -91,7 +97,7 @@ browser_change_dir(const char *dir)
 		free(browser_dir);
 		browser_dir = newdir;
 
-		if (prevdir)
+		if (prevdir != NULL)
 			/* Select the remembered directory. */
 			browser_select_entry(prevdir);
 
@@ -117,10 +123,12 @@ browser_copy_entry(enum view_id view)
 	path = path_normalise(tmp);
 	free(tmp);
 
-	if (e->type == FILE_TYPE_REGULAR) {
+	switch (e->type) {
+	case FILE_TYPE_REGULAR:
 		if ((t = track_init(path, e->ip)) != NULL)
 			view_add_track(view, t);
-	} else if (e->type == FILE_TYPE_DIRECTORY) {
+		break;
+	case FILE_TYPE_DIRECTORY:
 		if ((d = dir_open(path)) == NULL)
 			msg_err("Cannot open directory");
 		else {
@@ -132,6 +140,10 @@ browser_copy_entry(enum view_id view)
 
 			dir_close(d);
 		}
+		break;
+	/* Silence gcc. */
+	default:
+		break;
 	}
 
 	free(path);
@@ -160,8 +172,9 @@ browser_get_entry_text(const void *e, char *buf, size_t bufsize)
 	const struct browser_entry *be;
 
 	be = e;
-	(void)snprintf(buf, bufsize, "%s%c", be->name,
-	    be->type == FILE_TYPE_DIRECTORY ? '/' : '\0');
+	(void)strlcpy(buf, be->name, bufsize);
+	if (be->type == FILE_TYPE_DIRECTORY)
+		(void)strlcat(buf, "/", bufsize);
 }
 
 void
