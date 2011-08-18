@@ -64,13 +64,13 @@ ip/%.o: ip/%.c
 	${CC} ${CFLAGS} ${CPPFLAGS} ${CPPFLAGS_$(*F)} -fPIC -c -o $@ $<
 
 ip/%.so: ip/%.o
-	${CC} ${LDFLAGS_$(*F)} -shared -o $@ $<
+	${CC} ${LDFLAGS_$(*F)} -fPIC -shared -o $@ $<
 
 op/%.o: op/%.c
 	${CC} ${CFLAGS} ${CPPFLAGS} ${CPPFLAGS_$(*F)} -fPIC -c -o $@ $<
 
 op/%.so: op/%.o
-	${CC} ${LDFLAGS_$(*F)} -shared -o $@ $<
+	${CC} ${LDFLAGS_$(*F)} -fPIC -shared -o $@ $<
 
 %.ln: %.c
 	${LINT} ${LINTFLAGS} ${CPPFLAGS} ${CPPFLAGS_$(*F)} -i -o $@ $<

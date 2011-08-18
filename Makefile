@@ -72,7 +72,7 @@ LDFLAGS+=	-lpthread
 	${CC} ${CFLAGS} ${CPPFLAGS} -c -o $@ $<
 
 .lo.so:
-	${CC} ${LDFLAGS_${@:T:R}} -shared -o $@ $<
+	${CC} ${LDFLAGS_${@:T:R}} -fPIC -shared -o $@ $<
 
 all: ${PROG} ${IP_LIBS} ${OP_LIBS}
 
