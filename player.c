@@ -149,30 +149,31 @@ player_change_op(void)
 		msg_errx("Output plug-in not found: %s", name);
 	else {
 		player_stop();
+		XPTHREAD_MUTEX_LOCK(&player_op_mtx);
 		player_close_op();
 		LOG_INFO("opening %s output plug-in", op->name);
 		if ((ret = op->open()))
 			msg_op_err(op, ret, "Cannot open %s output plug-in",
 			    op->name);
 		else {
-			XPTHREAD_MUTEX_LOCK(&player_op_mtx);
 			player_op = op;
 			player_op_opened = 1;
-			XPTHREAD_MUTEX_UNLOCK(&player_op_mtx);
 		}
+		XPTHREAD_MUTEX_UNLOCK(&player_op_mtx);
 	}
 	free(name);
 }
 
+/*
+ * The player_op_mtx mutex must be locked before calling this function.
+ */
 static void
 player_close_op(void)
 {
-	XPTHREAD_MUTEX_LOCK(&player_op_mtx);
 	if (player_op_opened) {
 		player_op->close();
 		player_op_opened = 0;
 	}
-	XPTHREAD_MUTEX_UNLOCK(&player_op_mtx);
 }
 
 static void
