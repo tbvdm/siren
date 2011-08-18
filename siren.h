@@ -424,9 +424,7 @@ struct menu	*menu_init(void (*)(void *),
 		    int (*)(const void *, const char *));
 void		 menu_insert_before(struct menu *, struct menu_entry *,
 		    void *) NONNULL();
-void		 menu_insert_head(struct menu *, void *) NONNULL();
 void		 menu_insert_tail(struct menu *, void *) NONNULL();
-int		 menu_is_empty(const struct menu *) NONNULL();
 void		 menu_move_entry_down(struct menu_entry *) NONNULL();
 void		 menu_move_entry_up(struct menu_entry *) NONNULL();
 void		 menu_print(struct menu *) NONNULL();

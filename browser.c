@@ -225,11 +225,6 @@ browser_read_dir(const char *dir)
 		be->type = de->type;
 		be->ip = ip;
 
-		if (menu_is_empty(browser_menu)) {
-			menu_insert_head(browser_menu, be);
-			continue;
-		}
-
 		MENU_FOR_EACH_ENTRY(browser_menu, me) {
 			mbe = menu_get_entry_data(me);
 			if (option_get_boolean("show-dirs-before-files") &&

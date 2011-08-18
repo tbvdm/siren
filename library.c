@@ -57,20 +57,16 @@ library_add_track(struct track *t)
 	struct menu_entry	*entry;
 
 	XPTHREAD_MUTEX_LOCK(&library_menu_mtx);
-	if (menu_is_empty(library_menu))
-		menu_insert_head(library_menu, t);
-	else {
-		MENU_FOR_EACH_ENTRY(library_menu, entry) {
-			et = menu_get_entry_data(entry);
-			if (track_cmp(t, et) < 0) {
-				menu_insert_before(library_menu, entry, t);
-				break;
-			}
+	MENU_FOR_EACH_ENTRY(library_menu, entry) {
+		et = menu_get_entry_data(entry);
+		if (track_cmp(t, et) < 0) {
+			menu_insert_before(library_menu, entry, t);
+			break;
 		}
-
-		if (entry == NULL)
-			menu_insert_tail(library_menu, t);
 	}
+
+	if (entry == NULL)
+		menu_insert_tail(library_menu, t);
 
 	library_duration += t->duration;
 	XPTHREAD_MUTEX_UNLOCK(&library_menu_mtx);

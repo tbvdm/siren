@@ -245,24 +245,6 @@ menu_insert_before(struct menu *m, struct menu_entry *le, void *data)
 }
 
 void
-menu_insert_head(struct menu *m, void *data)
-{
-	struct menu_entry *e;
-
-	if (m->nentries == MENU_NENTRIES_MAX)
-		return;
-
-	e = xmalloc(sizeof *e);
-	e->data = data;
-
-	TAILQ_INSERT_HEAD(&m->list, e, entries);
-	m->nentries++;
-
-	if (m->sel_index > 0)
-		m->sel_index++;
-}
-
-void
 menu_insert_tail(struct menu *m, void *data)
 {
 	struct menu_entry *e;
@@ -275,12 +257,6 @@ menu_insert_tail(struct menu *m, void *data)
 
 	TAILQ_INSERT_TAIL(&m->list, e, entries);
 	m->nentries++;
-}
-
-int
-menu_is_empty(const struct menu *m)
-{
-	return TAILQ_EMPTY(&m->list);
 }
 
 void
