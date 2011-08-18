@@ -266,17 +266,20 @@ browser_refresh_dir(void)
 	struct browser_entry	*e;
 	char			*name;
 
-	/* Remember selected entry. */
-	e = menu_get_selected_entry_data(browser_menu);
-	name = xstrdup(e->name);
+	if ((e = menu_get_selected_entry_data(browser_menu)) == NULL)
+		name = NULL;
+	else
+		/* Remember selected entry. */
+		name = xstrdup(e->name);
 
 	if (browser_read_dir(browser_dir) != -1) {
-		/* Reselect remembered entry. */
-		browser_select_entry(name);
+		if (name != NULL) {
+			/* Select remembered entry. */
+			browser_select_entry(name);
+			free(name);
+		}
 		browser_print();
 	}
-
-	free(name);
 }
 
 static int
