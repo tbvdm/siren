@@ -542,7 +542,9 @@ screen_prompt_printf(size_t cursorpos, const char *fmt, ...)
 void
 screen_refresh(void)
 {
+	XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
 	(void)clear();
+	XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
 	screen_resize();
 	screen_print();
 }
