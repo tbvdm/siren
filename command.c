@@ -533,7 +533,6 @@ command_bind_key_free(void *datap)
 	free(data);
 }
 
-/* ARGSUSED */
 static int
 command_bind_key_parse(int argc, char **argv, void **datap, char **error)
 {
@@ -1360,7 +1359,7 @@ static int
 command_string_to_argv(const char *line, char ***argv)
 {
 	size_t	 argsize;
-	int	 argc, backslash, done, have_arg, i;
+	int	 argc, backslash, done, i;
 	char	*arg;
 	enum {
 		QUOTE_NONE,
@@ -1371,7 +1370,7 @@ command_string_to_argv(const char *line, char ***argv)
 	arg = NULL;
 	*argv = NULL;
 	argsize = 0;
-	argc = backslash = done = have_arg = i = 0;
+	argc = backslash = done = i = 0;
 	quote = QUOTE_NONE;
 
 	while (!done) {
@@ -1402,15 +1401,12 @@ command_string_to_argv(const char *line, char ***argv)
 				switch (line[i]) {
 				case '\\':
 					backslash = 1;
-					have_arg = 1;
 					break;
 				case '\'':
 					quote = QUOTE_SINGLE;
-					have_arg = 1;
 					break;
 				case '"':
 					quote = QUOTE_DOUBLE;
-					have_arg = 1;
 					break;
 				case '\0':
 				case '#':
@@ -1418,7 +1414,7 @@ command_string_to_argv(const char *line, char ***argv)
 					/* FALLTHROUGH */
 				case ' ':
 				case '\t':
-					if (have_arg) {
+					if (argsize) {
 						arg = xrealloc(arg,
 						    argsize + 1);
 						arg[argsize] = '\0';
@@ -1429,13 +1425,11 @@ command_string_to_argv(const char *line, char ***argv)
 
 						arg = NULL;
 						argsize = 0;
-						have_arg = 0;
 					}
 					break;
 				default:
 					arg = xrealloc(arg, argsize + 1);
 					arg[argsize++] = line[i];
-					have_arg = 1;
 					break;
 				}
 			}
