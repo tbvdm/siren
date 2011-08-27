@@ -546,6 +546,8 @@ screen_prompt_printf(size_t cursorpos, const char *fmt, ...)
 	if (move(screen_status_row, 0) == OK) {
 		bkgdset(screen_objects[SCREEN_OBJ_PROMPT].attr);
 		screen_vprintf(fmt, ap);
+		if ((int)cursorpos >= COLS && COLS > 0)
+			cursorpos = (size_t)(COLS - 1);
 		(void)move(screen_status_row, (int)cursorpos);
 		(void)refresh();
 	}
