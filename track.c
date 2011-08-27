@@ -55,8 +55,8 @@ track_cmp_number(const char *s1, const char *s2)
 	const char	*errstr;
 
 	if (s1 == NULL)
-		return s2 ? -1 : 0;
-	else if (s2 == NULL)
+		return s2 == NULL ? 0 : -1;
+	if (s2 == NULL)
 		return 1;
 
 	i1 = (int)strtonum(s1, 0, INT_MAX, &errstr);
@@ -75,23 +75,17 @@ track_cmp_number(const char *s1, const char *s2)
 		return track_cmp_string(s1, s2);
 	}
 
-	if (i1 < i2)
-		return -1;
-	else if (i1 == i2)
-		return 0;
-	else
-		return 1;
+	return i1 < i2 ? -1 : i1 > i2;
 }
 
 static int
 track_cmp_string(const char *s1, const char *s2)
 {
 	if (s1 == NULL)
-		return s2 ? -1 : 0;
-	else if (s2 == NULL)
+		return s2 == NULL ? 0: -1;
+	if (s2 == NULL)
 		return 1;
-	else
-		return strcasecmp(s1, s2);
+	return strcasecmp(s1, s2);
 }
 
 void
