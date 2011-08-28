@@ -68,6 +68,7 @@ static void			screen_sigwinch_handler(int);
 #endif
 
 static pthread_mutex_t		screen_curses_mtx = PTHREAD_MUTEX_INITIALIZER;
+static int			screen_have_colours;
 static int			screen_player_row;
 static int			screen_status_row;
 static int			screen_view_cursor_row;
@@ -235,6 +236,9 @@ screen_configure_colours(void)
 	size_t		i;
 	short int	bg, fg;
 
+	if (!screen_have_colours)
+		return;
+
 	for (i = 0; i < NELEMENTS(screen_objects); i++) {
 		bg = screen_get_colour(screen_objects[i].option_bg,
 		    COLOUR_BLACK);
@@ -267,8 +271,7 @@ screen_configure_objects(void)
 {
 	XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
 	screen_configure_attribs();
-	if (has_colors() == TRUE)
-		screen_configure_colours();
+	screen_configure_colours();
 	XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
 	screen_print();
 }
@@ -396,19 +399,22 @@ screen_init(void)
 	screen_disable_dsusp();
 #endif
 
+	if (has_colors() == TRUE) {
+		if (start_color() == ERR)
+			LOG_ERRX("start_color() failed");
+		else {
+			screen_have_colours = 1;
+#ifdef HAVE_USE_DEFAULT_COLORS
+			if (use_default_colors() == OK)
+				screen_have_default_colours = 1;
+#endif
+		}
+	}
+
 	screen_calculate_rows();
 	screen_configure_cursor();
 	screen_configure_attribs();
-
-	if (has_colors() == TRUE) {
-		if (start_color() == ERR)
-			LOG_FATALX("start_color() failed");
-#ifdef HAVE_USE_DEFAULT_COLORS
-		if (use_default_colors() == OK)
-			screen_have_default_colours = 1;
-#endif
-		screen_configure_colours();
-	}
+	screen_configure_colours();
 }
 
 void
