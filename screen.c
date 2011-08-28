@@ -60,7 +60,6 @@ static void			screen_msg_vprintf(chtype, const char *,
 				    va_list);
 static void			screen_print_row(const char *);
 static void			screen_resize(void);
-static void			screen_show_cursor(int);
 static void			screen_vprintf(const char *, va_list);
 
 #ifdef SIGWINCH
@@ -527,16 +526,18 @@ screen_print_row(const char *s)
 void
 screen_prompt_begin(void)
 {
-	screen_show_cursor(1);
+	XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
+	(void)curs_set(1);
+	XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
 }
 
 void
 screen_prompt_end(void)
 {
-	screen_show_cursor(0);
 	screen_status_clear();
-
 	XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
+	if (!option_get_boolean("show-cursor"))
+		(void)curs_set(0);
 	(void)move(screen_view_cursor_row, 0);
 	(void)refresh();
 	XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
@@ -621,20 +622,6 @@ screen_resize(void)
 #endif
 
 	screen_calculate_rows();
-}
-
-static void
-screen_show_cursor(int show)
-{
-	if (show) {
-		XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
-		(void)curs_set(1);
-		XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
-	} else if (!option_get_boolean("show-cursor")) {
-		XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
-		(void)curs_set(0);
-		XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
-	}
 }
 
 #ifdef SIGWINCH
