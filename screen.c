@@ -591,13 +591,6 @@ screen_resize(void)
 		return;
 
 	XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
-#ifdef HAVE_IS_TERM_RESIZED
-	if (is_term_resized(ws.ws_row, ws.ws_col) == FALSE) {
-		XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
-		return;
-	}
-#endif
-
 	if (resizeterm(ws.ws_row, ws.ws_col) == ERR)
 		/*
 		 * resizeterm() might have failed to allocate memory, so treat

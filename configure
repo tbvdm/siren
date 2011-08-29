@@ -54,7 +54,6 @@ have_dirfd=0
 have_err=0
 have_fgetln=0
 have_freebsd_bswap16=0
-have_is_term_resized=0
 have_netbsd_bswap16=0
 have_netbsd_curses=0
 have_openbsd_swap16=0
@@ -141,7 +140,6 @@ FreeBSD)
 	have_err=1
 	have_fgetln=1
 	have_freebsd_bswap16=1
-	have_is_term_resized=1
 	have_optreset=1
 	have_resizeterm=1
 	have_strcasestr=1
@@ -158,7 +156,6 @@ Linux)
 	have_asprintf=1
 	have_dirfd=1
 	have_err=1
-	have_is_term_resized=1
 	have_resizeterm=1
 	have_strcasestr=1
 	have_strsep=1
@@ -193,7 +190,6 @@ OpenBSD)
 	have_dirfd=1
 	have_err=1
 	have_fgetln=1
-	have_is_term_resized=1
 	have_openbsd_swap16=1
 	have_optreset=1
 	have_queue_h=1
@@ -245,10 +241,6 @@ fi
 
 if [ "$have_freebsd_bswap16" -eq 1 ]; then
 	header_define HAVE_FREEBSD_BSWAP16
-fi
-
-if [ "$have_is_term_resized" -eq 1 ]; then
-	header_define HAVE_IS_TERM_RESIZED
 fi
 
 if [ "$have_netbsd_bswap16" -eq 1 ]; then
