@@ -81,11 +81,8 @@ ${PROG}: ${OBJS}
 
 .depend: ${SRCS} ${IP_SRCS} ${OP_SRCS} ${PROG}.h
 	${MKDEP} ${MKDEPFLAGS} ${CPPFLAGS} ${SRCS}
-.for p in ${IP}
-	${MKDEP} ${MKDEPFLAGS} ${CPPFLAGS_$p} ip/$p.c
-.endfor
-.for p in ${OP}
-	${MKDEP} ${MKDEPFLAGS} ${CPPFLAGS_$p} op/$p.c
+.for src in ${IP_SRCS} ${OP_SRCS}
+	${MKDEP} ${MKDEPFLAGS} ${CPPFLAGS_${src:T:R}} ${src}
 .endfor
 
 clean:
