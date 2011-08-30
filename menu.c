@@ -322,7 +322,6 @@ menu_print(struct menu *m)
 	e = menu_get_entry_at_index(m, m->scroll_offset);
 	for (i = 0; i < nrows && e != NULL; i++) {
 		m->get_entry_text(e->data, buf, bufsize);
-		screen_view_move_cursor(i);
 
 		if (i == m->sel_index - m->scroll_offset)
 			screen_view_print_selected(buf);
@@ -333,9 +332,6 @@ menu_print(struct menu *m)
 
 		e = TAILQ_NEXT(e, entries);
 	}
-
-	/* Move the cursor back to the selected entry. */
-	screen_view_move_cursor(m->sel_index - m->scroll_offset);
 
 	screen_view_print_end();
 	free(buf);

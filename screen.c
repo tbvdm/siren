@@ -53,13 +53,12 @@
 #define clrtoeol		screen_clrtoeol
 #endif
 
-static void			screen_configure_attribs(void);
-static void			screen_configure_colours(void);
 static short int		screen_get_colour(const char *, enum colour);
 static void			screen_msg_vprintf(chtype, const char *,
 				    va_list);
 static void			screen_print_row(const char *);
 static void			screen_resize(void);
+static void			screen_view_print_row(chtype, const char *);
 static void			screen_vprintf(const char *, va_list);
 
 #ifdef SIGWINCH
@@ -70,7 +69,8 @@ static pthread_mutex_t		screen_curses_mtx = PTHREAD_MUTEX_INITIALIZER;
 static int			screen_have_colours;
 static int			screen_player_row;
 static int			screen_status_row;
-static int			screen_view_cursor_row;
+static int			screen_view_current_row;
+static int			screen_view_selected_row;
 static int			screen_view_nrows;
 
 #ifdef SIGWINCH
@@ -538,7 +538,7 @@ screen_prompt_end(void)
 	XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
 	if (!option_get_boolean("show-cursor"))
 		(void)curs_set(0);
-	(void)move(screen_view_cursor_row, 0);
+	(void)move(screen_view_selected_row, 0);
 	(void)refresh();
 	XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
 }
@@ -649,21 +649,10 @@ screen_view_get_nrows(void)
 }
 
 void
-screen_view_move_cursor(unsigned int row)
-{
-	if ((int)row < screen_view_nrows) {
-		XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
-		(void)move(SCREEN_VIEW_ROW + (int)row, 0);
-		XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
-	}
-}
-
-void
 screen_view_print(const char *s)
 {
 	XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
-	bkgdset(screen_objects[SCREEN_OBJ_VIEW].attr);
-	screen_print_row(s);
+	screen_view_print_row(screen_objects[SCREEN_OBJ_VIEW].attr, s);
 	XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
 }
 
@@ -671,8 +660,7 @@ void
 screen_view_print_active(const char *s)
 {
 	XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
-	bkgdset(screen_objects[SCREEN_OBJ_ACTIVE].attr);
-	screen_print_row(s);
+	screen_view_print_row(screen_objects[SCREEN_OBJ_ACTIVE].attr, s);
 	XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
 }
 
@@ -681,33 +669,43 @@ screen_view_print_begin(void)
 {
 	int i;
 
-	/* Clear the view area. */
 	XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
+	/* Clear the view area. */
 	bkgdset(screen_objects[SCREEN_OBJ_VIEW].attr);
 	for (i = 0; i < screen_view_nrows; i++) {
 		(void)move(SCREEN_VIEW_ROW + i, 0);
 		(void)clrtoeol();
 	}
+	screen_view_current_row = screen_view_selected_row = SCREEN_VIEW_ROW;
 	XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
 }
 
 void
 screen_view_print_end(void)
 {
-	int col;
-
 	XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
+	(void)move(screen_view_selected_row, 0);
 	(void)refresh();
-	getyx(stdscr, screen_view_cursor_row, col);
 	XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
+}
+
+/*
+ * The screen_curses_mtx mutex must be locked before calling this function.
+ */
+static void
+screen_view_print_row(chtype attr, const char *s)
+{
+	bkgdset(attr);
+	(void)move(screen_view_current_row++, 0);
+	screen_print_row(s);
 }
 
 void
 screen_view_print_selected(const char *s)
 {
 	XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
-	bkgdset(screen_objects[SCREEN_OBJ_SELECTOR].attr);
-	screen_print_row(s);
+	screen_view_selected_row = screen_view_current_row;
+	screen_view_print_row(screen_objects[SCREEN_OBJ_SELECTOR].attr, s);
 	XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
 }
 
