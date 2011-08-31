@@ -719,7 +719,7 @@ screen_view_title_printf(const char *fmt, ...)
 	if (move(SCREEN_TITLE_ROW, 0) == OK) {
 		bkgdset(screen_objects[SCREEN_OBJ_TITLE].attr);
 		screen_vprintf(fmt, ap);
-		/* No refresh() yet. */
+		/* No refresh() yet; screen_view_print_end() will do that. */
 	}
 	XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
 	va_end(ap);
@@ -741,7 +741,7 @@ screen_view_title_printf_right(const char *fmt, ...)
 		(void)mvaddstr(SCREEN_TITLE_ROW, COLS - len, buf);
 	else
 		(void)mvaddstr(SCREEN_TITLE_ROW, 0, buf + len - COLS);
-	(void)refresh();
+	/* No refresh() yet; screen_view_print_end() will do that. */
 	XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
 
 	free(buf);
