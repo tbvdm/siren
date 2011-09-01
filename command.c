@@ -1013,16 +1013,6 @@ command_search_prev_exec(UNUSED void *datap)
 }
 
 static void
-command_search_prompt_free(void *datap)
-{
-	struct command_search_prompt_data *data;
-
-	data = datap;
-	free(data->prompt);
-	free(data);
-}
-
-static void
 command_search_prompt_exec(void *datap)
 {
 	struct command_search_prompt_data *data;
@@ -1037,6 +1027,16 @@ command_search_prompt_exec(void *datap)
 	}
 
 	free(search);
+}
+
+static void
+command_search_prompt_free(void *datap)
+{
+	struct command_search_prompt_data *data;
+
+	data = datap;
+	free(data->prompt);
+	free(data);
 }
 
 static int
