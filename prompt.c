@@ -144,7 +144,7 @@ prompt_get_search(const char *prompt)
 	return prompt_line;
 }
 
-void
+static void
 prompt_handle_input(struct history *history)
 {
 	size_t		 i, j;
