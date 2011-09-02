@@ -324,9 +324,9 @@ bind_string_to_key(const char *str)
 	if (str[0] >= ' ' && str[0] <= '~' && str[1] == '\0')
 		return str[0];
 
-	/* Control characters (ASCII 0 to 31 decimal). */
-	if (str[0] == '^' && toupper((int)str[1]) >= '@' &&
-	    toupper((int)str[1]) <= '_' && str[2] == '\0')
+	/* Control characters (ASCII 0 to 31 decimal, and 127 decimal). */
+	if (str[0] == '^' && K_IS_CTRL(K_CTRL(toupper((int)str[1]))) &&
+	    str[2] == '\0')
 		return K_CTRL(toupper((int)str[1]));
 
 	/* Key names. */
