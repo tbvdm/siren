@@ -112,7 +112,7 @@
 
 #define K_IS_CTRL(c)		(((c) & ~0x1F) == 0 || (c) == 0x7F)
 #define K_CTRL(c)		((c) & 0x3F)
-#define K_CTRL_TO_CHAR(c)	((c) | 0x40)
+#define K_UNCTRL(c)		((c) | 0x40)
 
 /* Time conversion macros. */
 #define HOURS(s)		((s) / 3600)

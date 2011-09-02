@@ -247,7 +247,7 @@ bind_key_to_string(int key, char *name, size_t namelen)
 	size_t i;
 
 	if (K_IS_CTRL(key)) {
-		(void)xsnprintf(name, namelen, "^%c", K_CTRL_TO_CHAR(key));
+		(void)xsnprintf(name, namelen, "^%c", K_UNCTRL(key));
 		return name;
 	}
 
