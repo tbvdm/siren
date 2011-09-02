@@ -110,9 +110,16 @@
 #define K_F19			0x134
 #define K_F20			0x135
 
+/* Whether a character is a control character. */
 #define K_IS_CTRL(c)		(((c) & ~0x1F) == 0 || (c) == 0x7F)
-#define K_CTRL(c)		((c) & 0x3F)
-#define K_UNCTRL(c)		((c) | 0x40)
+
+/*
+ * Convert a control character to its matching printable character and vice
+ * versa. For example, convert the ^A control character to "A". Conversion in
+ * both directions is done by negating the 7th bit.
+ */
+#define K_CTRL(c)		((~(c) & 0x40) | ((c) & 0xBF))
+#define K_UNCTRL(c)		K_CTRL(c)
 
 /* Time conversion macros. */
 #define HOURS(s)		((s) / 3600)
