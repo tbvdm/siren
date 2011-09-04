@@ -87,27 +87,9 @@ menu_adjust_scroll_offset(struct menu *m)
 }
 
 void
-menu_clear(struct menu *m)
-{
-	struct menu_entry *e;
-
-	while ((e = TAILQ_FIRST(&m->list)) != NULL) {
-		TAILQ_REMOVE(&m->list, e, entries);
-		if (m->free_entry_data != NULL)
-			m->free_entry_data(e->data);
-		free(e);
-	}
-
-	m->active = NULL;
-	m->selected = NULL;
-	m->top = NULL;
-	m->nentries = 0;
-}
-
-void
 menu_free(struct menu *m)
 {
-	menu_clear(m);
+	menu_remove_all_entries(m);
 	free(m);
 }
 
@@ -309,6 +291,24 @@ menu_print(struct menu *m)
 		free(buf);
 	}
 	screen_view_print_end();
+}
+
+void
+menu_remove_all_entries(struct menu *m)
+{
+	struct menu_entry *e;
+
+	while ((e = TAILQ_FIRST(&m->list)) != NULL) {
+		TAILQ_REMOVE(&m->list, e, entries);
+		if (m->free_entry_data != NULL)
+			m->free_entry_data(e->data);
+		free(e);
+	}
+
+	m->active = NULL;
+	m->selected = NULL;
+	m->top = NULL;
+	m->nentries = 0;
 }
 
 static void

@@ -70,7 +70,7 @@ void
 queue_delete_all_entries(void)
 {
 	XPTHREAD_MUTEX_LOCK(&queue_menu_mtx);
-	menu_clear(queue_menu);
+	menu_remove_all_entries(queue_menu);
 	queue_duration = 0;
 	XPTHREAD_MUTEX_UNLOCK(&queue_menu_mtx);
 	queue_print();

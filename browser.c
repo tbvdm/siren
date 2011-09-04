@@ -211,7 +211,7 @@ browser_read_dir(const char *dir)
 		return -1;
 	}
 
-	menu_clear(browser_menu);
+	menu_remove_all_entries(browser_menu);
 
 	while ((ret = dir_get_entry(d, &de)) == 0 && de != NULL) {
 		if (de->type == FILE_TYPE_OTHER &&

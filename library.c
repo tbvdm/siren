@@ -88,7 +88,7 @@ void
 library_delete_all_entries(void)
 {
 	XPTHREAD_MUTEX_LOCK(&library_menu_mtx);
-	menu_clear(library_menu);
+	menu_remove_all_entries(library_menu);
 	library_duration = 0;
 	XPTHREAD_MUTEX_UNLOCK(&library_menu_mtx);
 	library_print();
