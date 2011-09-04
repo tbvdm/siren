@@ -25,14 +25,13 @@
 #include "compat/queue.h"
 #endif
 
-#define MENU_NENTRIES_MAX	(UINT_MAX - 1)
-#define MENU_NONE		UINT_MAX
+#define MENU_NENTRIES_MAX UINT_MAX
 
 struct menu {
-	unsigned int	 active_index;
-	unsigned int	 sel_index;
+	struct menu_entry *active;
+	struct menu_entry *selected;
+	struct menu_entry *top;
 	unsigned int	 nentries;
-	unsigned int	 scroll_offset;
 
 	void		 (*free_entry_data)(void *);
 	void		 (*get_entry_text)(const void *, char *, size_t);
@@ -42,31 +41,15 @@ struct menu {
 };
 
 struct menu_entry {
+	unsigned int	 index;
 	void		*data;
 	TAILQ_ENTRY(menu_entry) entries;
 };
 
-static struct menu_entry *menu_get_entry_at_index(const struct menu *,
-    unsigned int);
-
 void
-menu_activate_entry(struct menu *m, struct menu_entry *ae)
+menu_activate_entry(struct menu *m, struct menu_entry *e)
 {
-	struct menu_entry	*e;
-	unsigned int		 i;
-
-	/*
-	 * Determine the index of the specified entry. This process also allows
-	 * us to ensure that the specified entry really exists in the menu.
-	 */
-	i = 0;
-	TAILQ_FOREACH(e, &m->list, entries) {
-		if (e == ae) {
-			m->active_index = i;
-			break;
-		}
-		i++;
-	}
+	m->active = e;
 }
 
 static void
@@ -74,23 +57,33 @@ menu_adjust_scroll_offset(struct menu *m)
 {
 	unsigned int nrows;
 
+	if (m->nentries == 0)
+		return;
+
 	nrows = screen_view_get_nrows();
 
-	/* The selected entry is above the viewport: scroll up. */
-	if (m->sel_index < m->scroll_offset || nrows == 0)
-		m->scroll_offset = m->sel_index;
-
-	/* The selected entry is below the viewport: scroll down. */
-	else if (m->sel_index >= m->scroll_offset + nrows)
-		m->scroll_offset = m->sel_index - nrows + 1;
-
-	/* The viewport extends below the last entry: scroll up if possible. */
-	else if (m->scroll_offset && m->scroll_offset + nrows > m->nentries) {
-		if (m->nentries <= nrows)
-			m->scroll_offset = 0;
-		else
-			m->scroll_offset = m->nentries - nrows;
-	}
+	/*
+	 * If the selected entry is above the viewport, then move the selected
+	 * entry to the top of the viewport.
+	 */
+	if (m->selected->index < m->top->index || nrows == 0)
+		m->top = m->selected;
+	/*
+	 * If the selected entry is below the viewport, then move the selected
+	 * entry to the bottom of the viewport.
+	 */
+	else if (m->selected->index >= m->top->index + nrows)
+		do
+			m->top = TAILQ_NEXT(m->top, entries);
+		while (m->top->index != m->selected->index - nrows + 1);
+	/*
+	 * If the viewport extends below the last entry, then, if possible,
+	 * move the last entry to the bottom of the viewport if possible.
+	 */
+	else
+		while (m->top->index > 0 &&
+		    m->top->index + nrows > m->nentries)
+			m->top = TAILQ_PREV(m->top, menu_list, entries);
 }
 
 void
@@ -105,9 +98,10 @@ menu_clear(struct menu *m)
 		free(e);
 	}
 
-	m->sel_index = 0;
+	m->active = NULL;
+	m->selected = NULL;
+	m->top = NULL;
 	m->nentries = 0;
-	m->scroll_offset = 0;
 }
 
 void
@@ -120,21 +114,7 @@ menu_free(struct menu *m)
 struct menu_entry *
 menu_get_active_entry(const struct menu *m)
 {
-	if (m->active_index == MENU_NONE)
-		return NULL;
-	return menu_get_entry_at_index(m, m->active_index);
-}
-
-static struct menu_entry *
-menu_get_entry_at_index(const struct menu *m, unsigned int index)
-{
-	struct menu_entry *e;
-
-	TAILQ_FOREACH(e, &m->list, entries)
-		if (index-- == 0)
-			break;
-
-	return e;
+	return m->active;
 }
 
 void *
@@ -176,18 +156,13 @@ menu_get_prev_entry(const struct menu_entry *e)
 struct menu_entry *
 menu_get_selected_entry(const struct menu *m)
 {
-	return menu_get_entry_at_index(m, m->sel_index);
+	return m->selected;
 }
 
 void *
 menu_get_selected_entry_data(const struct menu *m)
 {
-	struct menu_entry *e;
-
-	if ((e = menu_get_selected_entry(m)) == NULL)
-		return NULL;
-
-	return e->data;
+	return m->selected == NULL ? NULL : m->selected->data;
 }
 
 struct menu *
@@ -198,50 +173,42 @@ menu_init(void (*free_entry_data)(void *),
 	struct menu *m;
 
 	m = xmalloc(sizeof *m);
-
-	m->active_index = MENU_NONE;
-	m->sel_index = 0;
+	m->active = NULL;
+	m->selected = NULL;
+	m->top = NULL;
 	m->nentries = 0;
-	m->scroll_offset = 0;
-
 	m->free_entry_data = free_entry_data;
 	m->get_entry_text = get_entry_text;
 	m->search_entry_data = search_entry_data;
-
 	TAILQ_INIT(&m->list);
-
 	return m;
 }
 
 void
 menu_insert_before(struct menu *m, struct menu_entry *le, void *data)
 {
-	struct menu_entry	*e, *f;
-	unsigned int		 i;
+	struct menu_entry *e;
 
 	if (m->nentries == MENU_NENTRIES_MAX)
 		return;
 
 	e = xmalloc(sizeof *e);
 	e->data = data;
+	e->index = le->index;
 
 	TAILQ_INSERT_BEFORE(le, e, entries);
 	m->nentries++;
 
-	/*
-	 * If the new entry is inserted before the selected entry, then we have
-	 * to increment the index of the selected entry.
-	 */
-	i = 0;
-	TAILQ_FOREACH(f, &m->list, entries) {
-		if (f == e) {
-			m->sel_index++;
-			break;
-		}
-		if (i == m->sel_index)
-			break;
-		i++;
-	}
+	if (m->nentries == 1)
+		/*
+		 * This is the first entry in the menu: make it the top entry
+		 * and the selected entry.
+		 */
+		m->top = m->selected = e;
+
+	/* Increment the index of the entries after the inserted entry. */
+	while ((e = TAILQ_NEXT(e, entries)) != NULL)
+		e->index++;
 }
 
 void
@@ -254,9 +221,17 @@ menu_insert_tail(struct menu *m, void *data)
 
 	e = xmalloc(sizeof *e);
 	e->data = data;
+	e->index = m->nentries;
 
 	TAILQ_INSERT_TAIL(&m->list, e, entries);
 	m->nentries++;
+
+	if (m->nentries == 1)
+		/*
+		 * This is the first entry in the menu: make it the top entry
+		 * and the selected entry.
+		 */
+		m->top = m->selected = e;
 }
 
 void
@@ -289,7 +264,8 @@ void
 menu_print(struct menu *m)
 {
 	struct menu_entry	*e;
-	unsigned int		 bottomrow, bufsize, i, nrows, percent, toprow;
+	unsigned int		 bottomrow, nrows, percent, toprow;
+	size_t			 bufsize;
 	char			*buf;
 
 	menu_adjust_scroll_offset(m);
@@ -299,84 +275,93 @@ menu_print(struct menu *m)
 		toprow = 0;
 		bottomrow = 0;
 		percent = 100;
-	} else if (nrows == 0) {
-		toprow = m->scroll_offset + 1;
-		bottomrow = 0;
-		percent = 100 * toprow / m->nentries;
 	} else {
-		toprow = m->scroll_offset + 1;
-		bottomrow = m->nentries < nrows ? m->nentries :
-		    m->scroll_offset + nrows;
-		percent = 100 * bottomrow / m->nentries;
+		toprow = m->top->index + 1;
+		if (nrows == 0) {
+			bottomrow = 0;
+			percent = 100 * toprow / m->nentries;
+		} else {
+			if (m->nentries < nrows)
+				bottomrow = m->nentries;
+			else
+				bottomrow = toprow + nrows - 1;
+			percent = 100 * bottomrow / m->nentries;
+		}
 	}
-
 	screen_view_title_printf_right(" %u-%u/%u (%u%%)", toprow, bottomrow,
 	    m->nentries, percent);
 
-	bufsize = screen_get_ncols() + 1;
-	buf = xmalloc(bufsize);
-
 	screen_view_print_begin();
-
-	/* Print entries. */
-	e = menu_get_entry_at_index(m, m->scroll_offset);
-	for (i = 0; i < nrows && e != NULL; i++) {
-		m->get_entry_text(e->data, buf, bufsize);
-
-		if (i == m->sel_index - m->scroll_offset)
-			screen_view_print_selected(buf);
-		else if (i == m->active_index - m->scroll_offset)
-			screen_view_print_active(buf);
-		else
-			screen_view_print(buf);
-
-		e = TAILQ_NEXT(e, entries);
+	if (m->nentries > 0) {
+		bufsize = screen_get_ncols() + 1;
+		buf = xmalloc(bufsize);
+		e = m->top;
+		while (nrows-- > 0 && e != NULL) {
+			m->get_entry_text(e->data, buf, bufsize);
+			if (e == m->selected)
+				screen_view_print_selected(buf);
+			else if (e == m->active)
+				screen_view_print_active(buf);
+			else
+				screen_view_print(buf);
+			e = TAILQ_NEXT(e, entries);
+		}
+		free(buf);
 	}
-
 	screen_view_print_end();
-	free(buf);
 }
 
 static void
 menu_remove_entry(struct menu *m, struct menu_entry *e)
 {
+	struct menu_entry *f;
+
+	if (m->active == e)
+		m->active = NULL;
+	if (m->top == e)
+		m->top = TAILQ_NEXT(m->top, entries);
+	if (m->selected == e) {
+		if (TAILQ_NEXT(m->selected, entries) != NULL)
+			m->selected = TAILQ_NEXT(m->selected, entries);
+		else
+			m->selected = TAILQ_PREV(m->selected, menu_list,
+			    entries);
+	}
+
+	/* Decrement the index of the entries after the specified entry. */
+	f = e;
+	while ((f = TAILQ_NEXT(f, entries)) != NULL)
+		f->index--;
+
 	TAILQ_REMOVE(&m->list, e, entries);
+	m->nentries--;
+
 	if (m->free_entry_data != NULL)
 		m->free_entry_data(e->data);
 	free(e);
-	m->nentries--;
 }
 
 void
 menu_remove_first_entry(struct menu *m)
 {
-	struct menu_entry *e;
-
-	if ((e = TAILQ_FIRST(&m->list)) != NULL) {
-		menu_remove_entry(m, e);
-		if (m->sel_index > 0)
-			m->sel_index--;
-	}
+	if (TAILQ_FIRST(&m->list) != NULL)
+		menu_remove_entry(m, TAILQ_FIRST(&m->list));
 }
 
 void
 menu_remove_selected_entry(struct menu *m)
 {
-	struct menu_entry *e;
-
-	if ((e = menu_get_entry_at_index(m, m->sel_index)) != NULL) {
-		menu_remove_entry(m, e);
-		if (m->active_index == m->sel_index)
-			m->active_index = MENU_NONE;
-		if (m->sel_index > 0 && m->sel_index == m->nentries)
-			m->sel_index--;
-	}
+	if (m->selected != NULL)
+		menu_remove_entry(m, m->selected);
 }
 
 void
 menu_scroll_down(struct menu *m, enum menu_scroll scroll)
 {
 	unsigned int nrows, nscroll;
+
+	if (m->nentries == 0)
+		return;
 
 	nrows = screen_view_get_nrows();
 	switch (scroll) {
@@ -392,25 +377,26 @@ menu_scroll_down(struct menu *m, enum menu_scroll scroll)
 		break;
 	}
 
-	if (m->scroll_offset + nrows >= m->nentries) {
+	if (m->top->index + nrows >= m->nentries)
 		/*
 		 * The last entry already is visible, so we cannot scroll down
 		 * farther. Select the last entry instead.
 		 */
-		if (m->nentries)
-			m->sel_index = m->nentries - 1;
-	} else {
+		m->selected = TAILQ_LAST(&m->list, menu_list);
+	else {
 		/*
-		 * Check if we can scroll the requested number of lines. If we
-		 * can't, just scroll as far as we can.
+		 * Scroll down the requested number of lines or just as far as
+		 * possible.
 		 */
-		if (m->scroll_offset + nrows + nscroll < m->nentries)
-			m->scroll_offset += nscroll;
-		else
-			m->scroll_offset = m->nentries - nrows;
+		while (nscroll-- > 0 && m->top->index + nrows < m->nentries)
+			m->top = TAILQ_NEXT(m->top, entries);
 
-		if (m->sel_index < m->scroll_offset)
-			m->sel_index = m->scroll_offset;
+		/*
+		 * Select the top entry if the selected entry is no longer
+		 * visible.
+		 */
+		if (m->selected->index < m->top->index)
+			m->selected = m->top;
 	}
 }
 
@@ -419,6 +405,9 @@ menu_scroll_up(struct menu *m, enum menu_scroll scroll)
 {
 	unsigned int nrows, nscroll;
 
+	if (m->nentries == 0)
+		return;
+
 	nrows = screen_view_get_nrows();
 	switch (scroll) {
 	case MENU_SCROLL_HALF_PAGE:
@@ -433,58 +422,51 @@ menu_scroll_up(struct menu *m, enum menu_scroll scroll)
 		break;
 	}
 
-	if (m->scroll_offset == 0)
+	if (m->top->index == 0)
 		/*
 		 * The first entry already is visible, so we cannot scroll up
 		 * farther. Select the first entry instead.
 		 */
-		m->sel_index = 0;
+		m->selected = TAILQ_FIRST(&m->list);
 	else {
 		/*
-		 * Check if we can scroll the requested number of lines. If we
-		 * can't, just scroll as far as we can.
+		 * Scroll up the requested number of lines or just as far as
+		 * possible.
 		 */
-		if (m->scroll_offset > nscroll)
-			m->scroll_offset -= nscroll;
-		else
-			m->scroll_offset = 0;
+		while (nscroll-- > 0 && m->top->index > 0)
+			m->top = TAILQ_PREV(m->top, menu_list, entries);
 
-		if (nrows && m->sel_index >= m->scroll_offset + nrows)
-			m->sel_index = m->scroll_offset + nrows - 1;
+		/*
+		 * Select the bottom entry if the selected entry is no longer
+		 * visible.
+		 */
+		while (m->selected->index >= m->top->index + nrows)
+			m->selected = TAILQ_PREV(m->selected, menu_list,
+			    entries);
 	}
 }
 
 void
 menu_search_next(struct menu *m, const char *s)
 {
-	struct menu_entry	*e;
-	unsigned int		 i;
+	struct menu_entry *e;
 
-	if (m->nentries == 0 || m->search_entry_data == NULL)
-		return;
-
-	if (m->sel_index + 1 < m->nentries) {
-		i = m->sel_index + 1;
-		e = menu_get_entry_at_index(m, i);
+	if (m->selected != NULL && m->search_entry_data != NULL) {
+		e = m->selected;
 		do {
+			if (TAILQ_NEXT(e, entries) != NULL)
+				e = TAILQ_NEXT(e, entries);
+			else {
+				e = TAILQ_FIRST(&m->list);
+				msg_info("Search wrapped to top");
+			}
+
 			if (m->search_entry_data(e->data, s) == 0) {
-				m->sel_index = i;
+				m->selected = e;
 				return;
 			}
-			e = TAILQ_NEXT(e, entries);
-		} while (++i < m->nentries);
+		} while (e != m->selected);
 	}
-
-	i = 0;
-	e = menu_get_entry_at_index(m, i);
-	do {
-		if (m->search_entry_data(e->data, s) == 0) {
-			m->sel_index = i;
-			msg_info("Search wrapped to top");
-			return;
-		}
-		e = TAILQ_NEXT(e, entries);
-	} while (++i < m->nentries);
 
 	msg_errx("Not found");
 }
@@ -492,34 +474,24 @@ menu_search_next(struct menu *m, const char *s)
 void
 menu_search_prev(struct menu *m, const char *s)
 {
-	struct menu_entry	*e;
-	unsigned int		 i;
+	struct menu_entry *e;
 
-	if (m->nentries == 0 || m->search_entry_data == NULL)
-		return;
-
-	if (m->sel_index > 0) {
-		i = m->sel_index - 1;
-		e = menu_get_entry_at_index(m, i);
+	if (m->selected != NULL && m->search_entry_data != NULL) {
+		e = m->selected;
 		do {
+			if (TAILQ_PREV(e, menu_list, entries) != NULL)
+				e = TAILQ_PREV(e, menu_list, entries);
+			else {
+				e = TAILQ_LAST(&m->list, menu_list);
+				msg_info("Search wrapped to bottom");
+			}
+
 			if (m->search_entry_data(e->data, s) == 0) {
-				m->sel_index = i;
+				m->selected = e;
 				return;
 			}
-			e = TAILQ_PREV(e, menu_list, entries);
-		} while (i-- > 0);
+		} while (e != m->selected);
 	}
-
-	i = m->nentries - 1;
-	e = menu_get_entry_at_index(m, i);
-	do {
-		if (m->search_entry_data(e->data, s) == 0) {
-			m->sel_index = i;
-			msg_info("Search wrapped to bottom");
-			return;
-		}
-		e = TAILQ_PREV(e, menu_list, entries);
-	} while (i-- > 0);
 
 	msg_errx("Not found");
 }
@@ -527,54 +499,39 @@ menu_search_prev(struct menu *m, const char *s)
 void
 menu_select_active_entry(struct menu *m)
 {
-	if (m->active_index != MENU_NONE)
-		m->sel_index = m->active_index;
+	if (m->active != NULL)
+		m->selected = m->active;
 }
 
 void
-menu_select_entry(struct menu *m, struct menu_entry *se)
+menu_select_entry(struct menu *m, struct menu_entry *e)
 {
-	struct menu_entry	*e;
-	unsigned int		 i;
-
-	/*
-	 * Determine the index of the specified entry. This process also allows
-	 * us to ensure that the specified entry really exists in the menu.
-	 */
-	i = 0;
-	TAILQ_FOREACH(e, &m->list, entries) {
-		if (e == se) {
-			m->sel_index = i;
-			break;
-		}
-		i++;
-	}
+	m->selected = e;
 }
 
 void
 menu_select_first_entry(struct menu *m)
 {
-	m->sel_index = 0;
-	m->scroll_offset = 0;
+	m->selected = TAILQ_FIRST(&m->list);
 }
 
 void
 menu_select_last_entry(struct menu *m)
 {
-	if (m->nentries > 0)
-		m->sel_index = m->nentries - 1;
+	m->selected = TAILQ_LAST(&m->list, menu_list);
 }
 
 void
 menu_select_next_entry(struct menu *m)
 {
-	if (m->sel_index + 1 < m->nentries)
-		m->sel_index++;
+	if (m->selected != NULL && TAILQ_NEXT(m->selected, entries) != NULL)
+		m->selected = TAILQ_NEXT(m->selected, entries);
 }
 
 void
 menu_select_prev_entry(struct menu *m)
 {
-	if (m->sel_index > 0)
-		m->sel_index--;
+	if (m->selected != NULL &&
+	    TAILQ_PREV(m->selected, menu_list, entries) != NULL)
+		m->selected = TAILQ_PREV(m->selected, menu_list, entries);
 }
