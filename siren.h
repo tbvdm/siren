@@ -22,27 +22,8 @@
 
 #include "config.h"
 
-/*
- * GCC attributes.
- */
-
-#ifndef __GNUC__
-#define NONNULL(...)
-#define NORETURN
-#define PRINTFLIKE(...)
-#define UNUSED
-#else
-#define NORETURN		__attribute__((noreturn))
-#define PRINTFLIKE(fmt, arg)	__attribute__((format(printf, fmt, arg)))
-#define UNUSED			__attribute__((unused))
-
-/* The nonnull attribute is available since gcc 3.3. */
-#if __GNUC__ < 3 || (__GNUC__ == 3 && __GNUC_MINOR__ < 3)
-#define NONNULL(...)
-#else
-#define NONNULL(...)		__attribute__((nonnull(__VA_ARGS__)))
-#endif
-#endif
+#include "attribute.h"
+#include "compat.h"
 
 /* File paths. */
 #define CONF_DIR		".siren"
@@ -616,59 +597,3 @@ int		 xvsnprintf(char *, size_t, const char *, va_list) NONNULL()
 long int	 xfpathconf(int, int, const char *) NONNULL();
 long int	 xpathconf(const char *, int, const char *) NONNULL();
 long int	 xsysconf(int, const char *) NONNULL();
-
-#ifndef HAVE_ASPRINTF
-int		 asprintf(char **, const char *, ...) NONNULL()
-		    PRINTFLIKE(2, 3);
-int		 vasprintf(char **, const char *, va_list) NONNULL()
-		    PRINTFLIKE(2, 0);
-#endif
-
-#ifndef HAVE_ERR
-void		 err(int, const char *, ...) NORETURN PRINTFLIKE(2, 3);
-void		 errx(int, const char *, ...) NORETURN PRINTFLIKE(2, 3);
-void		 verr(int, const char *, va_list) NORETURN PRINTFLIKE(2, 0);
-void		 verrx(int, const char *, va_list) NORETURN PRINTFLIKE(2, 0);
-void		 vwarn(const char *, va_list) PRINTFLIKE(1, 0);
-void		 vwarnx(const char *, va_list) PRINTFLIKE(1, 0);
-void		 warn(const char *, ...) PRINTFLIKE(1, 2);
-void		 warnx(const char *, ...) PRINTFLIKE(1, 2);
-#endif
-
-#ifndef HAVE_FGETLN
-char		*fgetln(FILE *, size_t *);
-#endif
-
-#ifndef HAVE_OPTRESET
-#define getopt		xgetopt
-#define optarg		xoptarg
-#define opterr		xopterr
-#define optind		xoptind
-#define optopt		xoptopt
-#define optreset	xoptreset
-
-extern int	 xopterr, xoptind, xoptopt, xoptreset;
-extern char	*xoptarg;
-
-int		 xgetopt(int, char * const *, const char *);
-#endif
-
-#ifndef HAVE_STRCASESTR
-char		*strcasestr(const char *, const char *);
-#endif
-
-#ifndef HAVE_STRLCAT
-size_t		 strlcat(char *, const char *, size_t);
-#endif
-
-#ifndef HAVE_STRLCPY
-size_t		 strlcpy(char *, const char *, size_t);
-#endif
-
-#ifndef HAVE_STRSEP
-char		*strsep(char **, const char *);
-#endif
-
-#ifndef HAVE_STRTONUM
-long long int	 strtonum(const char *, long long, long long, const char **);
-#endif
