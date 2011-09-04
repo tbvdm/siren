@@ -311,7 +311,7 @@ menu_remove_all_entries(struct menu *m)
 	m->nentries = 0;
 }
 
-static void
+void
 menu_remove_entry(struct menu *m, struct menu_entry *e)
 {
 	struct menu_entry *f;
@@ -339,13 +339,6 @@ menu_remove_entry(struct menu *m, struct menu_entry *e)
 	if (m->free_entry_data != NULL)
 		m->free_entry_data(e->data);
 	free(e);
-}
-
-void
-menu_remove_first_entry(struct menu *m)
-{
-	if (TAILQ_FIRST(&m->list) != NULL)
-		menu_remove_entry(m, TAILQ_FIRST(&m->list));
 }
 
 void

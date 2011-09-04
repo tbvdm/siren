@@ -122,7 +122,7 @@ queue_get_next_track(void)
 		t = menu_get_entry_data(me);
 		track_hold(t);
 		queue_duration -= t->duration;
-		menu_remove_first_entry(queue_menu);
+		menu_remove_entry(queue_menu, me);
 	}
 	XPTHREAD_MUTEX_UNLOCK(&queue_menu_mtx);
 

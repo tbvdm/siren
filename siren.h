@@ -416,7 +416,8 @@ void		 menu_move_entry_down(struct menu_entry *) NONNULL();
 void		 menu_move_entry_up(struct menu_entry *) NONNULL();
 void		 menu_print(struct menu *) NONNULL();
 void		 menu_remove_all_entries(struct menu *) NONNULL();
-void		 menu_remove_first_entry(struct menu *) NONNULL();
+void		 menu_remove_entry(struct menu *, struct menu_entry *)
+		    NONNULL();
 void		 menu_remove_selected_entry(struct menu *) NONNULL();
 void		 menu_scroll_down(struct menu *, enum menu_scroll) NONNULL();
 void		 menu_scroll_up(struct menu *, enum menu_scroll) NONNULL();
