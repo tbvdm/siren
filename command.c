@@ -87,7 +87,7 @@ struct command_unbind_key_data {
 	int		  key;
 };
 
-static int command_string_to_argv(const char *, char ***);
+static int command_string_to_argv(const char *, char ***, char **);
 
 #define COMMAND_EXEC_PROTOTYPE(cmd) \
     static void command_ ## cmd ## _exec(void *)
@@ -863,10 +863,8 @@ command_parse_string(const char *str, struct command **cmd,
 	int		  argc, ret;
 	char		**argv;
 
-	if ((argc = command_string_to_argv(str, &argv)) == -1) {
-		*error = xstrdup("Syntax error");
+	if ((argc = command_string_to_argv(str, &argv, error)) == -1)
 		return -1;
-	}
 
 	*cmd = NULL;
 	if (argc == 0)
@@ -1372,7 +1370,7 @@ command_stop_exec(UNUSED void *datap)
 }
 
 static int
-command_string_to_argv(const char *line, char ***argv)
+command_string_to_argv(const char *line, char ***argv, char **error)
 {
 	size_t	 argsize;
 	int	 argc, backslash, done, i;
@@ -1395,6 +1393,8 @@ command_string_to_argv(const char *line, char ***argv)
 				switch (line[i]) {
 				case '\0':
 					/* Syntax error. */
+					*error = xstrdup("Syntax error: "
+					    "backslash at end of line");
 					done = 1;
 					break;
 				case '\\':
@@ -1450,10 +1450,12 @@ command_string_to_argv(const char *line, char ***argv)
 				}
 			}
 		} else {
-			if (line[i] == '\0')
+			if (line[i] == '\0') {
 				/* Syntax error. */
+				*error = xstrdup("Syntax error: missing "
+				    "quotation mark");
 				done = 1;
-			else if (!backslash) {
+			} else if (!backslash) {
 				if ((quote == QUOTE_SINGLE && line[i] == '\'')
 				    || (quote == QUOTE_DOUBLE && line[i] ==
 				    '"'))
