@@ -563,6 +563,12 @@ command_bind_key_parse(int argc, char **argv, void **datap, char **error)
 		return -1;
 	}
 
+	if (data->command == NULL) {
+		(void)xasprintf(error, "Missing command: %s", argv[3]);
+		free(data);
+		return -1;
+	}
+
 	data->command_string = xstrdup(argv[3]);
 	*datap = data;
 	return 0;
@@ -739,6 +745,11 @@ command_confirm_parse(int argc, char **argv, void **datap, char **error)
 	    error))
 		goto error;
 
+	if (data->command == NULL) {
+		(void)xasprintf(error, "Missing command: %s", argv[0]);
+		goto error;
+	}
+
 	if (data->prompt == NULL)
 		(void)xasprintf(&data->prompt, "Execute \"%s\"", argv[0]);
 
@@ -852,12 +863,15 @@ command_parse_string(const char *str, struct command **cmd,
 	int		  argc, ret;
 	char		**argv;
 
-	if ((argc = command_string_to_argv(str, &argv)) < 1) {
+	if ((argc = command_string_to_argv(str, &argv)) == -1) {
 		*error = xstrdup("Syntax error");
 		return -1;
 	}
 
 	*cmd = NULL;
+	if (argc == 0)
+		return 0;
+
 	for (i = 0; i < NELEMENTS(command_list); i++)
 		if (!strcmp(argv[0], command_list[i].name)) {
 			*cmd = &command_list[i];
@@ -913,8 +927,10 @@ command_process(const char *line, char **error)
 	if (command_parse_string(line, &cmd, &cmd_data, error))
 		return -1;
 
-	command_execute(cmd, cmd_data);
-	command_free_data(cmd, cmd_data);
+	if (cmd != NULL) {
+		command_execute(cmd, cmd_data);
+		command_free_data(cmd, cmd_data);
+	}
 	return 0;
 }
 
