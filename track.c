@@ -39,7 +39,7 @@ track_cmp(const struct track *t1, const struct track *t2)
 	if ((ret = track_cmp_string(t1->album, t2->album)))
 		return ret;
 
-	if ((ret = track_cmp_number(t1->track, t2->track)))
+	if ((ret = track_cmp_number(t1->tracknumber, t2->tracknumber)))
 		return ret;
 
 	if ((ret = track_cmp_string(t1->title, t2->title)))
@@ -98,7 +98,7 @@ track_free(struct track *t)
 		free(t->genre);
 		free(t->path);
 		free(t->title);
-		free(t->track);
+		free(t->tracknumber);
 		free(t);
 	}
 }
@@ -137,7 +137,7 @@ track_init(const char *path, const struct ip *ip)
 	t->date = NULL;
 	t->genre = NULL;
 	t->title = NULL;
-	t->track = NULL;
+	t->tracknumber = NULL;
 	t->duration = 0;
 
 	if (cache_get_metadata(t) == 0)
@@ -169,7 +169,7 @@ track_search(const struct track *t, const char *search)
 		return 0;
 	if (t->title && strcasestr(t->title, search))
 		return 0;
-	if (t->track && strcasestr(t->track, search))
+	if (t->tracknumber && strcasestr(t->tracknumber, search))
 		return 0;
 	if (strcasestr(t->path, search))
 		return 0;
@@ -198,7 +198,7 @@ track_snprintf(char *buf, size_t bufsize, const char *fmt,
 	fields[4].spec = 'l';
 	fields[4].value = t->album ? t->album : "";
 	fields[5].spec = 'n';
-	fields[5].value = t->track ? t->track : "";
+	fields[5].value = t->tracknumber ? t->tracknumber : "";
 	fields[6].spec = 't';
 	fields[6].value = t->title ? t->title : "";
 	fields[7].spec = 'y';

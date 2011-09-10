@@ -262,7 +262,7 @@ struct track {
 	char		*date;
 	char		*genre;
 	char		*title;
-	char		*track;
+	char		*tracknumber;
 	unsigned int	 duration;
 
 	struct sample_format format;

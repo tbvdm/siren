@@ -160,8 +160,8 @@ ip_vorbis_get_metadata(struct track *t, char **error)
 			free(t->title);
 			t->title = xstrdup(*c + 6);
 		} else if (!strncasecmp(*c, "tracknumber=", 12)) {
-			free(t->track);
-			t->track = xstrdup(*c + 12);
+			free(t->tracknumber);
+			t->tracknumber = xstrdup(*c + 12);
 		}
 
 	if ((duration = ov_time_total(&ovf, -1)) == OV_EINVAL) {

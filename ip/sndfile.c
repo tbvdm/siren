@@ -135,7 +135,7 @@ ip_sndfile_get_metadata(struct track *t, char **error)
 		t->title = xstrdup(value);
 #ifdef HAVE_SF_STR_TRACKNUMBER
 	if ((value = sf_get_string(sffp, SF_STR_TRACKNUMBER)) != NULL)
-		t->track = xstrdup(value);
+		t->tracknumber = xstrdup(value);
 #endif
 
 	if (sfinfo.frames < 0 || sfinfo.samplerate <= 0)

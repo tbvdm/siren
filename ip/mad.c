@@ -325,15 +325,15 @@ ip_mad_get_metadata(struct track *t, char **error)
 	t->artist = ip_mad_get_id3_frame(tag, ID3_FRAME_ARTIST);
 	t->date = ip_mad_get_id3_frame(tag, ID3_FRAME_YEAR);
 	t->title = ip_mad_get_id3_frame(tag, ID3_FRAME_TITLE);
-	t->track = ip_mad_get_id3_frame(tag, ID3_FRAME_TRACK);
+	t->tracknumber = ip_mad_get_id3_frame(tag, ID3_FRAME_TRACK);
 	t->genre = ip_mad_get_id3_genre(tag);
 
 	/*
 	 * ID3 allows track numbers of the form "x/y". We ignore the slash and
 	 * everything after it.
 	 */
-	if (t->track != NULL)
-		t->track[strcspn(t->track, "/")] = '\0';
+	if (t->tracknumber != NULL)
+		t->tracknumber[strcspn(t->tracknumber, "/")] = '\0';
 
 	t->duration = 0;
 	if ((tlen = ip_mad_get_id3_frame(tag, "TLEN")) == NULL)

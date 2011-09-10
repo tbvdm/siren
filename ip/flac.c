@@ -118,8 +118,8 @@ ip_flac_get_metadata(struct track *t, char **error)
 			free(t->title);
 			t->title = xstrdup(comment + 6);
 		} else if (!strncasecmp(comment, "tracknumber=", 12)) {
-			free(t->track);
-			t->track = xstrdup(comment + 12);
+			free(t->tracknumber);
+			t->tracknumber = xstrdup(comment + 12);
 		}
 	}
 

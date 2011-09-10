@@ -191,14 +191,14 @@ cache_get_metadata(struct track *t)
 	if (cache_read_string(&t->artist) ||
 	    cache_read_string(&t->album) ||
 	    cache_read_string(&t->date) ||
-	    cache_read_string(&t->track) ||
+	    cache_read_string(&t->tracknumber) ||
 	    cache_read_string(&t->title) ||
 	    cache_read_string(&t->genre) ||
 	    cache_read(cache_dat_fp, &t->duration, sizeof t->duration)) {
 		free(t->artist);
 		free(t->album);
 		free(t->date);
-		free(t->track);
+		free(t->tracknumber);
 		free(t->title);
 		free(t->genre);
 		return -1;
@@ -387,7 +387,7 @@ cache_write_record(const struct track *t)
 	    cache_write_string(t->artist) ||
 	    cache_write_string(t->album) ||
 	    cache_write_string(t->date) ||
-	    cache_write_string(t->track) ||
+	    cache_write_string(t->tracknumber) ||
 	    cache_write_string(t->title) ||
 	    cache_write_string(t->genre) ||
 	    cache_write(cache_dat_fp, &t->duration, sizeof t->duration))
