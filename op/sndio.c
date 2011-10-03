@@ -122,8 +122,7 @@ op_sndio_init(void)
 static int
 op_sndio_open(void)
 {
-	struct sio_par	 par;
-	char		*device;
+	char *device;
 
 	device = option_get_string("sndio-device");
 	if (device[0] == '\0') {
@@ -140,13 +139,7 @@ op_sndio_open(void)
 		return OP_SNDIO_ERROR_OPEN;
 	}
 
-	sio_initpar(&par);
-	if (!sio_getpar(op_sndio_handle, &par)) {
-		LOG_ERRX("sio_getpar() failed");
-		return OP_SNDIO_ERROR_GETPAR;
-	}
-
-	if (sio_onvol(op_sndio_handle, op_sndio_volume_cb, NULL) == 0)
+	if (!sio_onvol(op_sndio_handle, op_sndio_volume_cb, NULL))
 		op_sndio_volume_support = 0;
 	else
 		op_sndio_volume_support = 1;
