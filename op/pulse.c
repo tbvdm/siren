@@ -48,7 +48,6 @@ const struct op		 op = {
 };
 
 static pa_simple	*op_pulse_conn;
-static size_t		 op_pulse_bufsize;
 
 static void
 op_pulse_close(void)
@@ -65,7 +64,7 @@ op_pulse_error(int error)
 static size_t
 op_pulse_get_buffer_size(void)
 {
-	return op_pulse_bufsize;
+	return (size_t)option_get_number("pulse-buffer-size");
 }
 
 static int
@@ -109,7 +108,6 @@ op_pulse_start(struct sample_format *sf)
 	    pa_sample_format_to_string(spec.format), spec.rate,
 	    spec.channels);
 
-	op_pulse_bufsize = option_get_number("pulse-buffer-size");
 	return 0;
 }
 
