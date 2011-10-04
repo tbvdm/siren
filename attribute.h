@@ -23,36 +23,35 @@
 #ifndef ATTRIBUTE_H
 #define ATTRIBUTE_H
 
-#ifdef __GNUC__
+/* Check if the GCC version is equal to or greater than the one specified. */
+#define GCC_VERSION(major, minor)					\
+	(defined(__GNUC__) && (__GNUC__ > major ||			\
+	(__GNUC__ == major && __GNUC_MINOR >= minor)))
 
-/* The "format" attribute is supported since GCC 2.3. */
-#if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 3)
-#define PRINTFLIKE(fmt, arg)
-#else
-#define PRINTFLIKE(fmt, arg)	__attribute__((format(printf, fmt, arg)))
-#endif
-
-/* The "nonnull" attribute is supported since GCC 3.3. */
-#if __GNUC__ < 3 || (__GNUC__ == 3 && __GNUC_MINOR__ < 3)
-#define NONNULL(...)
-#else
+#if GCC_VERSION(3, 3)
 #define NONNULL(...)		__attribute__((nonnull(__VA_ARGS__)))
+#else
+#define NONNULL(...)
 #endif
 
-/* The "noreturn" attribute is supported since GCC 2.5. */
-#if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 5)
-#define NORETURN
-#else
+#if GCC_VERSION(2, 5)
 #define NORETURN		__attribute__((noreturn))
-#endif
-
-/* The "unused" attribute is supported since GCC 2.7. */
-#if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 7)
-#define UNUSED
 #else
-#define UNUSED			__attribute__((unused))
+#define NORETURN
 #endif
 
+#if GCC_VERSION(2, 3)
+#define PRINTFLIKE(fmt, arg)	__attribute__((format(printf, fmt, arg)))
+#else
+#define PRINTFLIKE(fmt, arg)
 #endif
+
+#if GCC_VERSION(2, 7)
+#define UNUSED			__attribute__((unused))
+#else
+#define UNUSED
+#endif
+
+#undef GCC_VERSION
 
 #endif
