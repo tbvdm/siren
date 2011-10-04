@@ -95,10 +95,17 @@ op_sndio_error(int errnum)
 	}
 }
 
+/* Return the buffer size in bytes. */
 static size_t
 op_sndio_get_buffer_size(void)
 {
-	return (size_t)op_sndio_par.appbufsz;
+	/*
+	 * The appbufsz parameter is specified in frames, so multiply it with
+	 * the number of channels and the number of bytes per sample to get the
+	 * buffer size in bytes.
+	 */
+	return (size_t)(op_sndio_par.appbufsz * op_sndio_par.pchan *
+	    op_sndio_par.bps);
 }
 
 static int
