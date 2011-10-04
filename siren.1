@@ -684,6 +684,21 @@ The name of the output plug-in to use.
 If the special name
 .Ar default
 is specified, the output plug-in with the highest priority will be used.
+.Pp
+The following output plug-ins may be available, depending on the compile-time
+options used.
+They are listed in descending order of priority.
+.Pp
+.Bl -tag -width Ds -compact
+.It sndio
+OpenBSD
+.Xr sndio 7
+output plug-in.
+.It pulse
+PulseAudio output plug-in.
+.It ao
+libao output plug-in.
+.El
 .It Ic player-attr Ar attributes
 Character attributes for the player area.
 .It Ic player-bg Ar colour
