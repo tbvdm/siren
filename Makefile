@@ -18,6 +18,7 @@
 
 PROG=		siren
 VERSION!=	cat version
+DIST=		${PROG}-${VERSION}
 
 SRCS+=		bind.c browser.c cache.c command.c conf.c dir.c format.c \
 		history.c library.c log.c menu.c msg.c option.c path.c \
@@ -58,7 +59,7 @@ MKDEPFLAGS?=	-a
 LDFLAGS+=	-lpthread
 .endif
 
-.PHONY: all clean cleandir cleanlog depend install lint
+.PHONY: all clean cleandir cleanlog depend dist install lint
 
 .SUFFIXES: .c .ln .lo .o .so
 
@@ -97,6 +98,13 @@ cleanlog:
 	rm -f *.log
 
 depend: .depend
+
+dist:
+	hg archive -X .hg\* -r ${VERSION} ${DIST}
+	chmod -R go+rX ${DIST}
+	GZIP=-9 tar -czf ${DIST}.tar.gz ${DIST}
+	rm -fr ${DIST}
+	gpg -bu 4cdfe96f ${DIST}.tar.gz
 
 install:
 	${INSTALL_DIR} ${DESTDIR}${BINDIR}
