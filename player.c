@@ -414,8 +414,10 @@ player_playback_handler(UNUSED void *p)
 
 		player_print_track();
 
-		if (player_begin_playback(&buf) == -1)
+		if (player_begin_playback(&buf) == -1) {
+			player_command = PLAYER_COMMAND_STOP;
 			continue;
+		}
 
 		player_state = PLAYER_STATE_PLAYING;
 		XPTHREAD_MUTEX_UNLOCK(&player_state_mtx);
@@ -423,6 +425,7 @@ player_playback_handler(UNUSED void *p)
 		for (;;) {
 			if (player_play_sample_buffer(&buf) == -1) {
 				XPTHREAD_MUTEX_LOCK(&player_state_mtx);
+				player_command = PLAYER_COMMAND_STOP;
 				break;
 			}
 
