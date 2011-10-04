@@ -61,6 +61,7 @@ op_pulse_error(int error)
 	return pa_strerror(-error);
 }
 
+/* Return the buffer size in bytes. */
 static size_t
 op_pulse_get_buffer_size(void)
 {

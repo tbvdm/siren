@@ -12,7 +12,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd August 18, 2011
+.Dd October 4, 2011
 .Dt SIREN 1
 .Os
 .Sh NAME
@@ -755,7 +755,7 @@ The following options are specific to the
 output plug-in.
 .Bl -tag -width Ds
 .It Ic ao-buffer-size Ar number
-The size of the output buffer.
+The size of the output buffer, specified in bytes.
 .It Ic ao-driver Ar string
 The name of the driver to use.
 If empty, the default driver will be used.
@@ -775,7 +775,7 @@ The following options are specific to the
 output plug-in.
 .Bl -tag -width Ds
 .It Ic pulse-buffer-size Ar number
-The size of the output buffer.
+The size of the output buffer, specified in bytes.
 .El
 .Pp
 The following options are specific to the

@@ -99,6 +99,7 @@ op_ao_error(int errnum)
 	}
 }
 
+/* Return the buffer size in bytes. */
 static size_t
 op_ao_get_buffer_size(void)
 {
