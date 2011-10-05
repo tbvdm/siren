@@ -352,7 +352,7 @@ player_play_sample_buffer(struct player_sample_buffer *buf)
 		/* Error encountered. */
 		msg_ip_err(ret, error, "Cannot read from track");
 		free(error);
-		return -1;
+		goto error;
 	}
 
 	buf->nsamples = ret;
@@ -367,10 +367,16 @@ player_play_sample_buffer(struct player_sample_buffer *buf)
 
 	if (ret == -1) {
 		msg_errx("Cannot play back");
-		return -1;
+		goto error;
 	}
 
 	return 0;
+
+error:
+	XPTHREAD_MUTEX_LOCK(&player_state_mtx);
+	player_command = PLAYER_COMMAND_STOP;
+	XPTHREAD_MUTEX_UNLOCK(&player_state_mtx);
+	return -1;
 }
 
 void
@@ -425,7 +431,6 @@ player_playback_handler(UNUSED void *p)
 		for (;;) {
 			if (player_play_sample_buffer(&buf) == -1) {
 				XPTHREAD_MUTEX_LOCK(&player_state_mtx);
-				player_command = PLAYER_COMMAND_STOP;
 				break;
 			}
 
