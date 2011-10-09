@@ -386,8 +386,8 @@ command_add_entry_parse(int argc, char **argv, void **datap, char **error)
 	int		 c;
 
 	view = xmalloc(sizeof *view);
-
 	*view = VIEW_ID_LIBRARY;
+
 	while ((c = getopt(argc, argv, "lq")) != -1)
 		switch (c) {
 		case 'l':
@@ -438,10 +438,12 @@ command_add_path_exec(void *datap)
 			continue;
 		}
 
-		if (S_ISREG(sb.st_mode)) {
+		switch (sb.st_mode & S_IFMT) {
+		case S_IFREG:
 			if ((t = track_init(data->paths[i], NULL)) != NULL)
 				view_add_track(data->view, t);
-		} else if (S_ISDIR(sb.st_mode)) {
+			break;
+		case S_IFDIR:
 			if ((d = dir_open(data->paths[i])) == NULL) {
 				msg_err("Cannot open directory: %s",
 				    data->paths[i]);
@@ -456,6 +458,7 @@ command_add_path_exec(void *datap)
 				    data->paths[i]);
 
 			dir_close(d);
+			break;
 		}
 	}
 }
@@ -480,8 +483,8 @@ command_add_path_parse(int argc, char **argv, void **datap, char **error)
 	int				 c, i;
 
 	data = xmalloc(sizeof *data);
-
 	data->use_current_view = 1;
+
 	while ((c = getopt(argc, argv, "lq")) != -1)
 		switch (c) {
 		case 'l':
@@ -677,6 +680,7 @@ command_command_prompt_parse(int argc, char **argv, void **datap, char **error)
 	char	*prompt;
 
 	prompt = NULL;
+
 	while ((c = getopt(argc, argv, "p:")) != -1)
 		switch (c) {
 		case 'p':
@@ -686,6 +690,7 @@ command_command_prompt_parse(int argc, char **argv, void **datap, char **error)
 		default:
 			goto usage;
 		}
+
 	if (argc - optind != 0)
 		goto usage;
 
@@ -1077,6 +1082,7 @@ command_search_prompt_parse(int argc, char **argv, void **datap, char **error)
 		default:
 			goto usage;
 		}
+
 	if (argc - optind != 0)
 		goto usage;
 
@@ -1114,16 +1120,13 @@ command_seek_parse(int argc, char **argv, void **datap, char **error)
 	}
 
 	data = xmalloc(sizeof *data);
+	data->relative = argv[1][0] == '-' || argv[1][0] == '+';
 	data->position = (int)strtonum(argv[1], INT_MIN, INT_MAX, &errstr);
 	if (errstr != NULL) {
 		(void)xasprintf(error, "Position is %s: %s", errstr, argv[1]);
 		free(data);
 		return -1;
 	}
-	if (argv[1][0] == '-' || argv[1][0] == '+')
-		data->relative = 1;
-	else
-		data->relative = 0;
 
 	*datap = data;
 	return 0;
