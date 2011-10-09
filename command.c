@@ -443,7 +443,8 @@ command_add_path_exec(void *datap)
 				view_add_track(data->view, t);
 		} else if (S_ISDIR(sb.st_mode)) {
 			if ((d = dir_open(data->paths[i])) == NULL) {
-				msg_err("Cannot open directory");
+				msg_err("Cannot open directory: %s",
+				    data->paths[i]);
 				continue;
 			}
 
@@ -451,7 +452,8 @@ command_add_path_exec(void *datap)
 				view_add_track(data->view, t);
 
 			if (ret)
-				msg_err("Error reading directory");
+				msg_err("Error reading directory: %s",
+				    data->paths[i]);
 
 			dir_close(d);
 		}
@@ -539,7 +541,7 @@ command_bind_key_parse(int argc, char **argv, void **datap, char **error)
 	struct command_bind_key_data *data;
 
 	if (argc != 4) {
-		(void)xasprintf(error, "Usage: %s scope key command", argv[0]);
+		*error = xstrdup("Usage: bind-key scope key command");
 		return -1;
 	}
 
@@ -1177,7 +1179,7 @@ command_select_view_parse(int argc, char **argv, void **datap, char **error)
 	enum view_id *data;
 
 	if (argc != 2) {
-		*error = xstrdup("Usage: view name");
+		*error = xstrdup("Usage: select-view name");
 		return -1;
 	}
 
@@ -1342,7 +1344,7 @@ command_set_volume_parse(int argc, char **argv, void **datap, char **error)
 	const char			*errstr;
 
 	if (argc != 2) {
-		*error = xstrdup("Usage: volume level");
+		*error = xstrdup("Usage: set-volume level");
 		return -1;
 	}
 
@@ -1508,7 +1510,7 @@ command_unbind_key_parse(int argc, char **argv, void **datap, char **error)
 	struct command_unbind_key_data *data;
 
 	if (argc != 3) {
-		*error = xstrdup("Usage: unbind scope key");
+		*error = xstrdup("Usage: unbind-key scope key");
 		return -1;
 	}
 
