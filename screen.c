@@ -68,6 +68,7 @@ static void			screen_sigwinch_handler(int);
 static pthread_mutex_t		screen_curses_mtx = PTHREAD_MUTEX_INITIALIZER;
 static int			screen_have_colours;
 static int			screen_player_row;
+static int			screen_status_col;
 static int			screen_status_row;
 static int			screen_view_current_row;
 static int			screen_view_selected_row;
@@ -528,6 +529,7 @@ screen_prompt_begin(void)
 {
 	XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
 	(void)curs_set(1);
+	screen_status_col = 0;
 	XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
 }
 
@@ -550,12 +552,11 @@ screen_prompt_printf(size_t cursorpos, const char *fmt, ...)
 
 	va_start(ap, fmt);
 	XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
+	screen_status_col = (int)cursorpos;
 	if (move(screen_status_row, 0) == OK) {
 		bkgdset(screen_objects[SCREEN_OBJ_PROMPT].attr);
 		screen_vprintf(fmt, ap);
-		if ((int)cursorpos >= COLS && COLS > 0)
-			cursorpos = (size_t)(COLS - 1);
-		(void)move(screen_status_row, (int)cursorpos);
+		(void)move(screen_status_row, screen_status_col);
 		(void)refresh();
 	}
 	XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
@@ -684,7 +685,10 @@ void
 screen_view_print_end(void)
 {
 	XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
-	(void)move(screen_view_selected_row, 0);
+	if (prompt_is_active())
+		(void)move(screen_status_row, screen_status_col);
+	else
+		(void)move(screen_view_selected_row, 0);
 	(void)refresh();
 	XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
 }
