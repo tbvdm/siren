@@ -36,7 +36,7 @@ makefile_assign()
 
 makefile_append()
 {
-	echo "$1+=$2" >> "$makefile"
+	[ "$2" ] && echo "$1+=$2" >> "$makefile"
 }
 
 set -e
@@ -311,6 +311,13 @@ if [ "$enable_debug" = yes ]; then
 	echo enabling debug build
 	header_define DEBUG
 	makefile_append CFLAGS -ggdb
+fi
+
+if which ncurses5-config >/dev/null 2>&1; then
+	makefile_append CFLAGS "`ncurses5-config --cflags`"
+	makefile_append LDFLAGS "`ncurses5-config --libs`"
+else
+	makefile_append LDFLAGS -lcurses
 fi
 
 if [ "$enable_flac" != no ] && pkg-config flac; then
