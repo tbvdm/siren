@@ -314,7 +314,7 @@ if [ "$enable_debug" = yes ]; then
 fi
 
 if which ncurses5-config >/dev/null 2>&1; then
-	makefile_append CFLAGS "`ncurses5-config --cflags`"
+	makefile_append CPPFLAGS "`ncurses5-config --cflags`"
 	makefile_append LDFLAGS "`ncurses5-config --libs`"
 else
 	makefile_append LDFLAGS -lcurses
