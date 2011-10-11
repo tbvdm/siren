@@ -206,6 +206,7 @@ bind_init(void)
 	bind_add(BIND_SCOPE_COMMON, 'C', "set continue");
 	bind_add(BIND_SCOPE_COMMON, 'G', "select-last-entry");
 	bind_add(BIND_SCOPE_COMMON, 'N', "search-prev");
+	bind_add(BIND_SCOPE_COMMON, 'R', "set repeat-all");
 	bind_add(BIND_SCOPE_COMMON, 'b', "play-next");
 	bind_add(BIND_SCOPE_COMMON, 'c', "pause");
 	bind_add(BIND_SCOPE_COMMON, 'g', "select-first-entry");
@@ -214,6 +215,7 @@ bind_init(void)
 	bind_add(BIND_SCOPE_COMMON, 'n', "search-next");
 	bind_add(BIND_SCOPE_COMMON, 'p', "search-prev");
 	bind_add(BIND_SCOPE_COMMON, 'q', "confirm -p Quit quit");
+	bind_add(BIND_SCOPE_COMMON, 'r', "set repeat-track");
 	bind_add(BIND_SCOPE_COMMON, 'v', "stop");
 	bind_add(BIND_SCOPE_COMMON, 'x', "play");
 	bind_add(BIND_SCOPE_COMMON, 'z', "play-prev");
@@ -235,10 +237,10 @@ bind_init(void)
 	bind_add(BIND_SCOPE_QUEUE, 'l',
 	    "confirm -p \"Delete all entries\" \"delete-entry -a\"");
 
+	bind_add(BIND_SCOPE_BROWSER, K_CTRL('R'), "reread-directory");
 	bind_add(BIND_SCOPE_BROWSER, K_BACKSPACE, "cd ..");
 	bind_add(BIND_SCOPE_BROWSER, 'a', "add-entry -q");
 	bind_add(BIND_SCOPE_BROWSER, 'h', "set show-hidden-files");
-	bind_add(BIND_SCOPE_BROWSER, 'r', "reread-directory");
 }
 
 static char *
