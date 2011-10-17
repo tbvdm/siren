@@ -172,7 +172,7 @@ void
 view_move_entry_down(void)
 {
 	if (view_list[view_sel].move_entry_down == NULL)
-		msg_errx("Cannot move this entries in this view");
+		msg_errx("Cannot move entries in this view");
 	else
 		view_list[view_sel].move_entry_down();
 }
@@ -181,7 +181,7 @@ void
 view_move_entry_up(void)
 {
 	if (view_list[view_sel].move_entry_up == NULL)
-		msg_errx("Cannot move this entries in this view");
+		msg_errx("Cannot move entries in this view");
 	else
 		view_list[view_sel].move_entry_up();
 }
