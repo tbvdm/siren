@@ -188,13 +188,13 @@ bind_init(void)
 	bind_add(BIND_SCOPE_COMMON, K_END, "select-last-entry");
 	bind_add(BIND_SCOPE_COMMON, K_ENTER, "activate-entry");
 	bind_add(BIND_SCOPE_COMMON, K_HOME, "select-first-entry");
-	bind_add(BIND_SCOPE_COMMON, K_LEFT, "seek -5");
+	bind_add(BIND_SCOPE_COMMON, K_LEFT, "seek -b 5");
 	bind_add(BIND_SCOPE_COMMON, K_PAGEDOWN, "scroll-down -p");
 	bind_add(BIND_SCOPE_COMMON, K_PAGEUP, "scroll-up -p");
-	bind_add(BIND_SCOPE_COMMON, K_RIGHT, "seek +5");
+	bind_add(BIND_SCOPE_COMMON, K_RIGHT, "seek -f 5");
 	bind_add(BIND_SCOPE_COMMON, K_UP, "select-prev-entry");
-	bind_add(BIND_SCOPE_COMMON, ',', "seek -60");
-	bind_add(BIND_SCOPE_COMMON, '.', "seek +60");
+	bind_add(BIND_SCOPE_COMMON, ',', "seek -b 1:00");
+	bind_add(BIND_SCOPE_COMMON, '.', "seek -f 1:00");
 	bind_add(BIND_SCOPE_COMMON, '-', "set-volume -5");
 	bind_add(BIND_SCOPE_COMMON, '/', "search-prompt");
 	bind_add(BIND_SCOPE_COMMON, '?', "search-prompt -b");

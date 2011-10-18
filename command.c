@@ -1112,24 +1112,71 @@ static int
 command_seek_parse(int argc, char **argv, void **datap, char **error)
 {
 	struct command_seek_data	*data;
+	int				 c;
+	char				*field, *position;
 	const char			*errstr;
 
-	if (argc != 2) {
-		*error = xstrdup("Usage: seek position");
-		return -1;
+	data = xmalloc(sizeof *data);
+	data->relative = 0;
+
+	while ((c = getopt(argc, argv, "bf")) != -1)
+		switch (c) {
+		case 'b':
+			data->relative = -1;
+			break;
+		case 'f':
+			data->relative = 1;
+			break;
+		default:
+			goto usage;
+		}
+
+	if (argc - optind != 1)
+		goto usage;
+
+	position = argv[optind];
+
+	/* Parse the first field. */
+	field = strsep(&position, ":");
+	data->position = (int)strtonum(field, 0, INT_MAX, &errstr);
+	if (errstr != NULL)
+		goto error;
+
+	/* Parse the second field, if present. */
+	if ((field = strsep(&position, ":")) != NULL) {
+		data->position *= 60;
+		data->position += (int)strtonum(field, 0, 59, &errstr);
+		if (errstr != NULL)
+			goto error;
+
+		/* Parse the third field, if present. */
+		if ((field = strsep(&position, ":")) != NULL) {
+			data->position *= 60;
+			data->position += (int)strtonum(field, 0, 59, &errstr);
+			if (errstr != NULL)
+				goto error;
+
+			/* Ensure there is no fourth field. */
+			if (position != NULL)
+				goto error;
+		}
 	}
 
-	data = xmalloc(sizeof *data);
-	data->relative = argv[1][0] == '-' || argv[1][0] == '+';
-	data->position = (int)strtonum(argv[1], INT_MIN, INT_MAX, &errstr);
-	if (errstr != NULL) {
-		(void)xasprintf(error, "Position is %s: %s", errstr, argv[1]);
-		free(data);
-		return -1;
-	}
+	if (data->relative)
+		data->position *= data->relative;
 
 	*datap = data;
 	return 0;
+
+usage:
+	*error = xstrdup("Usage: seek [-bf] [[hours]:minutes:]seconds");
+	free(data);
+	return -1;
+
+error:
+	*error = xstrdup("Invalid position");
+	free(data);
+	return -1;
 }
 
 /* ARGSUSED */

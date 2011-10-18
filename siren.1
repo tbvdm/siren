@@ -12,7 +12,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd October 11, 2011
+.Dd October 18, 2011
 .Dt SIREN 1
 .Os
 .Sh NAME
@@ -460,21 +460,20 @@ and
 .Sq \&?
 if searching backward.
 .El
-.It Ic seek Ar position
-Seek to a given position in the currently playing track.
-The
-.Ar position
-argument is specified in seconds.
-If the first character of
-.Ar position
-is
-.Sq -
-or
-.Sq + ,
-then
-.Ar position
-is considered to be relative and will be subtracted from or added to the
-current position.
+.It Xo
+.Ic seek
+.Op Fl bf
+.Oo Oo Ar hours: Oc Ns Ar minutes: Oc Ns Ar seconds
+.Xc
+Seek to the specified position in the currently playing track.
+The options are as follows.
+.Pp
+.Bl -tag -width Ds -compact
+.It Fl b
+Seek backward by subtracting the specified position from the current position.
+.It Fl f
+Seek forward by adding the specified position to the current position.
+.El
 .It Ic select-active-entry
 Select the active entry in the library view.
 .It Ic select-first-entry
