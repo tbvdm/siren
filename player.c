@@ -227,21 +227,18 @@ player_get_track(void)
 {
 	struct track *t;
 
-	if (!option_get_boolean("continue"))
-		return -1;
+	if (!option_get_boolean("repeat-track")) {
+		if ((t = queue_get_next_track()) == NULL &&
+		    (t = library_get_next_track()) == NULL)
+			return -1;
 
-	if (option_get_boolean("repeat-track"))
-		return 0;
+		XPTHREAD_MUTEX_LOCK(&player_track_mtx);
+		track_free(player_track);
+		player_track = t;
+		XPTHREAD_MUTEX_UNLOCK(&player_track_mtx);
+	}
 
-	if ((t = queue_get_next_track()) == NULL &&
-	    (t = library_get_next_track()) == NULL)
-		return -1;
-
-	XPTHREAD_MUTEX_LOCK(&player_track_mtx);
-	track_free(player_track);
-	player_track = t;
-	XPTHREAD_MUTEX_UNLOCK(&player_track_mtx);
-	return 0;
+	return option_get_boolean("continue") ? 0 : -1;
 }
 
 void
@@ -406,19 +403,19 @@ player_playback_handler(UNUSED void *p)
 
 	XPTHREAD_MUTEX_LOCK(&player_state_mtx);
 	for (;;) {
-		if (player_command == PLAYER_COMMAND_PLAY &&
-		    player_get_track() == -1)
-			player_command = PLAYER_COMMAND_STOP;
+		if (player_command == PLAYER_COMMAND_PLAY) {
+			if (player_get_track() == -1)
+				player_command = PLAYER_COMMAND_STOP;
+			player_print_track();
+		}
 
 		if (player_command == PLAYER_COMMAND_STOP) {
 			XPTHREAD_COND_WAIT(&player_command_cond,
 			    &player_state_mtx);
-
 			if (player_command == PLAYER_COMMAND_QUIT)
 				break;
+			player_print_track();
 		}
-
-		player_print_track();
 
 		if (player_begin_playback(&buf) == -1) {
 			player_command = PLAYER_COMMAND_STOP;
