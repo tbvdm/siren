@@ -197,6 +197,8 @@ bind_init(void)
 	bind_add(BIND_SCOPE_COMMON, '.', "seek -f 1:00");
 	bind_add(BIND_SCOPE_COMMON, '-', "set-volume -d 5");
 	bind_add(BIND_SCOPE_COMMON, '/', "search-prompt");
+	bind_add(BIND_SCOPE_COMMON, '<', "seek -b 5:00");
+	bind_add(BIND_SCOPE_COMMON, '>', "seek -f 5:00");
 	bind_add(BIND_SCOPE_COMMON, '?', "search-prompt -b");
 	bind_add(BIND_SCOPE_COMMON, '1', "select-view library");
 	bind_add(BIND_SCOPE_COMMON, '2', "select-view queue");
