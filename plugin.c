@@ -94,24 +94,30 @@ plugin_end(void)
 	}
 }
 
+/*
+ * Find an input plug-in based on the extension of the specified file.
+ */
 const struct ip *
 plugin_find_ip(const char *file)
 {
-	struct plugin_ip_entry	*ope;
+	struct plugin_ip_entry	*ipe;
 	int			 i;
 	char			*ext;
 
 	if ((ext = strrchr(file, '.')) == NULL || *++ext == '\0')
 		return NULL;
 
-	SLIST_FOREACH(ope, &plugin_ip_list, entries)
-		for (i = 0; ope->ip->extensions[i] != NULL; i++)
-			if (!strcasecmp(ext, ope->ip->extensions[i]))
-				return ope->ip;
+	SLIST_FOREACH(ipe, &plugin_ip_list, entries)
+		for (i = 0; ipe->ip->extensions[i] != NULL; i++)
+			if (!strcasecmp(ext, ipe->ip->extensions[i]))
+				return ipe->ip;
 
 	return NULL;
 }
 
+/*
+ * Find an output plug-in by name or, if the name is "default", by priority.
+ */
 const struct op *
 plugin_find_op(const char *name)
 {
