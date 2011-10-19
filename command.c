@@ -1391,27 +1391,45 @@ static int
 command_set_volume_parse(int argc, char **argv, void **datap, char **error)
 {
 	struct command_set_volume_data	*data;
+	int				 c;
 	const char			*errstr;
 
-	if (argc != 2) {
-		*error = xstrdup("Usage: set-volume level");
-		return -1;
-	}
-
 	data = xmalloc(sizeof *data);
-	data->volume = (int)strtonum(argv[1], -100, 100, &errstr);
+	data->relative = 0;
+
+	while ((c = getopt(argc, argv, "di")) != -1)
+		switch (c) {
+		case 'd':
+			data->relative = -1;
+			break;
+		case 'i':
+			data->relative = 1;
+			break;
+		default:
+			goto usage;
+		}
+
+	if (argc - optind != 1)
+		goto usage;
+
+	data->volume = (int)strtonum(argv[optind], 0, 100, &errstr);
 	if (errstr != NULL) {
-		(void)xasprintf(error, "Volume is %s: %s", errstr, argv[1]);
+		(void)xasprintf(error, "Volume level is %s: %s", errstr,
+		    argv[optind]);
 		free(data);
 		return -1;
 	}
-	if (argv[1][0] == '-' || argv[1][0] == '+')
-		data->relative = 1;
-	else
-		data->relative = 0;
+
+	if (data->relative)
+		data->volume *= data->relative;
 
 	*datap = data;
 	return 0;
+
+usage:
+	*error = xstrdup("Usage: set-volume [-di] level");
+	free(data);
+	return -1;
 }
 
 /* ARGSUSED */

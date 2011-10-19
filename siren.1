@@ -12,7 +12,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd October 18, 2011
+.Dd October 19, 2011
 .Dt SIREN 1
 .Os
 .Sh NAME
@@ -228,7 +228,8 @@ This is the default.
 .It Fl q
 Add the selected entry to the queue.
 .El
-.It Xo Ic add-path
+.It Xo
+.Ic add-path
 .Op Fl l | q
 .Ar path Ar ...
 .Xc
@@ -350,7 +351,8 @@ as the prompt.
 The default is
 .Sq \&: .
 .El
-.It Xo Ic confirm
+.It Xo
+.Ic confirm
 .Op Fl p Ar prompt
 .Ar command
 .Xc
@@ -437,7 +439,8 @@ command.
 Search for the previous occurrence of the text earlier specified with the
 .Ic search-prompt
 command.
-.It Xo Ic search-prompt
+.It Xo
+.Ic search-prompt
 .Op Fl b
 .Op Fl p Ar prompt
 .Xc
@@ -506,24 +509,26 @@ is not specified, it is toggled.
 See
 .Sx OPTIONS
 below for a list of available options.
-.It Ic set-volume Ar level
-Set or adjust the volume.
+.It Xo
+.Ic set-volume
+.Op Fl di
+.Ar level
+.Xc
+Set the volume level to
+.Ar level .
 The
 .Ar level
-argument should be an integer value between 0 and 100 inclusive.
-If the first character of
-.Ar level
-is
-.Sq -
-or
-.Sq + ,
-then
-.Ar level
-is considered a relative value and will be subtracted from or added to the
-current volume.
-Otherwise,
-.Ar level
-is considered an absolute value.
+argument should be an integer value between 0 and 100.
+The options are as follows.
+.Pp
+.Bl -tag -width Ds -compact
+.It Fl d
+Decrease the current volume level by subtracting
+.Ar level .
+.It Fl i
+Increase the current volume level by adding
+.Ar level .
+.El
 .Pp
 Not all output plug-ins support setting the volume.
 .It Ic stop
