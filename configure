@@ -36,7 +36,9 @@ makefile_assign()
 
 makefile_append()
 {
-	[ "$2" ] && echo "$1+=$2" >> "$makefile"
+	if [ "$2" ]; then
+		echo "$1+=$2" >> "$makefile"
+	fi
 }
 
 set -e
