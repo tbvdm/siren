@@ -507,7 +507,7 @@ screen_print(void)
 static void
 screen_print_row(const char *s)
 {
-	int col, row;
+	int col UNUSED, row;
 
 	(void)addnstr(s, COLS);
 
@@ -757,7 +757,7 @@ screen_view_title_printf_right(const char *fmt, ...)
 static void
 screen_vprintf(const char *fmt, va_list ap)
 {
-	int	 col, len, row;
+	int	 col UNUSED, len, row;
 	char	*buf;
 
 	len = xvasprintf(&buf, fmt, ap);
