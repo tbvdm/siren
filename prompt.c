@@ -258,9 +258,7 @@ prompt_handle_input(struct history *history)
 			if (key < 32 || key > 126)
 				break;
 
-			prompt_linelen++;
-
-			if (prompt_linelen == prompt_linesize) {
+			if (++prompt_linelen == prompt_linesize) {
 				prompt_linesize += PROMPT_LINESIZE;
 				prompt_line = xrealloc(prompt_line,
 				    prompt_linesize);
