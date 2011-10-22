@@ -65,13 +65,13 @@ ip/%.o: ip/%.c
 	${CC} ${CFLAGS} ${CPPFLAGS} ${CPPFLAGS_$(*F)} -fPIC -c -o $@ $<
 
 ip/%.so: ip/%.o
-	${CC} ${LDFLAGS_$(*F)} -fPIC -shared -o $@ $<
+	${CC} -fPIC -shared -o $@ $< ${LDFLAGS_$(*F)}
 
 op/%.o: op/%.c
 	${CC} ${CFLAGS} ${CPPFLAGS} ${CPPFLAGS_$(*F)} -fPIC -c -o $@ $<
 
 op/%.so: op/%.o
-	${CC} ${LDFLAGS_$(*F)} -fPIC -shared -o $@ $<
+	${CC} -fPIC -shared -o $@ $< ${LDFLAGS_$(*F)}
 
 %.ln: %.c
 	${LINT} ${LINTFLAGS} ${CPPFLAGS} ${CPPFLAGS_$(*F)} -i -o $@ $<
@@ -82,7 +82,7 @@ op/%.so: op/%.o
 all: ${PROG} ${IP_LIBS} ${OP_LIBS}
 
 ${PROG}: ${OBJS}
-	${CC} ${LDFLAGS} -o $@ ${OBJS}
+	${CC} -o $@ ${OBJS} ${LDFLAGS}
 
 .depend: ${SRCS} ${IP_SRCS} ${OP_SRCS} ${PROG}.h
 	${MKDEP} ${MKDEPFLAGS} ${CPPFLAGS} ${SRCS}

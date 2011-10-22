@@ -73,12 +73,12 @@ LDFLAGS+=	-lpthread
 	${CC} ${CFLAGS} ${CPPFLAGS} -c -o $@ $<
 
 .lo.so:
-	${CC} ${LDFLAGS_${@:T:R}} -fPIC -shared -o $@ $<
+	${CC} -fPIC -shared -o $@ $< ${LDFLAGS_${@:T:R}}
 
 all: ${PROG} ${IP_LIBS} ${OP_LIBS}
 
 ${PROG}: ${OBJS}
-	${CC} ${LDFLAGS} -o $@ ${OBJS}
+	${CC} -o $@ ${OBJS} ${LDFLAGS}
 
 .depend: ${SRCS} ${IP_SRCS} ${OP_SRCS} ${PROG}.h
 	${MKDEP} ${MKDEPFLAGS} ${CPPFLAGS} ${SRCS}
