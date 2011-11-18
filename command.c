@@ -454,7 +454,7 @@ command_add_path_exec(void *datap)
 				view_add_track(data->view, t);
 
 			if (ret)
-				msg_err("Error reading directory: %s",
+				msg_err("Cannot read directory: %s",
 				    data->paths[i]);
 
 			dir_close(d);

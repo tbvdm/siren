@@ -262,7 +262,7 @@ browser_read_dir(const char *dir)
 	}
 
 	if (ret)
-		LOG_ERR("Cannot read directory");
+		msg_err("Cannot read directory");
 
 	dir_close(d);
 	return 0;

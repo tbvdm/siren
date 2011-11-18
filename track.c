@@ -122,7 +122,7 @@ track_init(const char *path, const struct ip *ip)
 	}
 
 	if (ip == NULL && (ip = plugin_find_ip(path)) == NULL) {
-		msg_errx("%s: File not supported", path);
+		msg_errx("%s: Unsupported file format", path);
 		return NULL;
 	}
 
