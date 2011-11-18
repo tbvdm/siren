@@ -315,13 +315,6 @@ if [ "$enable_debug" = yes ]; then
 	makefile_append CFLAGS -ggdb
 fi
 
-if which ncurses5-config >/dev/null 2>&1; then
-	makefile_append CPPFLAGS "`ncurses5-config --cflags`"
-	makefile_append LDFLAGS "`ncurses5-config --libs`"
-else
-	makefile_append LDFLAGS -lcurses
-fi
-
 if [ "$enable_flac" != no ] && pkg-config flac; then
 	echo enabling flac plug-in
 	makefile_append IP flac

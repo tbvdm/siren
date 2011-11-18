@@ -50,7 +50,7 @@ CDIAGFLAGS+=	-Wall -W -Wbad-function-cast -Wcast-align -Wcast-qual \
 		-Wformat=2 -Wpointer-arith -Wshadow -Wundef -Wwrite-strings
 CFLAGS+=	${CDIAGFLAGS}
 CPPFLAGS+=	-DVERSION=\"${VERSION}\"
-LDFLAGS+=	-pthread -Wl,--export-dynamic
+LDFLAGS+=	-lcurses -pthread -Wl,--export-dynamic
 LINTFLAGS?=	-hx
 MKDEPFLAGS?=	-a
 
