@@ -61,8 +61,8 @@ browser_activate_entry(void)
 			player_play_track(t);
 		free(path);
 		break;
-	/* Silence gcc. */
 	default:
+		msg_errx("Unsupported file type");
 		break;
 	}
 }
@@ -141,8 +141,8 @@ browser_copy_entry(enum view_id view)
 			dir_close(d);
 		}
 		break;
-	/* Silence gcc. */
 	default:
+		msg_errx("Unsupported file type");
 		break;
 	}
 

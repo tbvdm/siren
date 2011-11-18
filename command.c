@@ -459,6 +459,9 @@ command_add_path_exec(void *datap)
 
 			dir_close(d);
 			break;
+		default:
+			msg_errx("Unsupported file type");
+			break;
 		}
 	}
 }
