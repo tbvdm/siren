@@ -266,5 +266,6 @@ view_select_view(enum view_id id)
 			if (view_list[i].id == id) {
 				view_sel = i;
 				view_print();
+				break;
 			}
 }
