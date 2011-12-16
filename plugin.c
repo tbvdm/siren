@@ -167,11 +167,16 @@ plugin_load_dir(const char *dir, const char *symbol,
 	void			*handle, *plugin;
 
 	if ((d = dir_open(dir)) == NULL) {
-		LOG_ERR("dir_open: %s", dir);
+		msg_err("%s", dir);
 		return;
 	}
 
-	while (dir_get_entry(d, &de) == 0 && de != NULL) {
+	while ((de = dir_get_entry(d)) != NULL) {
+		if (errno) {
+			msg_err("%s", de->path);
+			continue;
+		}
+
 		if (de->type != FILE_TYPE_REGULAR)
 			continue;
 
@@ -193,6 +198,9 @@ plugin_load_dir(const char *dir, const char *symbol,
 
 		add(handle, plugin);
 	}
+
+	if (errno)
+		msg_err("%s", dir);
 
 	dir_close(d);
 }

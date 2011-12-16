@@ -108,6 +108,22 @@ view_activate_entry(void)
 }
 
 void
+view_add_dir(enum view_id view, const char *path)
+{
+	switch (view) {
+	case VIEW_ID_LIBRARY:
+		library_add_dir(path);
+		break;
+	case VIEW_ID_QUEUE:
+		queue_add_dir(path);
+		break;
+	default:
+		msg_errx("Cannot add tracks to this view");
+		break;
+	}
+}
+
+void
 view_add_track(enum view_id view, struct track *t)
 {
 	switch (view) {

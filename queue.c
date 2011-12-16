@@ -46,6 +46,47 @@ queue_activate_entry(void)
 }
 
 void
+queue_add_dir(const char *path)
+{
+	struct dir		*d;
+	struct dir_entry	*de;
+	struct track		*t;
+
+	if ((d = dir_open(path)) == NULL) {
+		msg_err("%s", path);
+		return;
+	}
+
+	while ((de = dir_get_entry(d)) != NULL) {
+		if (errno) {
+			msg_err("%s", de->path);
+			continue;
+		}
+
+		if (!strcmp(de->name, ".") || !strcmp(de->name, ".."))
+			continue;
+
+		switch (de->type) {
+		case FILE_TYPE_DIRECTORY:
+			queue_add_dir(de->path);
+			break;
+		case FILE_TYPE_REGULAR:
+			if ((t = track_init(de->path, NULL)) != NULL)
+				queue_add_track(t);
+			break;
+		default:
+			msg_errx("%s: Unsupported file type", de->path);
+			break;
+		}
+	}
+
+	if (errno)
+		msg_err("%s", path);
+
+	dir_close(d);
+}
+
+void
 queue_add_track(struct track *t)
 {
 	XPTHREAD_MUTEX_LOCK(&queue_menu_mtx);

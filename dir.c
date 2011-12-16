@@ -31,15 +31,11 @@ struct dir {
 	struct dir_entry	 entry;
 	DIR			*dirp;
 	struct dirent		*dp;
-	struct dir		*subdir;
 };
 
 void
 dir_close(struct dir *d)
 {
-	if (d->subdir != NULL)
-		dir_close(d->subdir);
-
 	while (closedir(d->dirp) == -1 && errno == EINTR);
 	free(d->dir);
 	free(d->entry.path);
@@ -47,23 +43,19 @@ dir_close(struct dir *d)
 	free(d);
 }
 
-int
-dir_get_entry(struct dir *d, struct dir_entry **e)
+struct dir_entry *
+dir_get_entry(struct dir *d)
 {
 	struct dirent	*result;
 	struct stat	 sb;
 	int		 ret;
 
-	*e = NULL;
-
-	if ((ret = readdir_r(d->dirp, d->dp, &result))) {
-		errno = ret;
-		LOG_ERR("readdir_r: %s", d->dir);
-		return errno;
+	if ((ret = readdir_r(d->dirp, d->dp, &result)) || result == NULL) {
+		/* Error or end of directory stream. */
+		if ((errno = ret))
+			LOG_ERR("readdir_r: %s", d->dir);
+		return NULL;
 	}
-
-	if (result == NULL)
-		return 0;
 
 	d->entry.name = d->dp->d_name;
 	(void)xsnprintf(d->entry.path, d->entry.pathsize, "%s/%s", d->dir,
@@ -71,23 +63,23 @@ dir_get_entry(struct dir *d, struct dir_entry **e)
 
 	if (stat(d->entry.path, &sb) == -1) {
 		LOG_ERR("stat: %s", d->entry.path);
-		return errno;
-	}
-
-	switch (sb.st_mode & S_IFMT) {
-	case S_IFDIR:
-		d->entry.type = FILE_TYPE_DIRECTORY;
-		break;
-	case S_IFREG:
-		d->entry.type = FILE_TYPE_REGULAR;
-		break;
-	default:
 		d->entry.type = FILE_TYPE_OTHER;
-		break;
+	} else {
+		errno = 0;
+		switch (sb.st_mode & S_IFMT) {
+		case S_IFDIR:
+			d->entry.type = FILE_TYPE_DIRECTORY;
+			break;
+		case S_IFREG:
+			d->entry.type = FILE_TYPE_REGULAR;
+			break;
+		default:
+			d->entry.type = FILE_TYPE_OTHER;
+			break;
+		}
 	}
 
-	*e = &d->entry;
-	return 0;
+	return &d->entry;
 }
 
 #ifndef NAME_MAX
@@ -134,41 +126,6 @@ dir_get_name_max(const char *dir, UNUSED DIR *dirp)
 }
 #endif
 
-int
-dir_get_track(struct dir *d, struct track **t)
-{
-	struct dir_entry	*de;
-	int			 ret;
-
-	*t = NULL;
-
-	for (;;) {
-		if (d->subdir == NULL) {
-			if ((ret = dir_get_entry(d, &de)) || de == NULL)
-				return ret;
-
-			if (!strcmp(de->name, ".") || !strcmp(de->name, ".."))
-				continue;
-
-			if (de->type == FILE_TYPE_DIRECTORY) {
-				if ((d->subdir = dir_open(de->path)) == NULL)
-					continue;
-			} else if (de->type == FILE_TYPE_REGULAR) {
-				if ((*t = track_init(de->path, NULL)) != NULL)
-					return 0;
-				continue;
-			} else
-				continue;
-		}
-
-		if ((ret = dir_get_track(d->subdir, t)) || *t != NULL)
-			return ret;
-
-		dir_close(d->subdir);
-		d->subdir = NULL;
-	}
-}
-
 struct dir *
 dir_open(const char *dir)
 {
@@ -206,7 +163,6 @@ dir_open(const char *dir)
 	d->entry.pathsize = strlen(dir) + name_max + 2;
 	d->entry.path = xmalloc(d->entry.pathsize);
 	d->dp = xmalloc(dirent_size);
-	d->subdir = NULL;
 
 	return d;
 }

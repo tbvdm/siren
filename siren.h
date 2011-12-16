@@ -345,10 +345,8 @@ char		*conf_path(const char *) NONNULL();
 void		 conf_read_file(void);
 
 void		 dir_close(struct dir *) NONNULL();
-int		 dir_get_entry(struct dir *, struct dir_entry **)
-		    NONNULL();
-int		 dir_get_track(struct dir *, struct track **) NONNULL();
-struct dir	*dir_open(const char *);
+struct dir_entry *dir_get_entry(struct dir *) NONNULL();
+struct dir	*dir_open(const char *) NONNULL();
 
 int		 format_snprintf(char *, size_t, const char *,
 		    const struct format_field *, size_t) NONNULL();
@@ -363,6 +361,7 @@ void		 history_resize(struct history *, unsigned int) NONNULL();
 void		 history_rewind(struct history *) NONNULL();
 
 void		 library_activate_entry(void);
+void		 library_add_dir(const char *) NONNULL();
 void		 library_add_track(struct track *) NONNULL();
 void		 library_copy_entry(enum view_id);
 void		 library_delete_all_entries(void);
@@ -501,6 +500,7 @@ void		 prompt_print(void);
 void		 prompt_resize_histories(void);
 
 void		 queue_activate_entry(void);
+void		 queue_add_dir(const char *) NONNULL();
 void		 queue_add_track(struct track *) NONNULL();
 void		 queue_copy_entry(enum view_id);
 void		 queue_delete_all_entries(void);
@@ -562,7 +562,8 @@ int		 track_snprintf(char *, size_t, const char *,
 		    const struct track *) NONNULL();
 
 void		 view_activate_entry(void);
-void		 view_add_track(enum view_id, struct track *);
+void		 view_add_dir(enum view_id, const char *) NONNULL();
+void		 view_add_track(enum view_id, struct track *) NONNULL();
 void		 view_copy_entry(enum view_id);
 void		 view_copy_track(enum view_id, enum view_id, struct track *);
 void		 view_delete_all_entries(void);

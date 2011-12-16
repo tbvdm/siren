@@ -416,10 +416,9 @@ static void
 command_add_path_exec(void *datap)
 {
 	struct command_add_path_data	*data;
-	struct dir			*d;
 	struct track			*t;
 	struct stat			 sb;
-	int				 i, ret;
+	int				 i;
 
 	data = datap;
 
@@ -439,25 +438,12 @@ command_add_path_exec(void *datap)
 		}
 
 		switch (sb.st_mode & S_IFMT) {
+		case S_IFDIR:
+			view_add_dir(data->view, data->paths[i]);
+			break;
 		case S_IFREG:
 			if ((t = track_init(data->paths[i], NULL)) != NULL)
 				view_add_track(data->view, t);
-			break;
-		case S_IFDIR:
-			if ((d = dir_open(data->paths[i])) == NULL) {
-				msg_err("Cannot open directory: %s",
-				    data->paths[i]);
-				continue;
-			}
-
-			while ((ret = dir_get_track(d, &t)) == 0 && t != NULL)
-				view_add_track(data->view, t);
-
-			if (ret)
-				msg_err("Cannot read directory: %s",
-				    data->paths[i]);
-
-			dir_close(d);
 			break;
 		default:
 			msg_errx("Unsupported file type");

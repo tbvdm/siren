@@ -14,6 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -111,9 +112,7 @@ void
 browser_copy_entry(enum view_id view)
 {
 	struct browser_entry	*e;
-	struct dir		*d;
 	struct track		*t;
-	int			 ret;
 	char			*path, *tmp;
 
 	if ((e = menu_get_selected_entry_data(browser_menu)) == NULL)
@@ -129,17 +128,7 @@ browser_copy_entry(enum view_id view)
 			view_add_track(view, t);
 		break;
 	case FILE_TYPE_DIRECTORY:
-		if ((d = dir_open(path)) == NULL)
-			msg_err("Cannot open directory");
-		else {
-			while ((ret = dir_get_track(d, &t)) == 0 && t != NULL)
-				view_add_track(view, t);
-
-			if (ret)
-				msg_err("Cannot read directory");
-
-			dir_close(d);
-		}
+		view_add_dir(view, path);
 		break;
 	default:
 		msg_errx("Unsupported file type");
@@ -204,7 +193,6 @@ browser_read_dir(const char *dir)
 	struct menu_entry	*me;
 	struct browser_entry	*be, *mbe;
 	const struct ip		*ip;
-	int			 ret;
 
 	if ((d = dir_open(dir)) == NULL) {
 		msg_err("Cannot open directory: %s", dir);
@@ -213,7 +201,12 @@ browser_read_dir(const char *dir)
 
 	menu_remove_all_entries(browser_menu);
 
-	while ((ret = dir_get_entry(d, &de)) == 0 && de != NULL) {
+	while ((de = dir_get_entry(d)) != NULL) {
+		if (errno) {
+			msg_err("%s", de->name);
+			continue;
+		}
+
 		if (de->type == FILE_TYPE_OTHER &&
 		    !option_get_boolean("show-all-files"))
 			continue;
@@ -261,7 +254,7 @@ browser_read_dir(const char *dir)
 			menu_insert_tail(browser_menu, be);
 	}
 
-	if (ret)
+	if (errno)
 		msg_err("Cannot read directory");
 
 	dir_close(d);
