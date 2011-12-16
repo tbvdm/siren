@@ -134,7 +134,7 @@ view_add_track(enum view_id view, struct track *t)
 		queue_add_track(t);
 		break;
 	default:
-		msg_errx("Cannot add tracks to this view.");
+		msg_errx("Cannot add tracks to this view");
 		break;
 	}
 }

@@ -441,7 +441,7 @@ command_add_path_exec(void *datap)
 				view_add_track(data->view, t);
 			break;
 		default:
-			msg_errx("Unsupported file type");
+			msg_errx("%s: Unsupported file type", data->paths[i]);
 			break;
 		}
 	}
