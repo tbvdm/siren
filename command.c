@@ -422,13 +422,8 @@ command_add_path_exec(void *datap)
 
 	data = datap;
 
-	if (data->use_current_view) {
+	if (data->use_current_view)
 		data->view = view_get_id();
-		if (data->view == VIEW_ID_BROWSER) {
-			msg_errx("Cannot add tracks to this view.");
-			return;
-		}
-	}
 
 	for (i = 0; data->paths[i] != NULL; i++) {
 		if (stat(data->paths[i], &sb) == -1) {
