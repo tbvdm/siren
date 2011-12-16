@@ -119,9 +119,14 @@ library_copy_entry(enum view_id view)
 {
 	struct track *t;
 
+	if (view == VIEW_ID_LIBRARY)
+		return;
+
 	XPTHREAD_MUTEX_LOCK(&library_menu_mtx);
-	if ((t = menu_get_selected_entry_data(library_menu)) != NULL)
-		view_copy_track(VIEW_ID_LIBRARY, view, t);
+	if ((t = menu_get_selected_entry_data(library_menu)) != NULL) {
+		track_hold(t);
+		view_add_track(view, t);
+	}
 	XPTHREAD_MUTEX_UNLOCK(&library_menu_mtx);
 }
 

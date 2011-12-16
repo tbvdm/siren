@@ -146,15 +146,6 @@ view_copy_entry(enum view_id view)
 }
 
 void
-view_copy_track(enum view_id src_view, enum view_id dst_view, struct track *t)
-{
-	if (src_view != dst_view) {
-		track_hold(t);
-		view_add_track(dst_view, t);
-	}
-}
-
-void
 view_delete_all_entries(void)
 {
 	if (view_list[view_sel].delete_all_entries == NULL)
