@@ -63,12 +63,10 @@ queue_add_dir(const char *path)
 			continue;
 		}
 
-		if (!strcmp(de->name, ".") || !strcmp(de->name, ".."))
-			continue;
-
 		switch (de->type) {
 		case FILE_TYPE_DIRECTORY:
-			queue_add_dir(de->path);
+			if (strcmp(de->name, ".") && strcmp(de->name, ".."))
+				queue_add_dir(de->path);
 			break;
 		case FILE_TYPE_REGULAR:
 			if ((t = track_init(de->path, NULL)) != NULL)
