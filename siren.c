@@ -20,23 +20,6 @@
 
 #include "siren.h"
 
-int quit;
-
-static void
-handle_input(void)
-{
-	int key;
-
-	while (!quit) {
-		key = screen_get_key();
-		msg_clear();
-
-		if (bind_execute(view_get_bind_scope(), key) == -1 &&
-		    bind_execute(BIND_SCOPE_COMMON, key) == -1)
-			msg_errx("Key not bound");
-	}
-}
-
 NORETURN static void
 usage(void)
 {
@@ -103,7 +86,7 @@ main(int argc, char **argv)
 	screen_print();
 	conf_read_file();
 	library_read_file();
-	handle_input();
+	input_handle_key();
 
 	prompt_end();
 	player_end();

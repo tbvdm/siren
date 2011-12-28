@@ -176,6 +176,19 @@ view_get_id(void)
 }
 
 void
+view_handle_key(int key)
+{
+	msg_clear();
+
+	if (bind_execute(view_list[view_sel].bind_scope, key) == 0)
+		return;
+	if (bind_execute(BIND_SCOPE_COMMON, key) == 0)
+		return;
+
+	msg_errx("Key not bound");
+}
+
+void
 view_move_entry_down(void)
 {
 	if (view_list[view_sel].move_entry_down == NULL)

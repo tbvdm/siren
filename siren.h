@@ -360,6 +360,9 @@ struct history	*history_init(void);
 void		 history_resize(struct history *, unsigned int) NONNULL();
 void		 history_rewind(struct history *) NONNULL();
 
+void		 input_end(void);
+void		 input_handle_key(void);
+
 void		 library_activate_entry(void);
 void		 library_add_dir(const char *) NONNULL();
 void		 library_add_track(struct track *) NONNULL();
@@ -569,6 +572,7 @@ void		 view_delete_all_entries(void);
 void		 view_delete_entry(void);
 enum bind_scope	 view_get_bind_scope(void);
 enum view_id	 view_get_id(void);
+void		 view_handle_key(int);
 void		 view_move_entry_down(void);
 void		 view_move_entry_up(void);
 void		 view_print(void);

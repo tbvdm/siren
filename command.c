@@ -927,9 +927,7 @@ command_process(const char *line, char **error)
 static void
 command_quit_exec(UNUSED void *datap)
 {
-	extern int quit;
-
-	quit = 1;
+	input_end();
 }
 
 /* ARGSUSED */
