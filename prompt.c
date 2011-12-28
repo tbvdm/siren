@@ -16,7 +16,6 @@
 
 #include <ctype.h>
 #include <limits.h>
-#include <pthread.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
@@ -31,8 +30,6 @@ static void		 prompt_mode_end(void);
 
 static struct history	*prompt_command_history;
 static struct history	*prompt_search_history;
-static pthread_mutex_t	 prompt_active_mtx = PTHREAD_MUTEX_INITIALIZER;
-static int		 prompt_active;
 
 static size_t		 prompt_linelen;
 static size_t		 prompt_linepos;
@@ -280,17 +277,6 @@ prompt_init(void)
 	prompt_search_history = history_init();
 }
 
-int
-prompt_is_active(void)
-{
-	int active;
-
-	XPTHREAD_MUTEX_LOCK(&prompt_active_mtx);
-	active = prompt_active;
-	XPTHREAD_MUTEX_UNLOCK(&prompt_active_mtx);
-	return active;
-}
-
 static void
 prompt_mode_begin(const char *prompt)
 {
@@ -304,10 +290,7 @@ prompt_mode_begin(const char *prompt)
 	prompt_line[0] = '\0';
 	prompt_scroll_offset = 0;
 
-	XPTHREAD_MUTEX_LOCK(&prompt_active_mtx);
-	prompt_active = 1;
-	XPTHREAD_MUTEX_UNLOCK(&prompt_active_mtx);
-
+	input_set_mode(INPUT_MODE_PROMPT);
 	screen_prompt_begin();
 }
 
@@ -315,9 +298,7 @@ static void
 prompt_mode_end(void)
 {
 	screen_prompt_end();
-	XPTHREAD_MUTEX_LOCK(&prompt_active_mtx);
-	prompt_active = 0;
-	XPTHREAD_MUTEX_UNLOCK(&prompt_active_mtx);
+	input_set_mode(INPUT_MODE_VIEW);
 }
 
 void

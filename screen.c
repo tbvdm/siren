@@ -495,7 +495,7 @@ screen_print(void)
 {
 	view_print();
 	player_print();
-	if (prompt_is_active())
+	if (input_get_mode() == INPUT_MODE_PROMPT)
 		prompt_print();
 	else
 		screen_status_clear();
@@ -685,7 +685,7 @@ void
 screen_view_print_end(void)
 {
 	XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
-	if (prompt_is_active())
+	if (input_get_mode() == INPUT_MODE_PROMPT)
 		(void)move(screen_status_row, screen_status_col);
 	else
 		(void)move(screen_view_selected_row, 0);

@@ -202,6 +202,11 @@ enum file_type {
 	FILE_TYPE_OTHER
 };
 
+enum input_mode {
+	INPUT_MODE_PROMPT,
+	INPUT_MODE_VIEW
+};
+
 enum menu_scroll {
 	MENU_SCROLL_HALF_PAGE,
 	MENU_SCROLL_LINE,
@@ -361,7 +366,9 @@ void		 history_resize(struct history *, unsigned int) NONNULL();
 void		 history_rewind(struct history *) NONNULL();
 
 void		 input_end(void);
+enum input_mode	 input_get_mode(void);
 void		 input_handle_key(void);
+void		 input_set_mode(enum input_mode);
 
 void		 library_activate_entry(void);
 void		 library_add_dir(const char *) NONNULL();
@@ -498,7 +505,6 @@ int		 prompt_get_answer(const char *) NONNULL();
 char		*prompt_get_command(const char *) NONNULL();
 char		*prompt_get_search(const char *) NONNULL();
 void		 prompt_init(void);
-int		 prompt_is_active(void);
 void		 prompt_print(void);
 void		 prompt_resize_histories(void);
 

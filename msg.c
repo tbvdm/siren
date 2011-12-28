@@ -59,7 +59,7 @@ msg_info(const char *fmt, ...)
 {
 	va_list ap;
 
-	if (!prompt_is_active()) {
+	if (input_get_mode() != INPUT_MODE_PROMPT) {
 		va_start(ap, fmt);
 		screen_msg_info_vprintf(fmt, ap);
 		va_end(ap);
@@ -110,7 +110,7 @@ msg_verr(const char *fmt, va_list ap)
 	char	errstr[STRERROR_BUFSIZE], *msg;
 
 	oerrno = errno;
-	if (!prompt_is_active()) {
+	if (input_get_mode() != INPUT_MODE_PROMPT) {
 		(void)strerror_r(oerrno, errstr, sizeof errstr);
 		(void)xvasprintf(&msg, fmt, ap);
 		screen_msg_error_printf("%s: %s", msg, errstr);
@@ -122,6 +122,6 @@ msg_verr(const char *fmt, va_list ap)
 static void
 msg_verrx(const char *fmt, va_list ap)
 {
-	if (!prompt_is_active())
+	if (input_get_mode() != INPUT_MODE_PROMPT)
 		screen_msg_error_vprintf(fmt, ap);
 }
