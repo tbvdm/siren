@@ -49,15 +49,22 @@ struct command_bind_key_data {
 	char		 *command_string;
 };
 
+struct command_command_prompt_data {
+	char		 *prompt;
+	unsigned int	  nrefs;
+};
+
 struct command_confirm_data {
 	char		 *prompt;
 	struct command	 *command;
 	void		 *command_data;
+	unsigned int	  nrefs;
 };
 
 struct command_search_prompt_data {
-	int		  search_backward;
 	char		 *prompt;
+	int		  search_backward;
+	unsigned int	  nrefs;
 };
 
 struct command_seek_data {
@@ -110,6 +117,7 @@ COMMAND_PARSE_PROTOTYPE(cd);
 COMMAND_EXEC_PROTOTYPE(clear_history);
 COMMAND_PARSE_PROTOTYPE(clear_history);
 COMMAND_EXEC_PROTOTYPE(command_prompt);
+COMMAND_FREE_PROTOTYPE(command_prompt);
 COMMAND_PARSE_PROTOTYPE(command_prompt);
 COMMAND_EXEC_PROTOTYPE(confirm);
 COMMAND_FREE_PROTOTYPE(confirm);
@@ -194,7 +202,7 @@ static struct command command_list[] = {
 		"command-prompt",
 		command_command_prompt_parse,
 		command_command_prompt_exec,
-		free
+		command_command_prompt_free
 	},
 	{
 		"confirm",
@@ -640,36 +648,59 @@ usage:
 }
 
 static void
-command_command_prompt_exec(void *datap)
+command_command_prompt_callback(char *command, void *datap)
 {
-	char		*command, *error;
-	const char	*prompt;
+	struct command_command_prompt_data	*data;
+	char					*error;
 
-	prompt = datap != NULL ? (char *)datap : ":";
-	if ((command = prompt_get_command(prompt)) == NULL)
-		return;
-
-	if (command_process(command, &error)) {
+	data = datap;
+	if (command != NULL && command_process(command, &error)) {
 		msg_errx("%s", error);
 		free(error);
 	}
 
 	free(command);
+	command_command_prompt_free(data);
+}
+
+static void
+command_command_prompt_exec(void *datap)
+{
+	struct command_command_prompt_data *data;
+
+	data = datap;
+	data->nrefs++;
+	prompt_get_command(data->prompt, command_command_prompt_callback,
+	    data);
+}
+
+static void
+command_command_prompt_free(void *datap)
+{
+	struct command_command_prompt_data *data;
+
+	data = datap;
+	if (--data->nrefs == 0) {
+		free(data->prompt);
+		free(data);
+	}
 }
 
 static int
 command_command_prompt_parse(int argc, char **argv, void **datap, char **error)
 {
-	int	 c;
-	char	*prompt;
+	struct command_command_prompt_data	*data;
+	int					 c;
 
-	prompt = NULL;
+	data = xmalloc(sizeof *data);
+	data->prompt = NULL;
+	data->nrefs = 1;
 
 	while ((c = getopt(argc, argv, "p:")) != -1)
 		switch (c) {
 		case 'p':
-			free(prompt);
-			prompt = xstrdup(optarg);
+			free(data->prompt);
+			data->prompt = xstrdup(optarg);
 			break;
 		default:
 			goto usage;
@@ -678,13 +709,30 @@ command_command_prompt_parse(int argc, char **argv, void **datap, char **error)
 	if (argc - optind != 0)
 		goto usage;
 
-	*datap = prompt;
+	if (data->prompt == NULL)
+		data->prompt = xstrdup(":");
+
+	*datap = data;
 	return 0;
 
 usage:
 	*error = xstrdup("Usage: command-prompt [-p prompt]");
-	free(prompt);
+	free(data->prompt);
+	free(data);
 	return -1;
+}
+
+static void
+command_confirm_callback(char *answer, void *datap)
+{
+	struct command_confirm_data *data;
+
+	data = datap;
+	if (*answer == 'y')
+		command_execute(data->command, data->command_data);
+
+	free(answer);
+	command_confirm_free(data);
 }
 
 static void
@@ -693,8 +741,8 @@ command_confirm_exec(void *datap)
 	struct command_confirm_data *data;
 
 	data = datap;
-	if (prompt_get_answer(data->prompt))
-		command_execute(data->command, data->command_data);
+	data->nrefs++;
+	prompt_get_answer(data->prompt, command_confirm_callback, data);
 }
 
 static void
@@ -703,9 +751,11 @@ command_confirm_free(void *datap)
 	struct command_confirm_data *data;
 
 	data = datap;
-	command_free_data(data->command, data->command_data);
-	free(data->prompt);
-	free(data);
+	if (--data->nrefs == 0) {
+		command_free_data(data->command, data->command_data);
+		free(data->prompt);
+		free(data);
+	}
 }
 
 static int
@@ -713,15 +763,16 @@ command_confirm_parse(int argc, char **argv, void **datap, char **error)
 {
 	struct command_confirm_data	*data;
 	int				 c;
+	char				*prompt;
 
 	data = xmalloc(sizeof *data);
-	data->prompt = NULL;
+	data->nrefs = 1;
+	prompt = NULL;
 
 	while ((c = getopt(argc, argv, "p:")) != -1)
 		switch (c) {
 		case 'p':
-			free(data->prompt);
-			data->prompt = xstrdup(optarg);
+			prompt = optarg;
 			break;
 		default:
 			goto usage;
@@ -741,8 +792,11 @@ command_confirm_parse(int argc, char **argv, void **datap, char **error)
 		goto error;
 	}
 
-	if (data->prompt == NULL)
-		(void)xasprintf(&data->prompt, "Execute \"%s\"", argv[0]);
+	if (prompt != NULL)
+		(void)xasprintf(&data->prompt, "%s? ([y]/n): ", prompt);
+	else
+		(void)xasprintf(&data->prompt, "Execute \"%s\"? ([y]/n): ",
+		    argv[0]);
 
 	*datap = data;
 	return 0;
@@ -751,7 +805,6 @@ usage:
 	*error = xstrdup("Usage: confirm [-p prompt] command");
 
 error:
-	free(data->prompt);
 	free(data);
 	return -1;
 }
@@ -1016,20 +1069,31 @@ command_search_prev_exec(UNUSED void *datap)
 }
 
 static void
+command_search_prompt_callback(char *query, void *datap)
+{
+	struct command_search_prompt_data *data;
+
+	data = datap;
+	if (query != NULL) {
+		if (data->search_backward)
+			view_search_prev(query);
+		else
+			view_search_next(query);
+	}
+
+	free(query);
+	command_search_prompt_free(data);
+}
+
+static void
 command_search_prompt_exec(void *datap)
 {
 	struct command_search_prompt_data *data;
-	char *search;
 
 	data = datap;
-	if ((search = prompt_get_search(data->prompt)) != NULL) {
-		if (data->search_backward)
-			view_search_prev(search);
-		else
-			view_search_next(search);
-	}
-
-	free(search);
+	data->nrefs++;
+	prompt_get_search_query(data->prompt, command_search_prompt_callback,
+	    data);
 }
 
 static void
@@ -1038,19 +1102,22 @@ command_search_prompt_free(void *datap)
 	struct command_search_prompt_data *data;
 
 	data = datap;
-	free(data->prompt);
-	free(data);
+	if (--data->nrefs == 0) {
+		free(data->prompt);
+		free(data);
+	}
 }
 
 static int
 command_search_prompt_parse(int argc, char **argv, void **datap, char **error)
 {
-	struct command_search_prompt_data *data;
-	int c;
+	struct command_search_prompt_data	*data;
+	int					 c;
 
 	data = xmalloc(sizeof *data);
-	data->search_backward = 0;
 	data->prompt = NULL;
+	data->search_backward = 0;
+	data->nrefs = 1;
 
 	while ((c = getopt(argc, argv, "bp:")) != -1)
 		switch (c) {

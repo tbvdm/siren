@@ -24,11 +24,21 @@
 
 #define PROMPT_LINESIZE 1024
 
-static void		 prompt_handle_input(struct history *) NONNULL();
-static void		 prompt_mode_begin(const char *) NONNULL();
+enum prompt_mode {
+	PROMPT_MODE_CHAR,
+	PROMPT_MODE_LINE
+};
+
+static void		 prompt_line_handle_key(int);
+static void		 prompt_mode_begin(enum prompt_mode, const char *,
+			    struct history *, void (*)(char *, void *), void *)
+			    NONNULL(2, 4);
 static void		 prompt_mode_end(void);
 
+enum prompt_mode	 prompt_mode;
+
 static struct history	*prompt_command_history;
+static struct history	*prompt_history;
 static struct history	*prompt_search_history;
 
 static size_t		 prompt_linelen;
@@ -39,6 +49,9 @@ static char		*prompt_line;
 
 static const char	*prompt_prompt;
 static size_t		 prompt_promptlen;
+
+void			 (*prompt_callback)(char *, void *);
+void			*prompt_callback_data;
 
 static void
 prompt_adjust_scroll_offset(void)
@@ -89,185 +102,204 @@ prompt_end(void)
 {
 	history_free(prompt_command_history);
 	history_free(prompt_search_history);
+
+	/*
+	 * It is possible that we are quitting while still in prompt mode (for
+	 * example, because we received SIGTERM in prompt mode). In that case,
+	 * we have to free the prompt input buffer.
+	 */
+	if (input_get_mode() == INPUT_MODE_PROMPT)
+		free(prompt_line);
 }
 
-int
-prompt_get_answer(const char *question)
+void
+prompt_get_answer(const char *prompt, void (*callback)(char *, void *),
+    void *callback_data)
 {
-	int	 answer;
-	char	*prompt;
-
-	(void)xasprintf(&prompt, "%s? ([y]/n): ", question);
-	prompt_mode_begin(prompt);
-	prompt_print();
-
-	answer = -1;
-	do
-		switch (screen_get_key()) {
-		case K_CTRL('G'):
-		case 'N':
-		case 'n':
-			answer = 0;
-			break;
-		case 'Y':
-		case 'y':
-		case K_ENTER:
-			answer = 1;
-			break;
-		}
-	while (answer == -1);
-
-	prompt_mode_end();
-	free(prompt_line);
-	free(prompt);
-	return answer;
+	prompt_mode_begin(PROMPT_MODE_CHAR, prompt, NULL, callback,
+	    callback_data);
 }
 
-char *
-prompt_get_command(const char *prompt)
+void
+prompt_get_command(const char *prompt, void (*callback)(char *, void *),
+    void *callback_data)
 {
-	prompt_mode_begin(prompt);
-	prompt_handle_input(prompt_command_history);
-	prompt_mode_end();
-	return prompt_line;
+	prompt_mode_begin(PROMPT_MODE_LINE, prompt, prompt_command_history,
+	    callback, callback_data);
 }
 
-char *
-prompt_get_search(const char *prompt)
+void
+prompt_get_search_query(const char *prompt, void (*callback)(char *, void *),
+    void *callback_data)
 {
-	prompt_mode_begin(prompt);
-	prompt_handle_input(prompt_search_history);
-	prompt_mode_end();
-	return prompt_line;
+	prompt_mode_begin(PROMPT_MODE_LINE, prompt, prompt_search_history,
+	    callback, callback_data);
 }
 
 static void
-prompt_handle_input(struct history *history)
+prompt_char_handle_key(int key)
+{
+	switch (key) {
+	case 'N':
+	case 'n':
+	case K_CTRL('G'):
+		prompt_line[0] = 'n';
+		prompt_mode_end();
+		break;
+	case 'Y':
+	case 'y':
+	case K_ENTER:
+		prompt_line[0] = 'y';
+		prompt_mode_end();
+		break;
+	}
+}
+
+void
+prompt_handle_key(int key)
+{
+	if (prompt_mode == PROMPT_MODE_CHAR)
+		prompt_char_handle_key(key);
+	else
+		prompt_line_handle_key(key);
+}
+
+static void
+prompt_line_handle_key(int key)
 {
 	size_t		 i, j;
-	int		 done, key;
+	int		 done;
 	const char	*line;
 
-	history_rewind(history);
-
 	done = 0;
-	while (!done) {
-		prompt_print();
-		switch ((key = screen_get_key())) {
-		case K_CTRL('A'):
-		case K_HOME:
-			prompt_linepos = 0;
+	switch (key) {
+	case K_CTRL('A'):
+	case K_HOME:
+		prompt_linepos = 0;
+		break;
+	case K_CTRL('D'):
+	case K_DELETE:
+		if (prompt_linepos == prompt_linelen)
 			break;
-		case K_CTRL('D'):
-		case K_DELETE:
-			if (prompt_linepos == prompt_linelen)
-				break;
 
-			for (i = prompt_linepos; i < prompt_linelen; i++)
-				prompt_line[i] = prompt_line[i + 1];
-			prompt_linelen--;
+		for (i = prompt_linepos; i < prompt_linelen; i++)
+			prompt_line[i] = prompt_line[i + 1];
+		prompt_linelen--;
+		break;
+	case K_CTRL('E'):
+	case K_END:
+		prompt_linepos = prompt_linelen;
+		break;
+	case K_CTRL('G'):
+	case K_ESCAPE:
+		free(prompt_line);
+		prompt_line = NULL;
+		done = 1;
+		break;
+	case K_CTRL('K'):
+		prompt_linelen = prompt_linepos;
+		prompt_line[prompt_linelen] = '\0';
+		break;
+	case K_CTRL('U'):
+		prompt_linelen = 0;
+		prompt_linepos = 0;
+		prompt_scroll_offset = 0;
+		prompt_line[0] = '\0';
+		break;
+	case K_CTRL('W'):
+		i = 0;
+		while (prompt_linepos - i > 0 &&
+		    !isalnum((int)prompt_line[prompt_linepos - i - 1]))
+			i++;
+
+		while (prompt_linepos - i > 0 &&
+		    isalnum((int)prompt_line[prompt_linepos - i - 1]))
+			i++;
+
+		prompt_linepos -= i;
+		prompt_linelen -= i;
+		for (j = prompt_linepos; j <= prompt_linelen; j++)
+			prompt_line[j] = prompt_line[j + i];
+		break;
+	case K_BACKSPACE:
+		if (prompt_linepos == 0)
 			break;
-		case K_CTRL('E'):
-		case K_END:
-			prompt_linepos = prompt_linelen;
+
+		prompt_linepos--;
+		for (i = prompt_linepos; i < prompt_linelen; i++)
+			prompt_line[i] = prompt_line[i + 1];
+		prompt_linelen--;
+		break;
+	case K_DOWN:
+		if (prompt_history == NULL)
 			break;
-		case K_CTRL('G'):
-		case K_ESCAPE:
-			free(prompt_line);
-			prompt_line = NULL;
-			done = 1;
-			break;
-		case K_CTRL('K'):
-			prompt_linelen = prompt_linepos;
-			prompt_line[prompt_linelen] = '\0';
-			break;
-		case K_CTRL('U'):
+
+		if ((line = history_get_prev(prompt_history)) == NULL) {
 			prompt_linelen = 0;
 			prompt_linepos = 0;
 			prompt_scroll_offset = 0;
 			prompt_line[0] = '\0';
-			break;
-		case K_CTRL('W'):
-			i = 0;
-			while (prompt_linepos - i > 0 &&
-			    !isalnum((int)prompt_line[prompt_linepos - i - 1]))
-				i++;
-
-			while (prompt_linepos - i > 0 &&
-			    isalnum((int)prompt_line[prompt_linepos - i - 1]))
-				i++;
-
-			prompt_linepos -= i;
-			prompt_linelen -= i;
-			for (j = prompt_linepos; j <= prompt_linelen; j++)
-				prompt_line[j] = prompt_line[j + i];
-			break;
-		case K_BACKSPACE:
-			if (prompt_linepos == 0)
-				break;
-
-			prompt_linepos--;
-			for (i = prompt_linepos; i < prompt_linelen; i++)
-				prompt_line[i] = prompt_line[i + 1];
-			prompt_linelen--;
-			break;
-		case K_DOWN:
-			if ((line = history_get_prev(history)) == NULL) {
-				prompt_linelen = 0;
-				prompt_linepos = 0;
-				prompt_scroll_offset = 0;
-				prompt_line[0] = '\0';
-			} else {
-				free(prompt_line);
-				prompt_line = xstrdup(line);
-				prompt_linelen = strlen(prompt_line);
-				prompt_linesize = prompt_linelen + 1;
-				prompt_linepos = prompt_linelen;
-			}
-			break;
-		case K_ENTER:
-			if (prompt_linelen > 0)
-				history_add(history, prompt_line);
-			else {
-				free(prompt_line);
-				prompt_line = NULL;
-			}
-			done = 1;
-			break;
-		case K_LEFT:
-			if (prompt_linepos > 0)
-				prompt_linepos--;
-			break;
-		case K_RIGHT:
-			if (prompt_linepos < prompt_linelen)
-				prompt_linepos++;
-			break;
-		case K_UP:
-			if ((line = history_get_next(history)) != NULL) {
-				free(prompt_line);
-				prompt_line = xstrdup(line);
-				prompt_linelen = strlen(prompt_line);
-				prompt_linesize = prompt_linelen + 1;
-				prompt_linepos = prompt_linelen;
-			}
-			break;
-		default:
-			if (key < 32 || key > 126)
-				break;
-
-			if (++prompt_linelen == prompt_linesize) {
-				prompt_linesize += PROMPT_LINESIZE;
-				prompt_line = xrealloc(prompt_line,
-				    prompt_linesize);
-			}
-
-			for (i = prompt_linelen; i > prompt_linepos; i--)
-				prompt_line[i] = prompt_line[i - 1];
-
-			prompt_line[prompt_linepos++] = (char)key;
-			break;
+		} else {
+			free(prompt_line);
+			prompt_line = xstrdup(line);
+			prompt_linelen = strlen(prompt_line);
+			prompt_linesize = prompt_linelen + 1;
+			prompt_linepos = prompt_linelen;
 		}
+		break;
+	case K_ENTER:
+		if (prompt_history != NULL && prompt_linelen > 0)
+			history_add(prompt_history, prompt_line);
+		else {
+			free(prompt_line);
+			prompt_line = NULL;
+		}
+		done = 1;
+		break;
+	case K_LEFT:
+		if (prompt_linepos > 0)
+			prompt_linepos--;
+		break;
+	case K_RIGHT:
+		if (prompt_linepos < prompt_linelen)
+			prompt_linepos++;
+		break;
+	case K_UP:
+		if (prompt_history == NULL)
+			break;
+
+		if ((line = history_get_next(prompt_history)) != NULL) {
+			free(prompt_line);
+			prompt_line = xstrdup(line);
+			prompt_linelen = strlen(prompt_line);
+			prompt_linesize = prompt_linelen + 1;
+			prompt_linepos = prompt_linelen;
+		}
+		break;
+	default:
+		/*
+		 * Ignore control characters and function keys not handled
+		 * above.
+		 */
+		if (iscntrl(key) || key > 127)
+			break;
+
+		if (++prompt_linelen == prompt_linesize) {
+			prompt_linesize += PROMPT_LINESIZE;
+			prompt_line = xrealloc(prompt_line, prompt_linesize);
+		}
+
+		for (i = prompt_linelen; i > prompt_linepos; i--)
+			prompt_line[i] = prompt_line[i - 1];
+
+		prompt_line[prompt_linepos++] = (char)key;
+		break;
 	}
+
+	if (done)
+		prompt_mode_end();
+	else
+		prompt_print();
 }
 
 void
@@ -278,20 +310,33 @@ prompt_init(void)
 }
 
 static void
-prompt_mode_begin(const char *prompt)
+prompt_mode_begin(enum prompt_mode mode, const char *prompt,
+    struct history *history, void (*callback)(char *, void *),
+    void *callback_data)
 {
+	prompt_history = history;
+	if (prompt_history != NULL)
+		history_rewind(prompt_history);
+
+	prompt_mode = mode;
+	if (prompt_mode == PROMPT_MODE_CHAR)
+		prompt_linesize = 1;
+	else
+		prompt_linesize = PROMPT_LINESIZE;
+
 	prompt_prompt = prompt;
 	prompt_promptlen = strlen(prompt_prompt);
-
+	prompt_callback = callback;
+	prompt_callback_data = callback_data;
+	prompt_line = xmalloc(prompt_linesize);
 	prompt_linelen = 0;
 	prompt_linepos = 0;
-	prompt_linesize = PROMPT_LINESIZE;
-	prompt_line = xmalloc(prompt_linesize);
 	prompt_line[0] = '\0';
 	prompt_scroll_offset = 0;
 
 	input_set_mode(INPUT_MODE_PROMPT);
 	screen_prompt_begin();
+	prompt_print();
 }
 
 static void
@@ -299,6 +344,7 @@ prompt_mode_end(void)
 {
 	screen_prompt_end();
 	input_set_mode(INPUT_MODE_VIEW);
+	prompt_callback(prompt_line, prompt_callback_data);
 }
 
 void

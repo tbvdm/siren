@@ -393,13 +393,11 @@ player_playback_handler(UNUSED void *p)
 {
 	struct player_sample_buffer buf;
 
-#ifdef SIGWINCH
 	/*
-	 * Block SIGWINCH in this thread so that it can be handled in the main
-	 * thread by screen_get_key().
+	 * Block all signals in this thread so that they can be handled in the
+	 * main thread by input_handle_signal().
 	 */
 	player_set_signal_mask();
-#endif
 
 	XPTHREAD_MUTEX_LOCK(&player_state_mtx);
 	for (;;) {
@@ -615,17 +613,14 @@ out:
 	XPTHREAD_MUTEX_UNLOCK(&player_state_mtx);
 }
 
-#ifdef SIGWINCH
 static void
 player_set_signal_mask(void)
 {
 	sigset_t ss;
 
-	(void)sigemptyset(&ss);
-	(void)sigaddset(&ss, SIGWINCH);
+	(void)sigfillset(&ss);
 	(void)pthread_sigmask(SIG_BLOCK, &ss, NULL);
 }
-#endif
 
 void
 player_set_volume(int volume, int relative)

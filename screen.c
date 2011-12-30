@@ -16,14 +16,10 @@
 
 #include <ctype.h>
 #include <curses.h>
-#include <errno.h>
-#include <poll.h>
 #include <pthread.h>
-#include <signal.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
-#include <termios.h>
 #include <unistd.h>
 
 #include "siren.h"
@@ -61,10 +57,6 @@ static void			screen_resize(void);
 static void			screen_view_print_row(chtype, const char *);
 static void			screen_vprintf(const char *, va_list);
 
-#ifdef SIGWINCH
-static void			screen_sigwinch_handler(int);
-#endif
-
 static pthread_mutex_t		screen_curses_mtx = PTHREAD_MUTEX_INITIALIZER;
 static int			screen_have_colours;
 static int			screen_player_row;
@@ -73,10 +65,6 @@ static int			screen_status_row;
 static int			screen_view_current_row;
 static int			screen_view_selected_row;
 static int			screen_view_nrows;
-
-#ifdef SIGWINCH
-static volatile sig_atomic_t	screen_sigwinch;
-#endif
 
 #ifdef HAVE_USE_DEFAULT_COLORS
 static int			screen_have_default_colours;
@@ -276,33 +264,6 @@ screen_configure_objects(void)
 	screen_print();
 }
 
-#if defined(VDSUSP) && defined(_PC_VDISABLE)
-/*
- * Check if the DSUSP special-character is set to ^Y. If it is, disable it so
- * that ^Y becomes an ordinary character that can be bound to a command.
- */
-static void
-screen_disable_dsusp(void)
-{
-	struct termios	tio;
-	long int	vdisable;
-
-	if ((vdisable = XFPATHCONF(STDIN_FILENO, _PC_VDISABLE)) == -1)
-		return;
-
-	if (tcgetattr(STDIN_FILENO, &tio) == -1) {
-		LOG_ERR("tcgetattr");
-		return;
-	}
-
-	if (tio.c_cc[VDSUSP] == K_CTRL('Y')) {
-		tio.c_cc[VDSUSP] = (cc_t)vdisable;
-		if (tcsetattr(STDIN_FILENO, TCSANOW, &tio) == -1)
-			LOG_ERR("tcsetattr");
-	}
-}
-#endif
-
 void
 screen_end(void)
 {
@@ -334,40 +295,24 @@ screen_get_colour(const char *option, enum colour default_colour)
 int
 screen_get_key(void)
 {
-	struct pollfd	pfd[1];
-	size_t		i;
-	int		key;
+	size_t	i;
+	int	key;
 
-	pfd[0].fd = STDIN_FILENO;
-	pfd[0].events = POLLIN;
+	XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
+	while ((key = getch()) == ERR && errno == EINTR);
+	XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
 
-	for (;;) {
-#ifdef SIGWINCH
-		if (screen_sigwinch) {
-			screen_sigwinch = 0;
-			screen_refresh();
-		}
-#endif
+	if (key != ERR) {
+		for (i = 0; i < NELEMENTS(screen_keys); i++)
+			if (key == screen_keys[i].curses_key)
+				return screen_keys[i].key;
 
-		if (poll(pfd, 1, -1) == -1) {
-			if (errno != EINTR)
-				LOG_FATAL("poll");
-		} else if (pfd[0].revents & (POLLERR | POLLHUP | POLLNVAL))
-			LOG_FATALX("poll() failed");
-		else {
-			XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
-			while ((key = getch()) == ERR && errno == EINTR);
-			XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
-
-			if (key != ERR) {
-				for (i = 0; i < NELEMENTS(screen_keys); i++)
-					if (key == screen_keys[i].curses_key)
-						return screen_keys[i].key;
-
-				return isascii(key) ? key : K_NONE;
-			}
-		}
+		/* Only allow ASCII characters. */
+		if (key > -1 && key < 128)
+			return key;
 	}
+
+	return K_NONE;
 }
 
 unsigned int
@@ -379,25 +324,11 @@ screen_get_ncols(void)
 void
 screen_init(void)
 {
-#ifdef SIGWINCH
-	struct sigaction sa;
-
-	sa.sa_handler = screen_sigwinch_handler;
-	sa.sa_flags = 0;
-	sigemptyset(&sa.sa_mask);
-	if (sigaction(SIGWINCH, &sa, NULL) == -1)
-		LOG_ERR("sigaction");
-#endif
-
 	(void)initscr();
 	(void)cbreak();
 	(void)noecho();
 	(void)nonl();
 	(void)keypad(stdscr, TRUE);
-
-#if defined(VDSUSP) && defined(_PC_VDISABLE)
-	screen_disable_dsusp();
-#endif
 
 	if (has_colors() == TRUE) {
 		if (start_color() == ERR)
@@ -617,15 +548,6 @@ screen_resize(void)
 
 	screen_calculate_rows();
 }
-
-#ifdef SIGWINCH
-/* ARGSUSED */
-static void
-screen_sigwinch_handler(UNUSED int sig)
-{
-	screen_sigwinch = 1;
-}
-#endif
 
 void
 screen_status_clear(void)

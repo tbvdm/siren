@@ -71,6 +71,7 @@ main(int argc, char **argv)
 	opterr = 0;
 
 	log_init(lflag);
+	input_init();
 	option_init();
 	bind_init();
 	conf_init(confdir);

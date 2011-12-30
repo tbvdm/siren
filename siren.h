@@ -368,6 +368,7 @@ void		 history_rewind(struct history *) NONNULL();
 void		 input_end(void);
 enum input_mode	 input_get_mode(void);
 void		 input_handle_key(void);
+void		 input_init(void);
 void		 input_set_mode(enum input_mode);
 
 void		 library_activate_entry(void);
@@ -501,9 +502,13 @@ const struct op	*plugin_find_op(const char *) NONNULL();
 void		 prompt_clear_command_history(void);
 void		 prompt_clear_search_history(void);
 void		 prompt_end(void);
-int		 prompt_get_answer(const char *) NONNULL();
-char		*prompt_get_command(const char *) NONNULL();
-char		*prompt_get_search(const char *) NONNULL();
+void		 prompt_get_answer(const char *, void (*)(char *, void *),
+		    void *) NONNULL(1, 2);
+void		 prompt_get_command(const char *, void (*)(char *, void *),
+		    void *) NONNULL(1, 2);
+void		 prompt_get_search_query(const char *,
+		    void (*)(char *, void *), void *) NONNULL(1, 2);
+void		 prompt_handle_key(int);
 void		 prompt_init(void);
 void		 prompt_print(void);
 void		 prompt_resize_histories(void);

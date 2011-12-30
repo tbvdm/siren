@@ -14,19 +14,74 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <errno.h>
+#include <poll.h>
 #include <pthread.h>
+#include <signal.h>
+#include <termios.h>
+#include <unistd.h>
 
 #include "siren.h"
 
-static enum input_mode	input_mode = INPUT_MODE_VIEW;
-static pthread_mutex_t	input_mode_mtx = PTHREAD_MUTEX_INITIALIZER;
+static void			input_handle_signal(int);
 
-static int		input_quit;
+static enum input_mode		input_mode = INPUT_MODE_VIEW;
+static pthread_mutex_t		input_mode_mtx = PTHREAD_MUTEX_INITIALIZER;
+static volatile sig_atomic_t	input_quit;
+#ifdef SIGWINCH
+static volatile sig_atomic_t	input_sigwinch;
+#endif
 
 void
 input_end(void)
 {
 	input_quit = 1;
+}
+
+void
+input_init(void)
+{
+	struct sigaction	sa;
+#if defined(VDSUSP) && defined(_PC_VDISABLE)
+	struct termios		tio;
+	long int		vdisable;
+#endif
+
+	sa.sa_handler = input_handle_signal;
+	sa.sa_flags = 0;
+	sigemptyset(&sa.sa_mask);
+
+	if (sigaction(SIGINT, &sa, NULL) == -1)
+		LOG_ERR("sigaction");
+	if (sigaction(SIGQUIT, &sa, NULL) == -1)
+		LOG_ERR("sigaction");
+	if (sigaction(SIGTERM, &sa, NULL) == -1)
+		LOG_ERR("sigaction");
+#ifdef SIGWINCH
+	if (sigaction(SIGWINCH, &sa, NULL) == -1)
+		LOG_ERR("sigaction");
+#endif
+
+#if defined(VDSUSP) && defined(_PC_VDISABLE)
+	/*
+	 * Check if the DSUSP special character is set to ^Y. If it is, disable
+	 * it so that ^Y becomes an ordinary character that can be bound to a
+	 * command.
+	 */
+	if ((vdisable = XFPATHCONF(STDIN_FILENO, _PC_VDISABLE)) == -1)
+		return;
+
+	if (tcgetattr(STDIN_FILENO, &tio) == -1) {
+		LOG_ERR("tcgetattr");
+		return;
+	}
+
+	if (tio.c_cc[VDSUSP] == K_CTRL('Y')) {
+		tio.c_cc[VDSUSP] = (cc_t)vdisable;
+		if (tcsetattr(STDIN_FILENO, TCSANOW, &tio) == -1)
+			LOG_ERR("tcsetattr");
+	}
+#endif
 }
 
 enum input_mode
@@ -43,8 +98,51 @@ input_get_mode(void)
 void
 input_handle_key(void)
 {
-	while (!input_quit)
-		view_handle_key(screen_get_key());
+	struct pollfd	pfd[1];
+	int		key;
+
+	pfd[0].fd = STDIN_FILENO;
+	pfd[0].events = POLLIN;
+
+	while (!input_quit) {
+#ifdef SIGWINCH
+		if (input_sigwinch) {
+			input_sigwinch = 0;
+			screen_refresh();
+		}
+#endif
+
+		if (poll(pfd, NELEMENTS(pfd), -1) == -1) {
+			if (errno != EINTR)
+				LOG_FATAL("poll");
+		} else {
+			if (pfd[0].revents & (POLLERR | POLLHUP | POLLNVAL))
+				LOG_FATALX("poll() failed");
+
+			key = screen_get_key();
+			if (input_mode == INPUT_MODE_VIEW)
+				view_handle_key(key);
+			else
+				prompt_handle_key(key);
+		}
+	}
+}
+
+static void
+input_handle_signal(int sig)
+{
+	switch (sig) {
+	case SIGINT:
+	case SIGQUIT:
+	case SIGTERM:
+		input_quit = 1;
+		break;
+#ifdef SIGWINCH
+	case SIGWINCH:
+		input_sigwinch = 1;
+		break;
+#endif
+	}
 }
 
 void
