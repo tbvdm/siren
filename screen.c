@@ -482,7 +482,11 @@ screen_prompt_printf(size_t cursorpos, const char *fmt, ...)
 
 	va_start(ap, fmt);
 	XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
-	screen_status_col = (int)cursorpos;
+	if ((int)cursorpos >= COLS && COLS > 0)
+		screen_status_col = COLS - 1;
+	else
+		screen_status_col = (int)cursorpos;
+
 	if (move(screen_status_row, 0) == OK) {
 		bkgdset(screen_objects[SCREEN_OBJ_PROMPT].attr);
 		screen_vprintf(fmt, ap);
