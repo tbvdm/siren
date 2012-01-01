@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 Tim van der Molen <tbvdm@xs4all.nl>
+ * Copyright (c) 2011, 2012 Tim van der Molen <tbvdm@xs4all.nl>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -161,12 +161,6 @@ view_delete_entry(void)
 		msg_errx("Cannot delete entries in this view");
 	else
 		view_list[view_sel].delete_entry();
-}
-
-enum bind_scope
-view_get_bind_scope(void)
-{
-	return view_list[view_sel].bind_scope;
 }
 
 enum view_id

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 Tim van der Molen <tbvdm@xs4all.nl>
+ * Copyright (c) 2011, 2012 Tim van der Molen <tbvdm@xs4all.nl>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -581,7 +581,6 @@ void		 view_add_track(enum view_id, struct track *) NONNULL();
 void		 view_copy_entry(enum view_id);
 void		 view_delete_all_entries(void);
 void		 view_delete_entry(void);
-enum bind_scope	 view_get_bind_scope(void);
 enum view_id	 view_get_id(void);
 void		 view_handle_key(int);
 void		 view_move_entry_down(void);
