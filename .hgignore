@@ -1,0 +1,13 @@
+syntax: glob
+
+*.ln
+*.lo
+*.log
+*.o
+*.so
+*.swp
+.depend
+config.h
+config.mk
+siren
+tags
