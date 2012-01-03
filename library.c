@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 Tim van der Molen <tbvdm@xs4all.nl>
+ * Copyright (c) 2011, 2012 Tim van der Molen <tbvdm@xs4all.nl>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -280,7 +280,7 @@ library_read_file(void)
 	}
 
 	lbuf = NULL;
-	for (lineno = 1; (buf = fgetln(fp, &len)); lineno++) {
+	for (lineno = 1; (buf = fgetln(fp, &len)) != NULL; lineno++) {
 		if (buf[len - 1] != '\n') {
 			lbuf = xmalloc(len + 1);
 			buf = memcpy(lbuf, buf, len++);
