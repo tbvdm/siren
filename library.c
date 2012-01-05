@@ -301,7 +301,7 @@ library_read_file(void)
 			library_add_track(t);
 	}
 	if (ferror(fp)) {
-		LOG_ERR("fgetln: %s", buf);
+		LOG_ERR("fgetln: %s", file);
 		msg_err("Cannot read library");
 	}
 	free(lbuf);
