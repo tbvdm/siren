@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 Tim van der Molen <tbvdm@xs4all.nl>
+ * Copyright (c) 2011, 2012 Tim van der Molen <tbvdm@xs4all.nl>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -309,7 +309,6 @@ ip_mad_get_metadata(struct track *t, char **error)
 {
 	struct id3_file		*file;
 	struct id3_tag		*tag;
-	unsigned int		 duration;
 	char			*tlen;
 	const char		*errstr;
 
@@ -335,15 +334,16 @@ ip_mad_get_metadata(struct track *t, char **error)
 	if (t->tracknumber != NULL)
 		t->tracknumber[strcspn(t->tracknumber, "/")] = '\0';
 
-	t->duration = 0;
 	if ((tlen = ip_mad_get_id3_frame(tag, "TLEN")) == NULL)
 		t->duration = ip_mad_calculate_duration(t->path);
 	else {
-		duration = (unsigned int)strtonum(tlen, 0, UINT_MAX, &errstr);
+		t->duration = (unsigned int)strtonum(tlen, 0, UINT_MAX,
+		    &errstr);
 		if (errstr != NULL)
-			LOG_ERRX("%s: TLEN frame is %s", tlen, errstr);
+			LOG_ERRX("%s: %s: TLEN frame is %s", t->path, tlen,
+			    errstr);
 		else
-			t->duration = duration / 1000;
+			t->duration /= 1000;
 	}
 
 	if (id3_file_close(file) == -1)
