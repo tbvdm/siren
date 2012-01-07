@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 Tim van der Molen <tbvdm@xs4all.nl>
+ * Copyright (c) 2011, 2012 Tim van der Molen <tbvdm@xs4all.nl>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -136,6 +136,7 @@ ip_vorbis_get_metadata(struct track *t, char **error)
 	if ((vc = ov_comment(&ovf, -1)) == NULL) {
 		LOG_ERRX("%s: ov_comment() failed", t->path);
 		*error = xstrdup("Cannot get Vorbis comments");
+		(void)ov_clear(&ovf);
 		return IP_ERROR_PLUGIN;
 	}
 
@@ -167,6 +168,7 @@ ip_vorbis_get_metadata(struct track *t, char **error)
 	if ((duration = ov_time_total(&ovf, -1)) == OV_EINVAL) {
 		LOG_ERRX("%s: ov_time_total() failed", t->path);
 		*error = xstrdup("Cannot get duration");
+		(void)ov_clear(&ovf);
 		return IP_ERROR_PLUGIN;
 	}
 
