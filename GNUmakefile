@@ -59,7 +59,7 @@ ifeq (${MAKECMDGOALS}, lint)
 LDFLAGS+=	-lpthread
 endif
 
-.PHONY: all clean cleandir cleanlog depend dist install lint
+.PHONY: all clean cleandir cleanlog cppcheck depend dist install lint
 
 ip/%.o: ip/%.c
 	${CC} ${CFLAGS} ${CPPFLAGS} ${CPPFLAGS_$(*F)} -fPIC -c -o $@ $<
@@ -99,6 +99,9 @@ cleandir: clean cleanlog
 
 cleanlog:
 	rm -f *.log
+
+cppcheck:
+	cppcheck --enable=all --quiet ${SRCS} ${IP_SRCS} ${OP_SRCS}
 
 depend: .depend
 

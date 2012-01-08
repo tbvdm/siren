@@ -59,7 +59,7 @@ MKDEPFLAGS?=	-a
 LDFLAGS+=	-lpthread
 .endif
 
-.PHONY: all clean cleandir cleanlog depend dist install lint
+.PHONY: all clean cleandir cleanlog cppcheck depend dist install lint
 
 .SUFFIXES: .c .ln .lo .o .so
 
@@ -96,6 +96,9 @@ cleandir: clean cleanlog
 
 cleanlog:
 	rm -f *.log
+
+cppcheck:
+	cppcheck --enable=all --quiet ${SRCS} ${IP_SRCS} ${OP_SRCS}
 
 depend: .depend
 
