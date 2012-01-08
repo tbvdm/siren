@@ -164,11 +164,6 @@ ip_flac_open(struct track *t, char **error)
 	FLAC__StreamMetadata		 metadata;
 	FILE				*fp;
 
-	if ((fp = fopen(t->path, "r")) == NULL) {
-		LOG_ERR("fopen: %s", t->path);
-		return IP_ERROR_SYSTEM;
-	}
-
 	ipd = xmalloc(sizeof *ipd);
 
 	if ((ipd->decoder = FLAC__stream_decoder_new()) == NULL) {
@@ -176,6 +171,12 @@ ip_flac_open(struct track *t, char **error)
 		*error = xstrdup("Cannot allocate memory");
 		free(ipd);
 		return IP_ERROR_PLUGIN;
+	}
+
+	if ((fp = fopen(t->path, "r")) == NULL) {
+		LOG_ERR("fopen: %s", t->path);
+		free(ipd);
+		return IP_ERROR_SYSTEM;
 	}
 
 	status = FLAC__stream_decoder_init_FILE(ipd->decoder, fp,
