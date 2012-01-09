@@ -49,8 +49,7 @@
 #endif
 
 static short int		screen_get_colour(const char *, enum colour);
-static void			screen_msg_vprintf(chtype, const char *,
-				    va_list);
+static void			screen_msg_vprintf(int, const char *, va_list);
 static void			screen_print_row(const char *);
 static void			screen_resize(void);
 static void			screen_view_print_row(chtype, const char *);
@@ -353,31 +352,31 @@ screen_msg_error_printf(const char *fmt, ...)
 	va_list ap;
 
 	va_start(ap, fmt);
-	screen_msg_vprintf(screen_objects[SCREEN_OBJ_ERROR].attr, fmt, ap);
+	screen_msg_vprintf(SCREEN_OBJ_ERROR, fmt, ap);
 	va_end(ap);
 }
 
 void
 screen_msg_error_vprintf(const char *fmt, va_list ap)
 {
-	screen_msg_vprintf(screen_objects[SCREEN_OBJ_ERROR].attr, fmt, ap);
+	screen_msg_vprintf(SCREEN_OBJ_ERROR, fmt, ap);
 }
 
 void
 screen_msg_info_vprintf(const char *fmt, va_list ap)
 {
-	screen_msg_vprintf(screen_objects[SCREEN_OBJ_INFO].attr, fmt, ap);
+	screen_msg_vprintf(SCREEN_OBJ_INFO, fmt, ap);
 }
 
 static void
-screen_msg_vprintf(chtype attr, const char *fmt, va_list ap)
+screen_msg_vprintf(int obj, const char *fmt, va_list ap)
 {
 	int col, row;
 
 	XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
 	getyx(stdscr, row, col);
 	if (move(screen_status_row, 0) == OK) {
-		bkgdset(attr);
+		bkgdset(screen_objects[obj].attr);
 		screen_vprintf(fmt, ap);
 		(void)move(row, col);
 		(void)refresh();
