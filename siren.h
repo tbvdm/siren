@@ -27,8 +27,7 @@
 
 /* File paths. */
 #define CONF_DIR		".siren"
-#define CACHE_DAT_FILE		"metadata.dat"
-#define CACHE_IDX_FILE		"metadata.idx"
+#define CACHE_FILE		"metadata"
 #define CONF_FILE		"config"
 #define LIBRARY_FILE		"library"
 
@@ -334,9 +333,11 @@ void		 browser_select_next_entry(void);
 void		 browser_select_prev_entry(void);
 
 void		 cache_add_metadata(const struct track *) NONNULL();
+void		 cache_clear(void);
 void		 cache_end(void);
 int		 cache_get_metadata(struct track *) NONNULL();
 void		 cache_init(void);
+int		 cache_write_file(void);
 
 void		 command_execute(struct command *, void *) NONNULL(1);
 void		 command_free_data(struct command *, void *) NONNULL(1);

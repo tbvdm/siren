@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 Tim van der Molen <tbvdm@xs4all.nl>
+ * Copyright (c) 2011, 2012 Tim van der Molen <tbvdm@xs4all.nl>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,7 +14,12 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdint.h>
+#include <sys/types.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+
+#include <fcntl.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -22,376 +27,289 @@
 
 #include "siren.h"
 
-#define CACHE_FNV_BASIS	2166136261U
-#define CACHE_FNV_PRIME	16777619U
+#ifdef HAVE_TREE_H
+#include <sys/tree.h>
+#else
+#include "compat/tree.h"
+#endif
 
-static long int	 cache_find_pointer(const char *);
-static void	 cache_handle_error(void);
-static uint32_t	 cache_hash(const char *);
-static int	 cache_read(FILE *, void *, size_t);
-static int	 cache_read_string(char **);
-static int	 cache_seek(FILE *, long int, int);
-static void	 cache_update_pointer(long int, long int);
-static int	 cache_write(FILE *, const void *, size_t);
-static void	 cache_write_index(const char *, long int);
-static long int  cache_write_record(const struct track *);
+#define CACHE_VERSION	0
 
-int		 cache_error;
-FILE		*cache_dat_fp = NULL;
-FILE		*cache_idx_fp = NULL;
-char		*cache_dat_file;
-char		*cache_idx_file;
+struct cache_entry {
+	char		*path;
+	char		*album;
+	char		*artist;
+	char		*date;
+	char		*genre;
+	char		*title;
+	char		*tracknumber;
+	unsigned int	 duration;
+	RB_ENTRY(cache_entry) entries;
+};
+
+RB_HEAD(cache_tree, cache_entry);
+
+static int		 cache_cmp_entry(struct cache_entry *,
+			    struct cache_entry *);
+static void		 cache_free_entry(struct cache_entry *);
+static int		 cache_read_file(void);
+static int		 cache_read_number(char **, char *, unsigned int *);
+static int		 cache_read_string(char **, char *, char **);
+static void		 cache_remove_entry(struct cache_entry *);
+
+RB_PROTOTYPE(cache_tree, cache_entry, entries, cache_cmp_entry)
+
+static struct cache_tree cache_tree = RB_INITIALIZER(cache_tree);
+static int		 cache_modified;
+static char		*cache_file;
+
+RB_GENERATE(cache_tree, cache_entry, entries, cache_cmp_entry)
+
+static void
+cache_add_entry(struct cache_entry *e)
+{
+	if (RB_INSERT(cache_tree, &cache_tree, e) != NULL) {
+		/* This should not happen. */
+		LOG_ERRX("%s: track is already in cache", e->path);
+		cache_free_entry(e);
+	}
+}
 
 void
 cache_add_metadata(const struct track *t)
 {
-	long int	 ptr, nptr;
-	int		 ret;
-	char		*path;
+	struct cache_entry *e;
 
-	if (cache_error)
-		return;
+	e = xmalloc(sizeof *e);
+	e->path = xstrdup(t->path);
+	e->album = xstrdup(t->album == NULL ? "" : t->album);
+	e->artist = xstrdup(t->artist == NULL ? "" : t->artist);
+	e->date = xstrdup(t->date == NULL ? "" : t->date);
+	e->genre = xstrdup(t->genre == NULL ? "" : t->genre);
+	e->title = xstrdup(t->title == NULL ? "" : t->title);
+	e->tracknumber = xstrdup(t->tracknumber == NULL ? "" :
+	    t->tracknumber);
+	e->duration = t->duration;
 
-	/* Check if there is a chain for the hash value of the path. */
-	if ((ptr = cache_find_pointer(t->path)) == -1) {
-		/* There is no chain: simply write the record and its index. */
-		if ((ptr = cache_write_record(t)) != -1)
-			cache_write_index(t->path, ptr);
-		return;
-	}
-
-	/*
-	 * Find the last the record in the chain and append the new record to
-	 * it.
-	 */
-	for (;;) {
-		/* Seek to the next record in the chain. */
-		if (cache_seek(cache_dat_fp, ptr, SEEK_SET))
-			return;
-
-		/* Read the pointer to the next record in the chain. */
-		if (cache_read(cache_dat_fp, &nptr, sizeof nptr))
-			return;
-
-		if (cache_read_string(&path) || path == NULL)
-			return;
-
-		ret = strcmp(t->path, path);
-		free(path);
-		if (ret == 0) {
-			/* This should not happen. */
-			LOG_ERRX("%s: track is already in cache", t->path);
-			return;
-		}
-
-		if (nptr == 0)
-			/* We have reached the last record in the chain. */
-			break;
-
-		ptr = nptr;
-	}
-
-	/*
-	 * Write the new record and update the previous record in the chain so
-	 * that it points to the new record.
-	 */
-	if ((nptr = cache_write_record(t)) != -1)
-		cache_update_pointer(ptr, nptr);
+	cache_add_entry(e);
+	cache_modified = 1;
 }
 
-static void
-cache_close_files(void)
+void
+cache_clear(void)
 {
-	if (cache_dat_fp != NULL)
-		(void)fclose(cache_dat_fp);
-	if (cache_idx_fp != NULL)
-		(void)fclose(cache_idx_fp);
+	struct cache_entry *e;
+
+	while ((e = RB_ROOT(&cache_tree)) != NULL)
+		cache_remove_entry(e);
+	cache_modified = 1;
+}
+
+static int
+cache_cmp_entry(struct cache_entry *e1, struct cache_entry *e2)
+{
+	return strcmp(e1->path, e2->path);
 }
 
 void
 cache_end(void)
 {
-	if (!cache_error)
-		cache_close_files();
+	if (cache_modified)
+		(void)cache_write_file();
 
-	free(cache_dat_file);
-	free(cache_idx_file);
+	cache_clear();
+	free(cache_file);
 }
 
-/*
- * Search the index file for the pointer that belongs to the hash value of
- * path.
- */
-static long int
-cache_find_pointer(const char *path)
+static void
+cache_free_entry(struct cache_entry *e)
 {
-	long int	ptr;
-	uint32_t	hash, idxhash;
-
-	if (cache_seek(cache_idx_fp, 0, SEEK_SET))
-		return -1;
-
-	hash = cache_hash(path);
-	for (;;) {
-		if (cache_read(cache_idx_fp, &idxhash, sizeof idxhash))
-			return -1;
-
-		if (hash == idxhash) {
-			/* The hashes match: read and return the pointer. */
-			if (cache_read(cache_idx_fp, &ptr, sizeof ptr))
-				return -1;
-			return ptr;
-		}
-
-		/* Seek to the next hash. */
-		if (cache_seek(cache_idx_fp, sizeof(long int), SEEK_CUR))
-			return -1;
-	}
+	free(e->path);
+	free(e->album);
+	free(e->artist);
+	free(e->date);
+	free(e->genre);
+	free(e->title);
+	free(e->tracknumber);
+	free(e);
 }
 
 int
 cache_get_metadata(struct track *t)
 {
-	long int	 ptr;
-	int		 ret;
-	char		*path;
+	struct cache_entry *find, search;
 
-	if (cache_error)
+	search.path = t->path;
+	if ((find = RB_FIND(cache_tree, &cache_tree, &search)) == NULL)
 		return -1;
 
-	if ((ptr = cache_find_pointer(t->path)) == -1)
-		return -1;
-
-	for (;;) {
-		/* Seek to the next record in the chain. */
-		if (cache_seek(cache_dat_fp, ptr, SEEK_SET))
-			return -1;
-
-		/* Read the pointer to the next record in the chain. */
-		if (cache_read(cache_dat_fp, &ptr, sizeof ptr))
-			return -1;
-
-		if (cache_read_string(&path) == -1)
-			return -1;
-
-		if (path != NULL) {
-			ret = strcmp(t->path, path);
-			free(path);
-			if (ret == 0)
-				/* We have found the right record. */
-				break;
-		}
-
-		if (ptr == 0)
-			/* We have reached the last record in the chain. */
-			return -1;
-	}
-
-	/* Read the metadata. */
-	if (cache_read_string(&t->artist) ||
-	    cache_read_string(&t->album) ||
-	    cache_read_string(&t->date) ||
-	    cache_read_string(&t->tracknumber) ||
-	    cache_read_string(&t->title) ||
-	    cache_read_string(&t->genre) ||
-	    cache_read(cache_dat_fp, &t->duration, sizeof t->duration)) {
-		free(t->artist);
-		free(t->album);
-		free(t->date);
-		free(t->tracknumber);
-		free(t->title);
-		free(t->genre);
-		return -1;
-	}
-
+	t->album = xstrdup(find->album);
+	t->artist = xstrdup(find->artist);
+	t->date = xstrdup(find->date);
+	t->genre = xstrdup(find->genre);
+	t->title = xstrdup(find->title);
+	t->tracknumber = xstrdup(find->tracknumber);
+	t->duration = find->duration;
 	return 0;
-}
-
-static void
-cache_handle_error(void)
-{
-	cache_close_files();
-	cache_error = 1;
-}
-
-/*
- * Compute a 32-bit hash value using the Fowler-Noll-Vo hash algorithm. See
- * <http://www.isthe.com/chongo/tech/comp/fnv/>.
- */
-static uint32_t
-cache_hash(const char *s)
-{
-	uint32_t hash;
-
-	hash = CACHE_FNV_BASIS;
-	while (*s != '\0') {
-		hash *= CACHE_FNV_PRIME;
-		hash ^= *s++;
-	}
-
-	return hash;
 }
 
 void
 cache_init(void)
 {
-	const char *mode;
+	cache_file = conf_path(CACHE_FILE);
+	if (cache_read_file() == -1)
+		msg_err("Cannot read metadata cache");
+}
 
-	cache_dat_file = conf_path(CACHE_DAT_FILE);
-	cache_idx_file = conf_path(CACHE_IDX_FILE);
+static void
+cache_read_entries(char *data, char *end)
+{
+	struct cache_entry	*e;
+	int			 ret;
+	unsigned int		 version;
 
-	if (access(cache_dat_file, F_OK) || access(cache_idx_file, F_OK))
-		mode = "w+";
-	else
-		mode = "r+";
+	if (cache_read_number(&data, end, &version) == -1)
+		return;
 
-	if ((cache_dat_fp = fopen(cache_dat_file, mode)) == NULL) {
-		LOG_ERR("fopen: %s", cache_dat_file);
-		cache_handle_error();
+	if (version != CACHE_VERSION) {
+		LOG_ERRX("%u: unsupported metadata cache version", version);
 		return;
 	}
 
-	if ((cache_idx_fp = fopen(cache_idx_file, mode)) == NULL) {
-		LOG_ERR("fopen: %s", cache_idx_file);
-		cache_handle_error();
-	}
-}
+	for (;;) {
+		e = xmalloc(sizeof *e);
+		ret = 0;
+		ret += cache_read_string(&data, end, &e->path);
+		ret += cache_read_string(&data, end, &e->artist);
+		ret += cache_read_string(&data, end, &e->album);
+		ret += cache_read_string(&data, end, &e->date);
+		ret += cache_read_string(&data, end, &e->tracknumber);
+		ret += cache_read_string(&data, end, &e->title);
+		ret += cache_read_number(&data, end, &e->duration);
+		ret += cache_read_string(&data, end, &e->genre);
 
-static int
-cache_read(FILE *fp, void *obj, size_t objsize)
-{
-	if (fread(obj, objsize, 1, fp) != 1) {
-		if (ferror(fp)) {
-			LOG_ERR("fread");
-			cache_handle_error();
+		/* Check for EOF or error. */
+		if (ret) {
+			cache_free_entry(e);
+			break;
 		}
 
-		return -1;
+		cache_add_entry(e);
 	}
-
-	return 0;
 }
 
 static int
-cache_read_string(char **str)
+cache_read_field(char **data, char *end, char **field)
 {
-	size_t len;
+	*field = *data;
 
-	/* Read the length of the string. */
-	if (cache_read(cache_dat_fp, &len, sizeof len) == -1)
+	/* Find end of field. */
+	while (*data < end)
+		if (*(*data)++ == '\0')
+			return 0;
+
+	/* EOF or field not NUL-terminated. */
+	return -1;
+}
+
+static int
+cache_read_file(void)
+{
+	struct stat	 sb;
+	int		 fd;
+	char		*data;
+
+	if ((fd = open(cache_file, O_RDONLY)) == -1) {
+		LOG_ERR("open: %s", cache_file);
 		return -1;
+	}
 
-	if (len == SIZE_MAX)
+	if (fstat(fd, &sb) == -1) {
+		LOG_ERR("fstat: %s", cache_file);
+		(void)close(fd);
 		return -1;
+	}
 
-	if (len == 0) {
-		/* The string is empty. */
-		*str = NULL;
+	if (sb.st_size == 0) {
+		(void)close(fd);
 		return 0;
 	}
 
-	/* Read the string. */
-	*str = xmalloc(len + 1);
-	if (cache_read(cache_dat_fp, *str, len) == -1)
+	if ((data = mmap(0, sb.st_size, PROT_READ, MAP_PRIVATE, fd, 0)) ==
+	    MAP_FAILED) {
+		LOG_ERR("mmap: %s", cache_file);
+		(void)close(fd);
 		return -1;
+	}
 
-	(*str)[len] = '\0';
+	cache_read_entries(data, data + sb.st_size);
+
+	(void)munmap(data, sb.st_size);
+	(void)close(fd);
 	return 0;
 }
 
 static int
-cache_seek(FILE *fp, long int offset, int whence)
+cache_read_number(char **data, char *end, unsigned int *num)
 {
-	if (fseek(fp, offset, whence)) {
-		LOG_ERR("fseek");
-		cache_handle_error();
+	char		*field;
+	const char	*errstr;
+
+	if (cache_read_field(data, end, &field) == -1)
 		return -1;
-	}
+
+	*num = (unsigned int)strtonum(field, 0, UINT_MAX, &errstr);
+	if (errstr != NULL)
+		LOG_ERRX("%s: number is %s", field, errstr);
 
 	return 0;
 }
 
-/*
- * Update the pointer to the next record for the record at the specified
- * offset.
- */
+static int
+cache_read_string(char **data, char *end, char **str)
+{
+	char *field;
+
+	if (cache_read_field(data, end, &field) == -1) {
+		*str = NULL;
+		return -1;
+	}
+
+	*str = xstrdup(field);
+	return 0;
+}
+
 static void
-cache_update_pointer(long int offset, long int ptr)
+cache_remove_entry(struct cache_entry *e)
 {
-	if (cache_seek(cache_dat_fp, offset, SEEK_SET) == -1)
-		return;
-
-	(void)cache_write(cache_dat_fp, &ptr, sizeof ptr);
+	(void)RB_REMOVE(cache_tree, &cache_tree, e);
+	cache_free_entry(e);
 }
 
-static int
-cache_write(FILE *fp, const void *obj, size_t objsize)
+int
+cache_write_file(void)
 {
-	if (fwrite(obj, objsize, 1, fp) != 1) {
-		LOG_ERR("fwrite");
-		cache_handle_error();
+	struct cache_entry	*e;
+	FILE			*fp;
+
+	if ((fp = fopen(cache_file, "w")) == NULL) {
+		LOG_ERR("fopen: %s", cache_file);
 		return -1;
 	}
 
+	(void)fprintf(fp, "%u%c", CACHE_VERSION, '\0');
+	RB_FOREACH(e, cache_tree, &cache_tree)
+		(void)fprintf(fp, "%s%c%s%c%s%c%s%c%s%c%s%c%u%c%s%c",
+		    e->path, '\0',
+		    e->artist, '\0',
+		    e->album, '\0',
+		    e->date, '\0',
+		    e->tracknumber, '\0',
+		    e->title, '\0',
+		    e->duration, '\0',
+		    e->genre, '\0');
+
+	(void)fclose(fp);
+	cache_modified = 0;
 	return 0;
-}
-
-static int
-cache_write_string(const char *str)
-{
-	size_t len;
-
-	/* Determine the length of the string and write it. */
-	len = str == NULL ? 0 : strlen(str);
-	if (cache_write(cache_dat_fp, &len, sizeof len))
-		return -1;
-
-	/* Write the string if it is non-empty. */
-	if (len && cache_write(cache_dat_fp, str, len))
-		return -1;
-
-	return 0;
-}
-
-/* Write an index entry to the index file. */
-static void
-cache_write_index(const char *path, long int ptr)
-{
-	uint32_t hash;
-
-	if (cache_seek(cache_idx_fp, 0, SEEK_END))
-		return;
-
-	hash = cache_hash(path);
-	(void)cache_write(cache_idx_fp, &hash, sizeof hash);
-	(void)cache_write(cache_idx_fp, &ptr, sizeof ptr);
-}
-
-static long int
-cache_write_record(const struct track *t)
-{
-	long int	 offset, ptr;
-
-	if (cache_seek(cache_dat_fp, 0, SEEK_END) == -1)
-		return -1;
-
-	if ((offset = ftell(cache_dat_fp)) < 0) {
-		LOG_ERR("ftell: %s", cache_dat_file);
-		cache_handle_error();
-		return -1;
-	}
-
-	ptr = 0;
-	if (cache_write(cache_dat_fp, &ptr, sizeof ptr) ||
-	    cache_write_string(t->path) ||
-	    cache_write_string(t->artist) ||
-	    cache_write_string(t->album) ||
-	    cache_write_string(t->date) ||
-	    cache_write_string(t->tracknumber) ||
-	    cache_write_string(t->title) ||
-	    cache_write_string(t->genre) ||
-	    cache_write(cache_dat_fp, &t->duration, sizeof t->duration))
-		return -1;
-
-	return offset;
 }
