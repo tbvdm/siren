@@ -211,6 +211,38 @@ Refresh the current directory.
 .It backspace
 Enter the parent directory.
 .El
+.Ss Prompt key-bindings
+The key bindings for the prompt currently cannot be changed.
+This will be fixed in a future version.
+.Pp
+.Bl -tag -width "^F, page-down" -compact
+.It enter
+Process the line and exit the prompt.
+.It ^G, escape
+Cancel and exit the prompt.
+.It ^B, left
+Move the cursor to the previous character.
+.It ^F, right
+Move the cursor to the next character.
+.It ^A, home
+Move the cursor to the beginning of the line.
+.It ^E, end
+Move the cursor to the end of the line.
+.It backspace
+Delete the character before the cursor.
+.It ^D, delete
+Delete the character the cursor is at.
+.It ^W
+Delete the word before the cursor.
+.It ^K
+Delete all characters from the cursor to the end of the line.
+.It ^U
+Delete the entire line.
+.It down
+Replace the line with the previous history entry.
+.It up
+Replace the line with the next history entry.
+.El
 .Sh COMMANDS
 .Nm
 is controlled by issuing commands.
