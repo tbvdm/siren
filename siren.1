@@ -334,6 +334,8 @@ in the browser view.
 If
 .Ar directory
 is not specified, the browser view will open the user's home directory.
+.It Ic clear-cache
+Clear the metadata cache.
 .It Ic clear-history Op Fl cs
 Clear one or more histories.
 The options are as follows.
@@ -408,10 +410,13 @@ Quit
 Refresh the screen.
 .It Ic reread-directory
 Reread the current directory in the browser view.
+.It Ic save-cache
+Save the metadata cache to disc.
+The metadata cache is automatically saved when
+.Nm
+quits.
 .It Ic save-library
 Save the library to disc.
-The library is saved in the file
-.Pa ~/.siren/library .
 The library is automatically saved when
 .Nm
 quits.

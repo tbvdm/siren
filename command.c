@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 Tim van der Molen <tbvdm@xs4all.nl>
+ * Copyright (c) 2011, 2012 Tim van der Molen <tbvdm@xs4all.nl>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -114,6 +114,7 @@ COMMAND_FREE_PROTOTYPE(bind_key);
 COMMAND_PARSE_PROTOTYPE(bind_key);
 COMMAND_EXEC_PROTOTYPE(cd);
 COMMAND_PARSE_PROTOTYPE(cd);
+COMMAND_EXEC_PROTOTYPE(clear_cache);
 COMMAND_EXEC_PROTOTYPE(clear_history);
 COMMAND_PARSE_PROTOTYPE(clear_history);
 COMMAND_EXEC_PROTOTYPE(command_prompt);
@@ -134,6 +135,7 @@ COMMAND_EXEC_PROTOTYPE(play_prev);
 COMMAND_EXEC_PROTOTYPE(quit);
 COMMAND_EXEC_PROTOTYPE(refresh_directory);
 COMMAND_EXEC_PROTOTYPE(refresh_screen);
+COMMAND_EXEC_PROTOTYPE(save_cache);
 COMMAND_EXEC_PROTOTYPE(save_library);
 COMMAND_PARSE_PROTOTYPE(scroll);
 COMMAND_EXEC_PROTOTYPE(scroll_down);
@@ -191,6 +193,12 @@ static struct command command_list[] = {
 		command_cd_parse,
 		command_cd_exec,
 		free
+	},
+	{
+		"clear-cache",
+		command_generic_parse,
+		command_clear_cache_exec,
+		NULL
 	},
 	{
 		"clear-history",
@@ -268,6 +276,12 @@ static struct command command_list[] = {
 		"reread-directory",
 		command_generic_parse,
 		command_refresh_directory_exec,
+		NULL
+	},
+	{
+		"save-cache",
+		command_generic_parse,
+		command_save_cache_exec,
 		NULL
 	},
 	{
@@ -597,6 +611,14 @@ command_cd_parse(int argc, char **argv, void **datap, char **error)
 		}
 
 	return 0;
+}
+
+/* ARGSUSED */
+static void
+command_clear_cache_exec(UNUSED void *datap)
+{
+	cache_clear();
+	msg_info("Cache cleared");
 }
 
 static void
@@ -995,6 +1017,16 @@ static void
 command_refresh_screen_exec(UNUSED void *datap)
 {
 	screen_refresh();
+}
+
+/* ARGSUSED */
+static void
+command_save_cache_exec(UNUSED void *datap)
+{
+	if (cache_write_file() == -1)
+		msg_err("Cannot save cache file");
+	else
+		msg_info("Cache saved");
 }
 
 /* ARGSUSED */
