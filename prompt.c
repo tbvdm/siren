@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 Tim van der Molen <tbvdm@xs4all.nl>
+ * Copyright (c) 2011, 2012 Tim van der Molen <tbvdm@xs4all.nl>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -177,6 +177,11 @@ prompt_line_handle_key(int key)
 	case K_HOME:
 		prompt_linepos = 0;
 		break;
+	case K_CTRL('B'):
+	case K_LEFT:
+		if (prompt_linepos > 0)
+			prompt_linepos--;
+		break;
 	case K_CTRL('D'):
 	case K_DELETE:
 		if (prompt_linepos == prompt_linelen)
@@ -189,6 +194,11 @@ prompt_line_handle_key(int key)
 	case K_CTRL('E'):
 	case K_END:
 		prompt_linepos = prompt_linelen;
+		break;
+	case K_CTRL('F'):
+	case K_RIGHT:
+		if (prompt_linepos < prompt_linelen)
+			prompt_linepos++;
 		break;
 	case K_CTRL('G'):
 	case K_ESCAPE:
@@ -255,14 +265,6 @@ prompt_line_handle_key(int key)
 			prompt_line = NULL;
 		}
 		done = 1;
-		break;
-	case K_LEFT:
-		if (prompt_linepos > 0)
-			prompt_linepos--;
-		break;
-	case K_RIGHT:
-		if (prompt_linepos < prompt_linelen)
-			prompt_linepos++;
 		break;
 	case K_UP:
 		if (prompt_history == NULL)
