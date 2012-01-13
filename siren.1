@@ -12,7 +12,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd January 12, 2012
+.Dd January 13, 2012
 .Dt SIREN 1
 .Os
 .Sh NAME
@@ -410,7 +410,7 @@ as the prompt.
 The default is
 .Sq Execute Qq Ar command .
 The prompt will be followed by the string
-.Sq Qq ? ([y]/n): .
+.Sq \&? ([y]/n): .
 .El
 .It Ic delete-entry Op Fl a
 Delete the selected entry in the current view.
@@ -510,7 +510,7 @@ if searching backward.
 .El
 .It Xo
 .Ic seek
-.Op Fl bf
+.Op Fl b | f
 .Oo Oo Ar hours : Oc Ns Ar minutes : Oc Ns Ar seconds
 .Xc
 Seek to the specified position in the currently playing track.
@@ -556,7 +556,7 @@ See
 below for a list of available options.
 .It Xo
 .Ic set-volume
-.Op Fl di
+.Op Fl d | i
 .Ar level
 .Xc
 Set the volume level to
