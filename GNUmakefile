@@ -106,7 +106,7 @@ cppcheck:
 depend: .depend
 
 dist:
-	hg archive -X .hg\* -r ${VERSION} ${DIST}
+	hg archive -X .hg\* -r ${DIST} ${DIST}
 	chmod -R go+rX ${DIST}
 	GZIP=-9 tar -czf ${DIST}.tar.gz ${DIST}
 	rm -fr ${DIST}
