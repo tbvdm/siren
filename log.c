@@ -117,6 +117,7 @@ log_init(int enable)
 			err(1, "fopen: %s", file);
 		free(file);
 
+		setbuf(log_fp, NULL);
 		log_enabled = 1;
 
 		if (uname(&un) == -1)
@@ -164,8 +165,6 @@ log_vprintf(const char *func, const char *fmt, va_list ap)
 				errx(1, "vfprintf() failed");
 		if (putc('\n', log_fp) == EOF)
 			err(1, "putc");
-		if (fflush(log_fp) == EOF)
-			err(1, "fflush");
 		(void)pthread_mutex_unlock(&log_fp_mtx);
 	}
 }
