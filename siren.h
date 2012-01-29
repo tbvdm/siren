@@ -308,6 +308,7 @@ struct op {
 
 void		 bind_end(void);
 int		 bind_execute(enum bind_scope, int);
+const char	*bind_get_command(enum bind_scope, int key);
 void		 bind_init(void);
 void		 bind_set(enum bind_scope, int, struct command *, void *,
 		    const char *) NONNULL();

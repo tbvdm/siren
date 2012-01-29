@@ -90,6 +90,11 @@ struct command_set_volume_data {
 	int		  relative;
 };
 
+struct command_show_binding_data {
+	enum bind_scope	  scope;
+	int		  key;
+};
+
 struct command_unbind_key_data {
 	enum bind_scope	  scope;
 	int		  key;
@@ -160,6 +165,8 @@ COMMAND_FREE_PROTOTYPE(set);
 COMMAND_PARSE_PROTOTYPE(set);
 COMMAND_EXEC_PROTOTYPE(set_volume);
 COMMAND_PARSE_PROTOTYPE(set_volume);
+COMMAND_EXEC_PROTOTYPE(show_binding);
+COMMAND_PARSE_PROTOTYPE(show_binding);
 COMMAND_EXEC_PROTOTYPE(stop);
 COMMAND_EXEC_PROTOTYPE(unbind_key);
 COMMAND_PARSE_PROTOTYPE(unbind_key);
@@ -373,6 +380,12 @@ static struct command command_list[] = {
 		"set-volume",
 		command_set_volume_parse,
 		command_set_volume_exec,
+		free
+	},
+	{
+		"show-binding",
+		command_show_binding_parse,
+		command_show_binding_exec,
 		free
 	},
 	{
@@ -1526,6 +1539,48 @@ usage:
 	*error = xstrdup("Usage: set-volume [-di] level");
 	free(data);
 	return -1;
+}
+
+static void
+command_show_binding_exec(void *datap)
+{
+	struct command_show_binding_data	*data;
+	const char				*command;
+
+	data = datap;
+
+	if ((command = bind_get_command(data->scope, data->key)) == NULL)
+		msg_errx("No such key binding");
+	else
+		msg_info("%s", command);
+}
+
+static int
+command_show_binding_parse(int argc, char **argv, void **datap, char **error)
+{
+	struct command_show_binding_data *data;
+
+	if (argc != 3) {
+		*error = xstrdup("Usage: show-binding context key");
+		return -1;
+	}
+
+	data = xmalloc(sizeof *data);
+
+	if (bind_string_to_scope(argv[1], &data->scope) == -1) {
+		(void)xasprintf(error, "Invalid scope: %s", argv[1]);
+		free(data);
+		return -1;
+	}
+
+	if ((data->key = bind_string_to_key(argv[2])) == K_NONE) {
+		(void)xasprintf(error, "Invalid key: %s", argv[2]);
+		free(data);
+		return -1;
+	}
+
+	*datap = data;
+	return 0;
 }
 
 /* ARGSUSED */

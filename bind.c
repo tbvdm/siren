@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 Tim van der Molen <tbvdm@xs4all.nl>
+ * Copyright (c) 2011, 2012 Tim van der Molen <tbvdm@xs4all.nl>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -172,6 +172,17 @@ bind_find(enum bind_scope scope, int key)
 	b.key = key;
 	b.scope = scope;
 	return SPLAY_FIND(bind_tree, &bind_tree, &b);
+}
+
+const char *
+bind_get_command(enum bind_scope scope, int key)
+{
+	struct bind_entry *b;
+
+	if ((b = bind_find(scope, key)) == NULL)
+		return NULL;
+	else
+		return b->command_string;
 }
 
 void
