@@ -79,7 +79,7 @@ The queue view can be displayed by pressing the
 key.
 .It Sy Browser view
 The browser view shows the contents of a directory.
-By default only directories and supported audio-files are shown.
+By default only directories and supported audio files are shown.
 The browser view can be used to browse through the file system and play back
 audio files or add them to the library or queue.
 The browser view can be displayed by pressing the
@@ -330,12 +330,12 @@ They are represented by themselves.
 .It
 The ASCII control characters: these are the ASCII character codes between 0 and
 31 decimal.
-They are represented by case-insensitive caret notation.
+They are represented in case-insensitive caret notation.
 For example,
 .Ar ^A
 and
 .Ar ^a
-denote the same control character.
+both denote the second control character.
 .It
 The following case-insensitive key-names are recognised:
 .Ar backspace ,
@@ -369,7 +369,7 @@ Open
 in the browser view.
 If
 .Ar directory
-is not specified, the browser view will open the user's home directory.
+is not specified, the user's home directory is opened instead.
 .It Ic clear-cache
 Clear the metadata cache.
 .It Ic clear-history Op Fl cs
@@ -426,7 +426,7 @@ The options are as follows.
 Delete all entries in the current view.
 .El
 .It Ic move-entry-down
-Move the selected entry below its succeeding entry.
+Move the selected entry after its succeeding entry.
 This command is supported in the queue view only.
 .It Ic move-entry-up
 Move the entry before its preceding entry.
