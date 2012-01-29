@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 Tim van der Molen <tbvdm@xs4all.nl>
+ * Copyright (c) 2011, 2012 Tim van der Molen <tbvdm@xs4all.nl>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -28,25 +28,25 @@
 	(defined(__GNUC__) && (__GNUC__ > major ||			\
 	(__GNUC__ == major && __GNUC_MINOR >= minor)))
 
-#if GCC_VERSION(3, 3)
+#if GCC_VERSION(3, 3) || defined(__clang__)
 #define NONNULL(...)		__attribute__((nonnull(__VA_ARGS__)))
 #else
 #define NONNULL(...)
 #endif
 
-#if GCC_VERSION(2, 5)
+#if GCC_VERSION(2, 5) || defined(__clang__)
 #define NORETURN		__attribute__((noreturn))
 #else
 #define NORETURN
 #endif
 
-#if GCC_VERSION(2, 3)
+#if GCC_VERSION(2, 3) || defined(__clang__)
 #define PRINTFLIKE(fmt, arg)	__attribute__((format(printf, fmt, arg)))
 #else
 #define PRINTFLIKE(fmt, arg)
 #endif
 
-#if GCC_VERSION(2, 7)
+#if GCC_VERSION(2, 7) || defined(__clang__)
 #define UNUSED			__attribute__((unused))
 #else
 #define UNUSED
