@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 Tim van der Molen <tbvdm@xs4all.nl>
+ * Copyright (c) 2011, 2012 Tim van der Molen <tbvdm@xs4all.nl>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -26,6 +26,13 @@
 #else
 #include "compat/tree.h"
 #endif
+
+/*
+ * Maximum size of any string created by option_attrib_to_string(). The longest
+ * possible string is "blink,bold,dim,reverse,standout,underline", which
+ * contains 42 characters (including the terminating NUL byte).
+ */
+#define OPTION_ATTRIB_MAXLEN 42
 
 struct option_entry {
 	char			*name;
@@ -191,10 +198,55 @@ option_add_string(const char *name, const char *value, void (*callback)(void))
 	option_insert_entry(o);
 }
 
+char *
+option_attrib_to_string(int attrib)
+{
+	size_t	i;
+	char	str[OPTION_ATTRIB_MAXLEN];
+
+	str[0] = '\0';
+	for (i = 0; i < NELEMENTS(option_attrib_names); i++)
+		if (attrib & option_attrib_names[i].attrib ||
+		    attrib == option_attrib_names[i].attrib) {
+			if (str[0] != '\0')
+				(void)strlcat(str, ",", sizeof str);
+			(void)strlcat(str, option_attrib_names[i].name,
+			    sizeof str);
+		}
+
+	return xstrdup(str);
+}
+
+const char *
+option_boolean_to_string(int boolean)
+{
+	size_t i;
+
+	for (i = 0; i < NELEMENTS(option_boolean_names); i++)
+		if (boolean == option_boolean_names[i].boolean)
+			return option_boolean_names[i].name;
+
+	LOG_FATALX("unknown boolean");
+	/* NOTREACHED */
+}
+
 static int
 option_cmp_entry(struct option_entry *o1, struct option_entry *o2)
 {
 	return strcmp(o1->name, o2->name);
+}
+
+const char *
+option_colour_to_string(enum colour colour)
+{
+	size_t i;
+
+	for (i = 0; i < NELEMENTS(option_colour_names); i++)
+		if (colour == option_colour_names[i].colour)
+			return option_colour_names[i].name;
+
+	LOG_FATALX("unknown colour");
+	/* NOTREACHED */
 }
 
 void

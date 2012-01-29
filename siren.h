@@ -458,6 +458,9 @@ void		 option_add_number(const char *, int, int, int, void (*)(void))
 		    NONNULL(1);
 void		 option_add_string(const char *, const char *,
 		    void (*)(void)) NONNULL(1, 2);
+char		*option_attrib_to_string(int);
+const char	*option_boolean_to_string(int);
+const char	*option_colour_to_string(enum colour);
 void		 option_end(void);
 int		 option_get_attrib(const char *) NONNULL();
 int		 option_get_boolean(const char *) NONNULL();

@@ -167,6 +167,8 @@ COMMAND_EXEC_PROTOTYPE(set_volume);
 COMMAND_PARSE_PROTOTYPE(set_volume);
 COMMAND_EXEC_PROTOTYPE(show_binding);
 COMMAND_PARSE_PROTOTYPE(show_binding);
+COMMAND_EXEC_PROTOTYPE(show_option);
+COMMAND_PARSE_PROTOTYPE(show_option);
 COMMAND_EXEC_PROTOTYPE(stop);
 COMMAND_EXEC_PROTOTYPE(unbind_key);
 COMMAND_PARSE_PROTOTYPE(unbind_key);
@@ -386,6 +388,12 @@ static struct command command_list[] = {
 		"show-binding",
 		command_show_binding_parse,
 		command_show_binding_exec,
+		free
+	},
+	{
+		"show-option",
+		command_show_option_parse,
+		command_show_option_exec,
 		free
 	},
 	{
@@ -1580,6 +1588,55 @@ command_show_binding_parse(int argc, char **argv, void **datap, char **error)
 	}
 
 	*datap = data;
+	return 0;
+}
+
+static void
+command_show_option_exec(void *datap)
+{
+	enum option_type	 type;
+	char			*name, *value;
+
+	name = datap;
+	if (option_get_type(name, &type) == -1) {
+		msg_errx("Invalid option: %s", name);
+		return;
+	}
+
+	switch (type) {
+	case OPTION_TYPE_ATTRIB:
+		value = option_attrib_to_string(option_get_attrib(name));
+		msg_info("%s", value);
+		free(value);
+		break;
+	case OPTION_TYPE_BOOLEAN:
+		msg_info("%s",
+		    option_boolean_to_string(option_get_boolean(name)));
+		break;
+	case OPTION_TYPE_COLOUR:
+		msg_info("%s",
+		    option_colour_to_string(option_get_colour(name)));
+		break;
+	case OPTION_TYPE_NUMBER:
+		msg_info("%d", option_get_number(name));
+		break;
+	case OPTION_TYPE_STRING:
+		value = option_get_string(name);
+		msg_info("%s", value);
+		free(value);
+		break;
+	}
+}
+
+static int
+command_show_option_parse(int argc, char **argv, void **datap, char **error)
+{
+	if (argc != 2) {
+		*error = xstrdup("Usage: show-option option");
+		return -1;
+	}
+
+	*datap = xstrdup(argv[1]);
 	return 0;
 }
 
