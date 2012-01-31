@@ -18,6 +18,7 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 
+#include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
 #include <stdio.h>
@@ -220,8 +221,12 @@ cache_read_file(void)
 	char		*data;
 
 	if ((fd = open(cache_file, O_RDONLY)) == -1) {
-		LOG_ERR("open: %s", cache_file);
-		return -1;
+		if (errno == ENOENT)
+			return 0;
+		else {
+			LOG_ERR("open: %s", cache_file);
+			return -1;
+		}
 	}
 
 	if (fstat(fd, &sb) == -1) {
