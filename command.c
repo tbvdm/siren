@@ -1251,6 +1251,12 @@ command_seek_parse(int argc, char **argv, void **datap, char **error)
 	if (argc - optind != 1)
 		goto usage;
 
+	/*
+	 * The position argument is of the form "[[hours:]minutes:]seconds". It
+	 * thus should have at least one colon-separated field and at most
+	 * three.
+	 */
+
 	position = argv[optind];
 
 	/* Parse the first field. */
@@ -1260,14 +1266,16 @@ command_seek_parse(int argc, char **argv, void **datap, char **error)
 		goto error;
 
 	/* Parse the second field, if present. */
-	if ((field = strsep(&position, ":")) != NULL) {
+	if (position != NULL) {
+		field = strsep(&position, ":");
 		data->position *= 60;
 		data->position += (int)strtonum(field, 0, 59, &errstr);
 		if (errstr != NULL)
 			goto error;
 
 		/* Parse the third field, if present. */
-		if ((field = strsep(&position, ":")) != NULL) {
+		if (position != NULL) {
+			field = strsep(&position, ":");
 			data->position *= 60;
 			data->position += (int)strtonum(field, 0, 59, &errstr);
 			if (errstr != NULL)
