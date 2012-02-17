@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 Tim van der Molen <tbvdm@xs4all.nl>
+ * Copyright (c) 2011, 2012 Tim van der Molen <tbvdm@xs4all.nl>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -122,7 +122,7 @@ path_get_home_dir(const char *user)
 	int		 ret;
 	char		*buf, *home;
 
-	if (user == NULL && (home = getenv("HOME")) && home[0] != '\0')
+	if (user == NULL && (home = getenv("HOME")) != NULL && home[0] != '\0')
 		return xstrdup(home);
 
 	if ((bufsize = XSYSCONF(_SC_GETPW_R_SIZE_MAX)) == -1)
