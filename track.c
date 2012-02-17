@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 Tim van der Molen <tbvdm@xs4all.nl>
+ * Copyright (c) 2011, 2012 Tim van der Molen <tbvdm@xs4all.nl>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -60,20 +60,16 @@ track_cmp_number(const char *s1, const char *s2)
 		return 1;
 
 	i1 = (int)strtonum(s1, 0, INT_MAX, &errstr);
-	if (errstr != NULL) {
-		LOG_DEBUG_ERRX("%s: number is %s", s1, errstr);
+	if (errstr != NULL)
 		/*
 		 * Numerical comparison failed; fall back to a lexicographical
 		 * comparison.
 		 */
 		return track_cmp_string(s1, s2);
-	}
 
 	i2 = (int)strtonum(s2, 0, INT_MAX, &errstr);
-	if (errstr != NULL) {
-		LOG_DEBUG_ERRX("%s: number is %s", s2, errstr);
+	if (errstr != NULL)
 		return track_cmp_string(s1, s2);
-	}
 
 	return i1 < i2 ? -1 : i1 > i2;
 }
