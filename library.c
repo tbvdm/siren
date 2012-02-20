@@ -39,15 +39,20 @@ library_activate_entry(void)
 	struct menu_entry	*e;
 	struct track		*t;
 
+	t = NULL;
+
 	XPTHREAD_MUTEX_LOCK(&library_menu_mtx);
 	if ((e = menu_get_selected_entry(library_menu)) != NULL) {
 		menu_activate_entry(library_menu, e);
 		t = menu_get_entry_data(e);
 		track_hold(t);
-		player_play_track(t);
 	}
 	XPTHREAD_MUTEX_UNLOCK(&library_menu_mtx);
-	library_print();
+
+	if (t != NULL) {
+		player_play_track(t);
+		library_print();
+	}
 }
 
 void
