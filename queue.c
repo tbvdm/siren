@@ -37,12 +37,15 @@ queue_activate_entry(void)
 	XPTHREAD_MUTEX_LOCK(&queue_menu_mtx);
 	if ((t = menu_get_selected_entry_data(queue_menu)) != NULL) {
 		track_hold(t);
-		player_play_track(t);
 		queue_duration -= t->duration;
 		menu_remove_selected_entry(queue_menu);
 	}
 	XPTHREAD_MUTEX_UNLOCK(&queue_menu_mtx);
-	queue_print();
+
+	if (t != NULL) {
+		player_play_track(t);
+		queue_print();
+	}
 }
 
 void
