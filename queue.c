@@ -150,7 +150,7 @@ queue_free_entry(void *e)
 }
 
 static void
-queue_get_entry_text(const void *entry, char *buf, size_t bufsize)
+queue_get_entry_text(const void *e, char *buf, size_t bufsize)
 {
 	const struct track *t;
 
