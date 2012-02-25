@@ -355,7 +355,7 @@ void		 dir_close(struct dir *) NONNULL();
 struct dir_entry *dir_get_entry(struct dir *) NONNULL();
 struct dir	*dir_open(const char *) NONNULL();
 
-int		 format_snprintf(char *, size_t, const char *,
+void		 format_snprintf(char *, size_t, const char *,
 		    const struct format_field *, size_t) NONNULL();
 
 void		 history_add(struct history *, const char *) NONNULL();
@@ -577,7 +577,7 @@ void		 track_free(struct track *);
 void		 track_hold(struct track *) NONNULL();
 struct track	*track_init(const char *, const struct ip *) NONNULL(1);
 int		 track_search(const struct track *, const char *);
-int		 track_snprintf(char *, size_t, const char *,
+void		 track_snprintf(char *, size_t, const char *,
 		    const struct track *) NONNULL();
 
 void		 view_activate_entry(void);

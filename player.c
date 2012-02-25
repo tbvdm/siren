@@ -553,7 +553,7 @@ player_print_track(void)
 
 	if (player_track != NULL) {
 		fmt = option_get_string("player-track-format");
-		(void)track_snprintf(buf, bufsize, fmt, player_track);
+		track_snprintf(buf, bufsize, fmt, player_track);
 		free(fmt);
 	}
 

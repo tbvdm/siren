@@ -172,12 +172,11 @@ track_search(const struct track *t, const char *search)
 	return -1;
 }
 
-int
+void
 track_snprintf(char *buf, size_t bufsize, const char *fmt,
     const struct track *t)
 {
 	struct format_field	 fields[8];
-	int			 ret;
 	char			*timestr;
 
 	(void)xasprintf(&timestr, "%u:%02u", MINS(t->duration),
@@ -200,7 +199,6 @@ track_snprintf(char *buf, size_t bufsize, const char *fmt,
 	fields[7].spec = 'y';
 	fields[7].value = t->date ? t->date : "";
 
-	ret = format_snprintf(buf, bufsize, fmt, fields, NELEMENTS(fields));
+	format_snprintf(buf, bufsize, fmt, fields, NELEMENTS(fields));
 	free(timestr);
-	return ret;
 }

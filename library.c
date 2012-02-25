@@ -181,7 +181,7 @@ library_get_entry_text(const void *e, char *buf, size_t bufsize)
 	const struct track *t;
 
 	t = e;
-	(void)track_snprintf(buf, bufsize, library_print_format, t);
+	track_snprintf(buf, bufsize, library_print_format, t);
 }
 
 struct track *

@@ -152,7 +152,7 @@ queue_free_entry(void *e)
 static void
 queue_get_entry_text(const void *entry, char *buf, size_t bufsize)
 {
-	(void)track_snprintf(buf, bufsize, queue_print_format,
+	track_snprintf(buf, bufsize, queue_print_format,
 	    (const struct track *)entry);
 }
 

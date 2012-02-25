@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 Tim van der Molen <tbvdm@xs4all.nl>
+ * Copyright (c) 2011, 2012 Tim van der Molen <tbvdm@xs4all.nl>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -36,7 +36,7 @@ format_get_field(char spec, const struct format_field *fields, size_t nfields)
 	return NULL;
 }
 
-int
+void
 format_snprintf(char *buf, size_t bufsize, const char *fmt,
     const struct format_field *fields, size_t nfields)
 {
@@ -61,7 +61,7 @@ format_snprintf(char *buf, size_t bufsize, const char *fmt,
 			field = format_get_field(fmt[i], fields, nfields);
 			if (field == NULL) {
 				buf[0] = '\0';
-				return -1;
+				return;
 			}
 			fieldlen = strlen(field);
 		} else {
@@ -119,7 +119,7 @@ format_snprintf(char *buf, size_t bufsize, const char *fmt,
 		if ((field = format_get_field(fmt[i], fields, nfields)) ==
 		    NULL) {
 			buf[0] = '\0';
-			return -1;
+			return;
 		}
 		fieldlen = strlen(field);
 
@@ -148,5 +148,4 @@ format_snprintf(char *buf, size_t bufsize, const char *fmt,
 	}
 
 	buf[len] = '\0';
-	return 0;
 }
