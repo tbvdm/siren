@@ -468,6 +468,16 @@ command_add_path_exec(void *datap)
 
 	data = datap;
 
+#ifdef __clang__
+	/*
+	 * Prevent a false positive from the Clang static analyzer. The false
+	 * positive is based on the assumption that data->paths[0] can be NULL,
+	 * but command_add_path_parse() guarantees it is not.
+	 */
+	if (data->paths[0] == NULL)
+		return;
+#endif
+
 	if (data->use_current_view)
 		data->view = view_get_id();
 
