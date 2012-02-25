@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 Tim van der Molen <tbvdm@xs4all.nl>
+ * Copyright (c) 2011, 2012 Tim van der Molen <tbvdm@xs4all.nl>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -152,8 +152,10 @@ queue_free_entry(void *e)
 static void
 queue_get_entry_text(const void *entry, char *buf, size_t bufsize)
 {
-	track_snprintf(buf, bufsize, queue_print_format,
-	    (const struct track *)entry);
+	const struct track *t;
+
+	t = e;
+	track_snprintf(buf, bufsize, queue_print_format, t);
 }
 
 struct track *
