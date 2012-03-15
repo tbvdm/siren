@@ -609,6 +609,7 @@ void		*xrealloc(void *, size_t);
 void		*xrecalloc(void *, size_t, size_t);
 int		 xsnprintf(char *, size_t, const char *, ...) PRINTFLIKE(3, 4);
 char		*xstrdup(const char *) NONNULL();
+char		*xstrndup(const char *, size_t) NONNULL();
 int		 xvasprintf(char **, const char *, va_list) NONNULL()
 		    PRINTFLIKE(2, 0);
 int		 xvsnprintf(char *, size_t, const char *, va_list) NONNULL()
