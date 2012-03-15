@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 Tim van der Molen <tbvdm@xs4all.nl>
+ * Copyright (c) 2011, 2012 Tim van der Molen <tbvdm@xs4all.nl>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -97,6 +97,16 @@ xstrdup(const char *s)
 	if ((c = strdup(s)) == NULL)
 		LOG_FATAL("strdup");
 	return c;
+}
+
+char *
+xstrndup(const char *s, size_t maxlen)
+{
+	char *t;
+
+	if ((t = strndup(s, maxlen)) == NULL)
+		LOG_FATAL("strndup");
+	return t;
 }
 
 int
