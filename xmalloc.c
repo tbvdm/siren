@@ -92,11 +92,11 @@ xsnprintf(char *buf, size_t size, const char *fmt, ...)
 char *
 xstrdup(const char *s)
 {
-	char *c;
+	char *t;
 
-	if ((c = strdup(s)) == NULL)
+	if ((t = strdup(s)) == NULL)
 		LOG_FATAL("strdup");
-	return c;
+	return t;
 }
 
 char *
