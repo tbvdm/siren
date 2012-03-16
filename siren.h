@@ -243,9 +243,21 @@ struct dir_entry {
 	enum file_type	 type;
 };
 
-struct format_field {
-	char		 spec;
-	const char	*value;
+struct format;
+
+struct format_variable {
+	const char		*lname;
+	char			 sname;
+	enum {
+		FORMAT_VARIABLE_NUMBER,
+		FORMAT_VARIABLE_STRING,
+		FORMAT_VARIABLE_TIME
+	} type;
+	union {
+		int			 number;
+		unsigned int		 time;
+		const char		*string;
+	} value;
 };
 
 struct sample_format {
@@ -355,8 +367,13 @@ void		 dir_close(struct dir *) NONNULL();
 struct dir_entry *dir_get_entry(struct dir *) NONNULL();
 struct dir	*dir_open(const char *) NONNULL();
 
-void		 format_snprintf(char *, size_t, const char *,
-		    const struct format_field *, size_t) NONNULL();
+void		 format_free(struct format *);
+struct format	*format_parse(const char *) NONNULL();
+void		 format_snprintf(char *, size_t, const struct format *,
+		    const struct format_variable *, size_t) NONNULL();
+const char	*format_to_string(const struct format *) NONNULL();
+void		 format_track_snprintf(char *, size_t, const struct format *,
+		    const struct track *) NONNULL();
 
 void		 history_add(struct history *, const char *) NONNULL();
 void		 history_clear(struct history *) NONNULL();
