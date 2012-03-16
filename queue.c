@@ -25,9 +25,9 @@ static void		 queue_get_entry_text(const void *, char *, size_t);
 static int		 queue_search_entry(const void *, const char *);
 
 static pthread_mutex_t	 queue_menu_mtx = PTHREAD_MUTEX_INITIALIZER;
+static struct format	*queue_format;
 static struct menu	*queue_menu;
 static unsigned int	 queue_duration;
-static char		*queue_print_format;
 
 void
 queue_activate_entry(void)
@@ -155,7 +155,7 @@ queue_get_entry_text(const void *e, char *buf, size_t bufsize)
 	const struct track *t;
 
 	t = e;
-	track_snprintf(buf, bufsize, queue_print_format, t);
+	format_track_snprintf(buf, bufsize, queue_format, t);
 }
 
 struct track *
@@ -222,7 +222,7 @@ queue_print(void)
 	if (view_get_id() != VIEW_ID_QUEUE)
 		return;
 
-	queue_print_format = option_get_string("queue-format");
+	queue_format = option_get_format("queue-format");
 
 	XPTHREAD_MUTEX_LOCK(&queue_menu_mtx);
 	screen_view_title_printf("Queue: %u track%s (%u:%02u:%02u)",
@@ -233,8 +233,6 @@ queue_print(void)
 	    MSECS(queue_duration));
 	menu_print(queue_menu);
 	XPTHREAD_MUTEX_UNLOCK(&queue_menu_mtx);
-
-	free(queue_print_format);
 }
 
 void

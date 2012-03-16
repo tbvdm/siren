@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 Tim van der Molen <tbvdm@xs4all.nl>
+ * Copyright (c) 2011, 2012 Tim van der Molen <tbvdm@xs4all.nl>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -86,6 +86,8 @@ static pthread_mutex_t		 player_op_mtx = PTHREAD_MUTEX_INITIALIZER;
 
 static struct track		*player_track = NULL;
 static pthread_mutex_t		 player_track_mtx = PTHREAD_MUTEX_INITIALIZER;
+
+static struct format		*player_track_format;
 
 static enum byte_order		 player_byte_order;
 
@@ -463,6 +465,8 @@ player_playback_handler(UNUSED void *p)
 void
 player_print(void)
 {
+	player_track_format= option_get_format("player-track-format");
+
 	XPTHREAD_MUTEX_LOCK(&player_state_mtx);
 	player_print_track();
 	player_print_status();
@@ -545,17 +549,15 @@ player_print_track(void)
 {
 	size_t	 bufsize;
 	char	*buf;
-	char	*fmt;
 
 	bufsize = screen_get_ncols() + 1;
 	buf = xmalloc(bufsize);
-	buf[0] = '\0';
 
-	if (player_track != NULL) {
-		fmt = option_get_string("player-track-format");
-		track_snprintf(buf, bufsize, fmt, player_track);
-		free(fmt);
-	}
+	if (player_track == NULL)
+		buf[0] = '\0';
+	else
+		format_track_snprintf(buf, bufsize, player_track_format,
+		    player_track);
 
 	screen_player_track_print(buf);
 	free(buf);

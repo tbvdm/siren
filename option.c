@@ -424,13 +424,12 @@ option_init(void)
 	option_add_boolean("continue", 1, player_print);
 	option_add_number("max-history-entries", 100, 0, INT_MAX,
 	    prompt_resize_histories);
-	option_add_string("library-format", "%-0a %-0l %4y %2n. %-0t %5d",
+	option_add_format("library-format", "%-*a %-*l %4y %2n. %-*t %5d",
 	    library_print);
 	option_add_string("output-plugin", "default", player_change_op);
-	option_add_string("player-track-format", "%a - %l (%y) - %n. %t",
+	option_add_format("player-track-format", "%a - %l (%y) - %n. %t",
 	    player_print);
-	option_add_string("queue-format", "%-0a %-0t %5d",
-	    queue_print);
+	option_add_format("queue-format", "%-*a %-*t %5d", queue_print);
 	option_add_boolean("repeat-all", 1, player_print);
 	option_add_boolean("repeat-track", 0, player_print);
 	option_add_boolean("show-all-files", 0, browser_refresh_dir);

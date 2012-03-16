@@ -29,9 +29,9 @@ static void		 library_get_entry_text(const void *, char *, size_t);
 static int		 library_search_entry(const void *, const char *);
 
 static pthread_mutex_t	 library_menu_mtx = PTHREAD_MUTEX_INITIALIZER;
+static struct format	*library_format;
 static struct menu	*library_menu;
 static unsigned int	 library_duration;
-static char		*library_print_format;
 
 void
 library_activate_entry(void)
@@ -181,7 +181,7 @@ library_get_entry_text(const void *e, char *buf, size_t bufsize)
 	const struct track *t;
 
 	t = e;
-	track_snprintf(buf, bufsize, library_print_format, t);
+	format_track_snprintf(buf, bufsize, library_format, t);
 }
 
 struct track *
@@ -251,7 +251,7 @@ library_print(void)
 	if (view_get_id() != VIEW_ID_LIBRARY)
 		return;
 
-	library_print_format = option_get_string("library-format");
+	library_format = option_get_format("library-format");
 
 	XPTHREAD_MUTEX_LOCK(&library_menu_mtx);
 	screen_view_title_printf("Library: %u track%s (%u:%02u:%02u)",
@@ -262,8 +262,6 @@ library_print(void)
 	    MSECS(library_duration));
 	menu_print(library_menu);
 	XPTHREAD_MUTEX_UNLOCK(&library_menu_mtx);
-
-	free(library_print_format);
 }
 
 void
