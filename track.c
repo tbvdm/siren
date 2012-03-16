@@ -171,34 +171,3 @@ track_search(const struct track *t, const char *search)
 		return 0;
 	return -1;
 }
-
-void
-track_snprintf(char *buf, size_t bufsize, const char *fmt,
-    const struct track *t)
-{
-	struct format_field	 fields[8];
-	char			*timestr;
-
-	(void)xasprintf(&timestr, "%u:%02u", MINS(t->duration),
-	    MSECS(t->duration));
-
-	fields[0].spec = 'a';
-	fields[0].value = t->artist ? t->artist : "";
-	fields[1].spec = 'd';
-	fields[1].value = timestr;
-	fields[2].spec = 'f';
-	fields[2].value = t->path;
-	fields[3].spec = 'g';
-	fields[3].value = t->genre ? t->genre : "";
-	fields[4].spec = 'l';
-	fields[4].value = t->album ? t->album : "";
-	fields[5].spec = 'n';
-	fields[5].value = t->tracknumber ? t->tracknumber : "";
-	fields[6].spec = 't';
-	fields[6].value = t->title ? t->title : "";
-	fields[7].spec = 'y';
-	fields[7].value = t->date ? t->date : "";
-
-	format_snprintf(buf, bufsize, fmt, fields, NELEMENTS(fields));
-	free(timestr);
-}
