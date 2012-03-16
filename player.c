@@ -465,7 +465,7 @@ player_playback_handler(UNUSED void *p)
 void
 player_print(void)
 {
-	player_track_format= option_get_format("player-track-format");
+	player_track_format = option_get_format("player-track-format");
 
 	XPTHREAD_MUTEX_LOCK(&player_state_mtx);
 	player_print_track();
