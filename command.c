@@ -77,6 +77,7 @@ struct command_set_data {
 	char		 *name;
 	enum option_type  type;
 	union {
+		struct format	*format;
 		enum colour	 colour;
 		int		 attrib;
 		int		 boolean;
@@ -1405,6 +1406,9 @@ command_set_exec(void *datap)
 		else
 			option_set_boolean(data->name, data->value.boolean);
 		break;
+	case OPTION_TYPE_FORMAT:
+		option_set_format(data->name, data->value.format);
+		break;
 	case OPTION_TYPE_NUMBER:
 		option_set_number(data->name, data->value.number);
 		break;
@@ -1489,6 +1493,9 @@ command_set_parse(int argc, char **argv, void **datap, char **error)
 			(void)xasprintf(error, "Invalid colour: %s", argv[2]);
 			goto error;
 		}
+		break;
+	case OPTION_TYPE_FORMAT:
+		data->value.format = format_parse(argv[2]);
 		break;
 	case OPTION_TYPE_NUMBER:
 		option_get_number_range(argv[1], &min, &max);
@@ -1634,6 +1641,10 @@ command_show_option_exec(void *datap)
 	case OPTION_TYPE_COLOUR:
 		msg_info("%s",
 		    option_colour_to_string(option_get_colour(name)));
+		break;
+	case OPTION_TYPE_FORMAT:
+		msg_info("%s",
+		    option_format_to_string(option_get_format(name)));
 		break;
 	case OPTION_TYPE_NUMBER:
 		msg_info("%d", option_get_number(name));

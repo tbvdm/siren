@@ -216,6 +216,7 @@ enum option_type {
 	OPTION_TYPE_ATTRIB,
 	OPTION_TYPE_BOOLEAN,
 	OPTION_TYPE_COLOUR,
+	OPTION_TYPE_FORMAT,
 	OPTION_TYPE_NUMBER,
 	OPTION_TYPE_STRING
 };
@@ -479,9 +480,11 @@ char		*option_attrib_to_string(int);
 const char	*option_boolean_to_string(int);
 const char	*option_colour_to_string(enum colour);
 void		 option_end(void);
+const char	*option_format_to_string(const struct format *) NONNULL();
 int		 option_get_attrib(const char *) NONNULL();
 int		 option_get_boolean(const char *) NONNULL();
 enum colour	 option_get_colour(const char *) NONNULL();
+struct format	*option_get_format(const char *) NONNULL();
 int		 option_get_number(const char *) NONNULL();
 void		 option_get_number_range(const char *, int *, int *) NONNULL();
 char		*option_get_string(const char *) NONNULL();
@@ -490,6 +493,7 @@ void		 option_init(void);
 void		 option_set_attrib(const char *, int) NONNULL();
 void		 option_set_boolean(const char *, int) NONNULL();
 void		 option_set_colour(const char *, enum colour) NONNULL();
+void		 option_set_format(const char *, struct format *) NONNULL();
 void		 option_set_number(const char *, int) NONNULL();
 void		 option_set_string(const char *, const char *) NONNULL();
 int		 option_string_to_attrib(const char *) NONNULL();

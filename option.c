@@ -44,6 +44,7 @@ struct option_entry {
 			int		 max;
 		} number;
 
+		struct format		*format;
 		enum colour		 colour;
 		int			 attrib;
 		int			 boolean;
@@ -161,6 +162,19 @@ option_add_colour(const char *name, enum colour value, void (*callback)(void))
 	option_insert_entry(o);
 }
 
+static void
+option_add_format(const char *name, const char *fmt, void (*callback)(void))
+{
+	struct option_entry *o;
+
+	o = xmalloc(sizeof *o);
+	o->name = xstrdup(name);
+	o->type = OPTION_TYPE_FORMAT;
+	o->value.format = format_parse(fmt);
+	o->callback = callback;
+	option_insert_entry(o);
+}
+
 void
 option_add_number(const char *name, int value, int minvalue, int maxvalue,
     void (*callback)(void))
@@ -257,8 +271,17 @@ option_end(void)
 	while ((o = SPLAY_ROOT(&option_tree)) != NULL) {
 		(void)SPLAY_REMOVE(option_tree, &option_tree, o);
 		free(o->name);
-		if (o->type == OPTION_TYPE_STRING)
+		switch (o->type) {
+		case OPTION_TYPE_FORMAT:
+			format_free(o->value.format);
+			break;
+		case OPTION_TYPE_STRING:
 			free(o->value.string);
+			break;
+		/* Silence gcc. */
+		default:
+			break;
+		}
 		free(o);
 	}
 }
@@ -285,6 +308,12 @@ option_find_type(const char *name, enum option_type type)
 		LOG_FATALX("%s: option is not of expected type %s", name,
 		    option_type_to_string(type));
 	return o;
+}
+
+const char *
+option_format_to_string(const struct format *format)
+{
+	return format_to_string(format);
 }
 
 int
@@ -324,6 +353,19 @@ option_get_colour(const char *name)
 	colour = o->value.colour;
 	XPTHREAD_MUTEX_UNLOCK(&option_entry_value_mtx);
 	return colour;
+}
+
+struct format *
+option_get_format(const char *name)
+{
+	struct option_entry	*o;
+	struct format		*format;
+
+	o = option_find_type(name, OPTION_TYPE_FORMAT);
+	XPTHREAD_MUTEX_LOCK(&option_entry_value_mtx);
+	format = o->value.format;
+	XPTHREAD_MUTEX_UNLOCK(&option_entry_value_mtx);
+	return format;
 }
 
 int
@@ -508,6 +550,20 @@ option_set_colour(const char *name, enum colour value)
 		if (o->callback != NULL)
 			o->callback();
 	}
+}
+
+void
+option_set_format(const char *name, struct format *format)
+{
+	struct option_entry *o;
+
+	o = option_find_type(name, OPTION_TYPE_FORMAT);
+	XPTHREAD_MUTEX_LOCK(&option_entry_value_mtx);
+	format_free(o->value.format);
+	o->value.format = format;
+	XPTHREAD_MUTEX_UNLOCK(&option_entry_value_mtx);
+	if (o->callback != NULL)
+		o->callback();
 }
 
 void
