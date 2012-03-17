@@ -18,7 +18,6 @@
 #undef _GNU_SOURCE
 
 #include <errno.h>
-#include <limits.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
