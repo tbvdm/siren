@@ -60,7 +60,6 @@ SPLAY_HEAD(option_tree, option_entry);
 static int		 option_cmp_entry(struct option_entry *,
 			    struct option_entry *);
 static void		 option_insert_entry(struct option_entry *);
-static const char	*option_type_to_string(enum option_type);
 
 SPLAY_PROTOTYPE(option_tree, option_entry, entries, option_cmp_entry)
 
@@ -108,17 +107,6 @@ static const struct {
 	{ 1,			"1" },
 	{ 1,			"on" },
 	{ 1,			"yes" }
-};
-
-static const struct {
-	const enum option_type	 type;
-	const char		*name;
-} option_type_names[] = {
-	{ OPTION_TYPE_ATTRIB,	"attribute" },
-	{ OPTION_TYPE_COLOUR,	"colour" },
-	{ OPTION_TYPE_BOOLEAN,	"boolean" },
-	{ OPTION_TYPE_NUMBER,	"number" },
-	{ OPTION_TYPE_STRING,	"string" }
 };
 
 SPLAY_GENERATE(option_tree, option_entry, entries, option_cmp_entry)
@@ -305,8 +293,7 @@ option_find_type(const char *name, enum option_type type)
 	if ((o = option_find(name)) == NULL)
 		LOG_FATALX("%s: option does not exist", name);
 	if (o->type != type)
-		LOG_FATALX("%s: option is not of expected type %s", name,
-		    option_type_to_string(type));
+		LOG_FATALX("%s: option is not of expected type", name);
 	return o;
 }
 
@@ -647,17 +634,4 @@ option_toggle_boolean(const char *name)
 	XPTHREAD_MUTEX_UNLOCK(&option_entry_value_mtx);
 	if (o->callback != NULL)
 		o->callback();
-}
-
-static const char *
-option_type_to_string(enum option_type type)
-{
-	size_t i;
-
-	for (i = 0; i < NELEMENTS(option_type_names); i++)
-		if (type == option_type_names[i].type)
-			return option_type_names[i].name;
-
-	LOG_FATALX("unknown option type");
-	/* NOTREACHED */
 }
