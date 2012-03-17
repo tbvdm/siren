@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 Tim van der Molen <tbvdm@xs4all.nl>
+ * Copyright (c) 2011, 2012 Tim van der Molen <tbvdm@xs4all.nl>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -169,7 +169,7 @@ op_ao_start(struct sample_format *sf)
 {
 	ao_sample_format	 aosf;
 	int			 error;
-	const char		*file;
+	char			*file;
 
 	aosf.bits = sf->nbits;
 	aosf.byte_format = op_ao_byte_format;
@@ -185,6 +185,7 @@ op_ao_start(struct sample_format *sf)
 		file = option_get_string("ao-file");
 		op_ao_device = ao_open_file(op_ao_driver_id, file, 0, &aosf,
 		    NULL);
+		free(file);
 	}
 
 	if (op_ao_device == NULL) {
