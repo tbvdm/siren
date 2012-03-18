@@ -182,11 +182,10 @@ screen_calculate_rows(void)
 static void
 screen_clrtoeol(void)
 {
-	int col, maxcol, row;
+	int col, i, row;
 
 	getyx(stdscr, row, col);
-	maxcol = getmaxx(stdscr); /* getmaxx() is an extension. */
-	while (maxcol-- > col)
+	for (i = col; i < COLS; i++)
 		(void)addch(' ');
 	(void)move(row, col);
 }
