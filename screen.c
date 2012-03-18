@@ -45,6 +45,7 @@
 #define SCREEN_VIEW_ROW		1
 
 #ifdef HAVE_NETBSD_CURSES
+#undef clrtoeol
 #define clrtoeol		screen_clrtoeol
 #endif
 
