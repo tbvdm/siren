@@ -175,9 +175,9 @@ screen_calculate_rows(void)
 
 #ifdef HAVE_NETBSD_CURSES
 /*
- * NetBSD's clrtoeol() does not preserve the attributes of the cells it clears
- * (although it does preserve the colour attributes). We work around this by
- * using our own version which simply writes spaces to the end of the row.
+ * NetBSD's clrtoeol() does not set the background attributes of the characters
+ * it clears. This will be fixed in NetBSD 6.0. We work around this by using
+ * our own version which simply writes spaces to the end of the row.
  */
 static void
 screen_clrtoeol(void)
@@ -247,6 +247,11 @@ screen_configure_cursor(void)
 		(void)curs_set(0);
 
 #ifdef HAVE_NETBSD_CURSES
+	/*
+	 * NetBSD's curs_set() does not let the cursor-visibility change take
+	 * effect immediately. This will be fixed in NetBSD 6.0. We work around
+	 * this by calling refresh() after curs_set().
+	 */
 	(void)refresh();
 #endif
 	XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
