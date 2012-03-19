@@ -12,7 +12,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd January 29, 2012
+.Dd March 18, 2012
 .Dt SIREN 1
 .Os
 .Sh NAME
@@ -613,7 +613,7 @@ may be modified by changing the value of various options.
 Options are changed with the
 .Ic set
 command.
-There are five different types of options.
+There are six types of options.
 They are as follows.
 .Bl -tag -width Ds
 .It Sy Attribute options
@@ -683,6 +683,74 @@ Their allowed range is option-specific.
 .It Sy String options
 String options have textual values.
 Their allowed values are option-specific.
+.It Sy Format options
+Format options are strings that control the formatting of information displayed
+on the screen.
+Their syntax is reminiscent of that of the
+.Xr printf 3
+family of functions.
+.Pp
+A format string consists of ordinary characters, which are displayed unchanged,
+and format fields, which specify how a variable is to be displayed.
+A format field is introduced by the
+.Sq %
+character.
+Then, the following appears in sequence.
+.Bl -dash
+.It
+An optional
+.Sq -
+character to specify that the variable is to be left-aligned within the field.
+The default is to right-align.
+.It
+An optional
+.Sq 0
+character to specify that the variable is to be padded with leading zeroes.
+The default is to pad with space characters.
+This flag is ignored if the variable is to be left-aligned.
+.It
+An optional sequence of numeric characters to specify the field width.
+If the
+.Sq *
+character is specified, the width is variable and will be as large as the
+available space allows.
+If there are two or more fields with a variable width, the available space will
+be divided equally between them.
+.It
+The name of the variable to display, enclosed by braces
+.Po
+i.e. the
+.Sq {
+and
+.Sq }
+characters
+.Pc .
+Some variables also have a one-character alias.
+If this alias is specified, the braces can be omitted.
+Which variables are available is dependent on the option.
+.Pp
+Conditional fields are also supported.
+A conditional field is enclosed in braces and begins with a
+.Sq \&?
+character, followed by the name of the variable and two comma-separated fields.
+If the variable is a non-zero number or a non-empty string, the first value is
+displayed; otherwise, the second value.
+For example,
+.Sq %{?artist,yes,no}
+yields
+.Sq yes
+if
+.Em artist
+is a non-empty string and
+.Sq no
+otherwise.
+.El
+.Pp
+A literal
+.Sq %
+character is displayed by specifying
+.Sq %%
+in the format string.
 .El
 .Pp
 The following options are available.
@@ -707,48 +775,19 @@ Character attributes for informational messages.
 Background colour for informational messages.
 .It Ic info-fg Ar colour
 Foreground colour for informational messages.
-.It Ic library-format Ar string
+.It Ic library-format Ar format
 The format used to display tracks in the library.
-.Pp
-The format string may contain format specifiers.
-A format specifier is introduced by the
-.Sq %
-character.
-It is optionally followed by the
-.Sq -
-character to specify that the format value is to be left-aligned instead of
-right-aligned.
-An optional digit string specifies the width of the format value.
-A width of 0
-.Pq zero
-indicates that the width should be as large as the remaining available space
-allows.
-If there are two or more 0-width format-specifiers, the remaining available
-space is divided equally between them.
-The last character of the format specifier specifies the value to display.
-It should be one of the following characters.
-.Pp
-.Bl -tag -width Ds -compact
-.It %
-Literal
-.Sq %
-character.
-.It a
-Artist.
-.It d
-Duration.
-.It f
-File name.
-.It g
-Genre.
-.It l
-Album.
-.It n
-Track number.
-.It t
-Title.
-.It y
-Date or year.
+The following variables are available.
+.Bl -column "tracknumber" "alias"
+.It Sy Name Ta Sy Alias Ta Sy Description
+.It album Ta l Ta Album
+.It artist Ta a Ta Artist
+.It date Ta y Ta Date or year
+.It duration Ta d Ta Duration Pq as So m:ss Sc or So h:mm:ss Sc
+.It genre Ta g Ta Genre
+.It path Ta f Ta File path
+.It title Ta t Ta Title
+.It tracknumber Ta n Ta Track number
 .El
 .It Ic max-history-entries Ar number
 The maximum number of entries saved in the command and search histories.
@@ -778,22 +817,22 @@ Character attributes for the player area.
 Background colour for the player area.
 .It Ic player-fg Ar colour
 Foreground colour of the player area.
-.It Ic player-track-format Ar string
-The format for displaying the metadata of the track currently playing.
+.It Ic player-track-format Ar format
+The format used to display the currently playing track.
 See the
 .Ic library-format
-option for a description of the format specification.
+option for a list of available variables.
 .It Ic prompt-attr Ar attributes
 Character attributes for the command, confirmation and search prompts.
 .It Ic prompt-bg Ar colour
 Background colour for the command, confirmation and search prompts.
 .It Ic prompt-fg Ar colour
 Foreground colour for the command, confirmation and search prompts.
-.It Ic queue-format Ar string
-The format for displaying tracks in the queue.
+.It Ic queue-format Ar format
+The format used to display tracks in the queue.
 See the
 .Ic library-format
-option for a description of the format specification.
+option for a list of available variables.
 .It Ic repeat-all Ar boolean
 Whether to repeat playback of the library.
 .It Ic repeat-track Ar boolean
