@@ -167,6 +167,7 @@ Linux)
 
 	makefile_append CFLAGS -std=c99
 	makefile_append CPPFLAGS "-D_POSIX_C_SOURCE=200809L -D_GNU_SOURCE"
+	makefile_append LDFLAGS -ldl
 	;;
 
 NetBSD)
