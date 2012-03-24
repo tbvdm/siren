@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 Tim van der Molen <tbvdm@xs4all.nl>
+ * Copyright (c) 2011, 2012 Tim van der Molen <tbvdm@xs4all.nl>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -34,6 +34,9 @@ struct ip_sndfile_ipdata {
 	short int	*buf;
 	sf_count_t	 bufidx;
 	sf_count_t	 buflen;
+
+	/* Current position in track, measured in samples. */
+	sf_count_t	 position;
 };
 
 static void		 ip_sndfile_close(struct track *);
@@ -178,6 +181,7 @@ ip_sndfile_open(struct track *t, char **error)
 	ipd->buf = xcalloc(IP_SNDFILE_BUFSIZE, sizeof *ipd->buf);
 	ipd->bufidx = 0;
 	ipd->buflen = 0;
+	ipd->position = 0;
 
 	t->ipdata = ipd;
 	return 0;
@@ -214,6 +218,7 @@ ip_sndfile_read(struct track *t, int16_t *samples, size_t maxsamples,
 		samples[nsamples] = (int16_t)ipd->buf[ipd->bufidx++];
 	}
 
+	ipd->position += nsamples;
 	return (int)nsamples;
 }
 
@@ -221,39 +226,34 @@ static int
 ip_sndfile_seek(struct track *t, unsigned int pos, char **error)
 {
 	struct ip_sndfile_ipdata *ipd;
-	sf_count_t offset;
+	sf_count_t frame;
 
 	ipd = t->ipdata;
 
-	offset = (sf_count_t)pos * ipd->sfinfo.samplerate;
-	if (sf_seek(ipd->sffp, offset, SEEK_SET) == -1) {
+	frame = (sf_count_t)pos * ipd->sfinfo.samplerate;
+	if (sf_seek(ipd->sffp, frame, SEEK_SET) == -1) {
 		*error = xstrdup(sf_strerror(ipd->sffp));
 		LOG_ERRX("sf_seek: %s: %s", t->path, *error);
 		return IP_ERROR_PLUGIN;
 	}
 
+	ipd->position = frame * ipd->sfinfo.channels;
 	return 0;
 }
 
 static int
-ip_sndfile_get_position(struct track *t, unsigned int *pos, char **error)
+ip_sndfile_get_position(struct track *t, unsigned int *pos,
+    UNUSED char **error)
 {
 	struct ip_sndfile_ipdata *ipd;
-	sf_count_t offset;
 
 	ipd = t->ipdata;
 
-	if ((offset = sf_seek(ipd->sffp, 0, SEEK_CUR)) == -1) {
-		*error = xstrdup(sf_strerror(ipd->sffp));
-		LOG_ERRX("sf_seek: %s: %s", t->path, *error);
-		*pos = 0;
-		return IP_ERROR_PLUGIN;
-	}
-
-	if (ipd->sfinfo.samplerate <= 0)
+	if (ipd->sfinfo.channels <= 0 || ipd->sfinfo.samplerate <= 0)
 		*pos = 0;
 	else
-		*pos = (unsigned int)(offset / ipd->sfinfo.samplerate);
+		*pos = (unsigned int)(ipd->position / ipd->sfinfo.channels /
+		    ipd->sfinfo.samplerate);
 
 	return 0;
 }
