@@ -153,6 +153,23 @@ ip_sndfile_get_metadata(struct track *t, char **error)
 }
 
 static int
+ip_sndfile_get_position(struct track *t, unsigned int *pos,
+    UNUSED char **error)
+{
+	struct ip_sndfile_ipdata *ipd;
+
+	ipd = t->ipdata;
+
+	if (ipd->sfinfo.channels <= 0 || ipd->sfinfo.samplerate <= 0)
+		*pos = 0;
+	else
+		*pos = (unsigned int)(ipd->position / ipd->sfinfo.channels /
+		    ipd->sfinfo.samplerate);
+
+	return 0;
+}
+
+static int
 ip_sndfile_open(struct track *t, char **error)
 {
 	struct ip_sndfile_ipdata *ipd;
@@ -238,22 +255,5 @@ ip_sndfile_seek(struct track *t, unsigned int pos, char **error)
 	}
 
 	ipd->position = frame * ipd->sfinfo.channels;
-	return 0;
-}
-
-static int
-ip_sndfile_get_position(struct track *t, unsigned int *pos,
-    UNUSED char **error)
-{
-	struct ip_sndfile_ipdata *ipd;
-
-	ipd = t->ipdata;
-
-	if (ipd->sfinfo.channels <= 0 || ipd->sfinfo.samplerate <= 0)
-		*pos = 0;
-	else
-		*pos = (unsigned int)(ipd->position / ipd->sfinfo.channels /
-		    ipd->sfinfo.samplerate);
-
 	return 0;
 }
