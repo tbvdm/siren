@@ -220,6 +220,7 @@ ip_sndfile_read(struct track *t, int16_t *samples, size_t maxsamples,
 			ipd->buflen = sf_read_short(ipd->sffp, ipd->buf,
 			    IP_SNDFILE_BUFSIZE);
 
+			/* Check for error. */
 			if (sf_error(ipd->sffp) != SF_ERR_NO_ERROR) {
 				*error = xstrdup(sf_strerror(ipd->sffp));
 				LOG_ERRX("sf_read_short: %s: %s", t->path,
@@ -227,8 +228,8 @@ ip_sndfile_read(struct track *t, int16_t *samples, size_t maxsamples,
 				return IP_ERROR_PLUGIN;
 			}
 
+			/* Check for EOF. */
 			if (ipd->buflen == 0)
-				/* EOF reached. */
 				break;
 		}
 
