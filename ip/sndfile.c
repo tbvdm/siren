@@ -152,6 +152,7 @@ ip_sndfile_get_metadata(struct track *t, char **error)
 	return 0;
 }
 
+/* ARGSUSED2 */
 static int
 ip_sndfile_get_position(struct track *t, unsigned int *pos,
     UNUSED char **error)
