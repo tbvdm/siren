@@ -257,5 +257,10 @@ ip_sndfile_seek(struct track *t, unsigned int pos, char **error)
 	}
 
 	ipd->position = frame * ipd->sfinfo.channels;
+
+	/* Discard buffered samples from the old position. */
+	ipd->bufidx = 0;
+	ipd->buflen = 0;
+
 	return 0;
 }
