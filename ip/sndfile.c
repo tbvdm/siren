@@ -245,12 +245,12 @@ static int
 ip_sndfile_seek(struct track *t, unsigned int pos, char **error)
 {
 	struct ip_sndfile_ipdata *ipd;
-	sf_count_t frame;
+	sf_count_t frame, seekframe;
 
 	ipd = t->ipdata;
 
-	frame = (sf_count_t)pos * ipd->sfinfo.samplerate;
-	if (sf_seek(ipd->sffp, frame, SEEK_SET) == -1) {
+	seekframe = (sf_count_t)pos * ipd->sfinfo.samplerate;
+	if ((frame = sf_seek(ipd->sffp, seekframe, SEEK_SET)) == -1) {
 		*error = xstrdup(sf_strerror(ipd->sffp));
 		LOG_ERRX("sf_seek: %s: %s", t->path, *error);
 		return IP_ERROR_PLUGIN;
