@@ -339,12 +339,12 @@ ip_mad_get_metadata(struct track *t, char **error)
 	else {
 		t->duration = (unsigned int)strtonum(tlen, 0, UINT_MAX,
 		    &errstr);
-		free(tlen);
 		if (errstr != NULL)
 			LOG_ERRX("%s: %s: TLEN frame is %s", t->path, tlen,
 			    errstr);
 		else
 			t->duration /= 1000;
+		free(tlen);
 	}
 
 	if (id3_file_close(file) == -1)
