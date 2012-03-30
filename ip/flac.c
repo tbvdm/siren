@@ -132,7 +132,9 @@ ip_flac_get_metadata(struct track *t, char **error)
 		return IP_ERROR_PLUGIN;
 	}
 
-	if (streaminfo.data.stream_info.sample_rate != 0)
+	if (streaminfo.data.stream_info.sample_rate == 0)
+		t->duration = 0;
+	else
 		t->duration =
 		    (unsigned int)streaminfo.data.stream_info.total_samples /
 		    streaminfo.data.stream_info.sample_rate;
