@@ -54,7 +54,7 @@ static int		 ip_sndfile_seek(struct track *, unsigned int,
  * libsndfile distribution.
  */
 static const char	*ip_sndfile_extensions[] = {
-	"aif", "aifc", "aiff",	/* AIFF; AIFF-C (compressed)  */
+	"aif", "aifc", "aiff",	/* AIFF; AIFF-C (compressed) */
 	"au", "snd",		/* NeXT/Sun audio */
 	"avr",			/* Audio Visual Research */
 	"caf",			/* Apple Core Audio Format */
