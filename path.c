@@ -60,8 +60,7 @@ path_expand_tilde(const char *path)
 	if ((userlen = strcspn(path, "/")) == 0)
 		home = path_get_home_dir(NULL);
 	else {
-		user = xmalloc(userlen + 1);
-		(void)strlcpy(user, path, userlen + 1);
+		user = xstrndup(path, userlen);
 		home = path_get_home_dir(user);
 		free(user);
 	}
