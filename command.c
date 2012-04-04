@@ -632,7 +632,7 @@ command_bind_key_parse(int argc, char **argv, void **datap, char **error)
 	return 0;
 }
 
-void
+static void
 command_cd_exec(void *datap)
 {
 	char *dir;
@@ -641,7 +641,7 @@ command_cd_exec(void *datap)
 	browser_change_dir(dir);
 }
 
-int
+static int
 command_cd_parse(int argc, char **argv, void **datap, char **error)
 {
 	if (argc > 2) {
