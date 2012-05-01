@@ -14,7 +14,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <errno.h>
 #include <pwd.h>
 #include <stdlib.h>
 #include <string.h>
@@ -129,20 +128,17 @@ path_get_home_dir(const char *user)
 
 	buf = xmalloc(bufsize);
 
-	if (user == NULL) {
-		if ((ret = getpwuid_r(getuid(), &pw, buf, bufsize, &pwp))) {
-			errno = ret;
-			LOG_ERR("getpwuid_r");
-		}
-	} else
-		if ((ret = getpwnam_r(user, &pw, buf, bufsize, &pwp))) {
-			errno = ret;
-			LOG_ERR("getpwnam_r");
-		}
+	if (user == NULL)
+		ret = getpwuid_r(getuid(), &pw, buf, bufsize, &pwp);
+	else
+		ret = getpwnam_r(user, &pw, buf, bufsize, &pwp);
 
-	home = (!ret && pwp != NULL) ? xstrdup(pw.pw_dir) : NULL;
+	if (ret == 0 && pwp != NULL)
+		home = xstrdup(pw.pw_dir);
+	else
+		home = NULL;
+
 	free(buf);
-
 	return home;
 }
 

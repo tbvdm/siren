@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 Tim van der Molen <tbvdm@xs4all.nl>
+ * Copyright (c) 2011, 2012 Tim van der Molen <tbvdm@xs4all.nl>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -119,9 +119,7 @@ log_init(int enable)
 		setbuf(log_fp, NULL);
 		log_enabled = 1;
 
-		if (uname(&un) == -1)
-			LOG_ERR("uname");
-		else
+		if (uname(&un) != -1)
 			log_info(NULL, "siren %s (%s %s %s)", VERSION,
 			    un.sysname, un.release, un.machine);
 	}
