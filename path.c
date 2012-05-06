@@ -22,25 +22,6 @@
 #include "siren.h"
 
 /*
- * Absolutise a relative path by prepending the current working directory to
- * it.
- */
-static char *
-path_absolutise(const char *path)
-{
-	char *abspath, *cwd;
-
-	if (path[0] == '/')
-		return xstrdup(path);
-
-	cwd = path_get_cwd();
-	(void)xasprintf(&abspath, "%s/%s", cwd, path);
-	free(cwd);
-
-	return abspath;
-}
-
-/*
  * Replace a leading tilde, optionally followed by a user name, in a path with
  * the user's home directory.
  */
@@ -156,14 +137,18 @@ path_get_home_dir(const char *user)
 char *
 path_normalise(const char *path)
 {
-	char	*npath, *tmp;
+	char	*cwd, *npath, *tmp;
 	size_t	 i, j, pathlen;
 
 	tmp = NULL;
 	if (path[0] == '~' && (tmp = path_expand_tilde(path)) != NULL)
 		path = tmp;
-	if (path[0] != '/')
-		path = tmp = path_absolutise(path);
+	if (path[0] != '/') {
+		cwd = path_get_cwd();
+		(void)xasprintf(&tmp, "%s/%s", cwd, path);
+		free(cwd);
+		path = tmp;
+	}
 
 	pathlen = strlen(path);
 	npath = xmalloc(pathlen + 1);
