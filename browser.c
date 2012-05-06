@@ -35,7 +35,7 @@ struct browser_entry {
 
 static void		 browser_free_entry(void *);
 static void		 browser_get_entry_text(const void *, char *, size_t);
-static int		 browser_read_dir(const char *);
+static void		 browser_read_dir(void);
 static int		 browser_search_entry(const void *, const char *);
 static void		 browser_select_entry(const char *);
 
@@ -71,41 +71,44 @@ browser_activate_entry(void)
 void
 browser_change_dir(const char *dir)
 {
-	char *lastslash, *newdir, *prevdir, *tmp;
-
-	prevdir = NULL;
+	char *newdir, *prevdir, *tmp;
 
 	if (dir[0] == '/' || dir[0] == '~')
 		newdir = path_normalise(dir);
 	else {
-		/*
-		 * If we are going to the parent directory, remember the name
-		 * of the current directory so that we can select it once we
-		 * are in the parent directory.
-		 */
-		if (!strcmp(dir, "..") &&
-		    (lastslash = strrchr(browser_dir, '/')) != NULL)
-			prevdir = xstrdup(lastslash + 1);
-
 		(void)xasprintf(&tmp, "%s/%s", browser_dir, dir);
 		newdir = path_normalise(tmp);
 		free(tmp);
 	}
 
-	if (browser_read_dir(newdir) == -1)
+	if (chdir(newdir) != 0) {
+		msg_err("Cannot change to directory: %s", newdir);
 		free(newdir);
-	else {
-		free(browser_dir);
-		browser_dir = newdir;
-
-		if (prevdir != NULL)
-			/* Select the remembered directory. */
-			browser_select_entry(prevdir);
-
-		browser_print();
+		return;
 	}
 
-	free(prevdir);
+	/*
+	 * If we are changing to the parent directory, remember the
+	 * subdirectory we were in previously so that we can preselect it.
+	 */
+	prevdir = NULL;
+	if (!strcmp(dir, "..")) {
+		tmp = strrchr(browser_dir, '/');
+		if (tmp != NULL && *++tmp != '\0')
+			prevdir = xstrdup(tmp);
+	}
+
+	free(browser_dir);
+	browser_dir = newdir;
+	browser_read_dir();
+
+	/* Preselect the subdirectory we were in previously, if applicable. */
+	if (prevdir != NULL) {
+		browser_select_entry(prevdir);
+		free(prevdir);
+	}
+
+	browser_print();
 }
 
 void
@@ -171,9 +174,8 @@ browser_init(void)
 {
 	browser_menu = menu_init(browser_free_entry, browser_get_entry_text,
 	    browser_search_entry);
-
 	browser_dir = path_get_cwd();
-	(void)browser_read_dir(browser_dir);
+	browser_read_dir();
 }
 
 void
@@ -185,8 +187,8 @@ browser_print(void)
 	}
 }
 
-static int
-browser_read_dir(const char *dir)
+static void
+browser_read_dir(void)
 {
 	struct dir		*d;
 	struct dir_entry	*de;
@@ -194,12 +196,12 @@ browser_read_dir(const char *dir)
 	struct browser_entry	*be, *mbe;
 	const struct ip		*ip;
 
-	if ((d = dir_open(dir)) == NULL) {
-		msg_err("Cannot open directory: %s", dir);
-		return -1;
-	}
-
 	menu_remove_all_entries(browser_menu);
+
+	if ((d = dir_open(browser_dir)) == NULL) {
+		msg_err("Cannot open directory: %s", browser_dir);
+		return;
+	}
 
 	while ((de = dir_get_entry(d)) != NULL) {
 		if (errno) {
@@ -258,7 +260,6 @@ browser_read_dir(const char *dir)
 		msg_err("Cannot read directory");
 
 	dir_close(d);
-	return 0;
 }
 
 void
@@ -267,20 +268,21 @@ browser_refresh_dir(void)
 	struct browser_entry	*e;
 	char			*name;
 
+	/* Remember the selected entry so that we can preselect it. */
 	if ((e = menu_get_selected_entry_data(browser_menu)) == NULL)
 		name = NULL;
 	else
-		/* Remember selected entry. */
 		name = xstrdup(e->name);
 
-	if (browser_read_dir(browser_dir) != -1) {
-		if (name != NULL) {
-			/* Select remembered entry. */
-			browser_select_entry(name);
-			free(name);
-		}
-		browser_print();
+	browser_read_dir();
+
+	/* Preselect the entry that was selected previously. */
+	if (name != NULL) {
+		browser_select_entry(name);
+		free(name);
 	}
+
+	browser_print();
 }
 
 static int
