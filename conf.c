@@ -34,18 +34,17 @@ conf_end(void)
 void
 conf_init(const char *dir)
 {
-	char *home, *tmp;
+	char *home;
 
 	if (dir != NULL)
 		conf_dir = path_normalise(dir);
 	else {
 		if ((home = path_get_home_dir(NULL)) == NULL)
-			(void)xasprintf(&tmp, "/%s", CONF_DIR);
-		else
-			(void)xasprintf(&tmp, "%s/%s", home, CONF_DIR);
-		conf_dir = path_normalise(tmp);
-		free(home);
-		free(tmp);
+			(void)xasprintf(&conf_dir, "/%s", CONF_DIR);
+		else {
+			(void)xasprintf(&conf_dir, "%s/%s", home, CONF_DIR);
+			free(home);
+		}
 	}
 
 	if (mkdir(conf_dir, S_IRWXU | S_IRWXG | S_IRWXO) == -1 &&
