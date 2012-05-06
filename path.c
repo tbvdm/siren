@@ -181,8 +181,8 @@ path_normalise(const char *path)
 		else if (path[i] == '.' && path[i + 1] == '.' &&
 		    (path[i + 2] == '/' || path[i + 2] == '\0')) {
 			/*
-			 * Remove the last path element including its
-			 * preceeding slash.
+			 * Remove the last path element including its preceding
+			 * slash.
 			 */
 			while (j > 0 && npath[--j] != '/')
 				;
