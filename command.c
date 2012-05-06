@@ -17,7 +17,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include <glob.h>
 #include <limits.h>
 #include <stdlib.h>
 #include <string.h>
@@ -463,57 +462,33 @@ command_add_path_exec(void *datap)
 	struct command_add_path_data	*data;
 	struct track			*t;
 	struct stat			 sb;
-	glob_t				 g;
-	size_t				 i;
-	int				 flags;
+	int				 i;
 
 	data = datap;
-
-#ifdef __clang__
-	/*
-	 * Prevent a false positive from the Clang static analyzer. The false
-	 * positive is based on the assumption that data->paths[0] can be NULL,
-	 * but command_add_path_parse() guarantees it is not.
-	 */
-	if (data->paths[0] == NULL)
-		return;
-#endif
 
 	if (data->use_current_view)
 		data->view = view_get_id();
 
-	flags = GLOB_NOCHECK | GLOB_NOSORT;
 	for (i = 0; data->paths[i] != NULL; i++) {
-		if (glob(data->paths[i], flags, NULL, &g)) {
-			LOG_ERRX("%s: glob() failed", data->paths[i]);
-			break;
-		}
-		flags |= GLOB_APPEND;
-	}
-
-	/* gl_pathc is an int on OpenBSD. */
-	for (i = 0; i < (size_t)g.gl_pathc; i++) {
-		if (stat(g.gl_pathv[i], &sb) == -1) {
-			LOG_ERR("stat: %s", g.gl_pathv[i]);
-			msg_err("%s", g.gl_pathv[i]);
+		if (stat(data->paths[i], &sb) == -1) {
+			LOG_ERR("stat: %s", data->paths[i]);
+			msg_err("%s", data->paths[i]);
 			continue;
 		}
 
 		switch (sb.st_mode & S_IFMT) {
 		case S_IFDIR:
-			view_add_dir(data->view, g.gl_pathv[i]);
+			view_add_dir(data->view, data->paths[i]);
 			break;
 		case S_IFREG:
-			if ((t = track_init(g.gl_pathv[i], NULL)) != NULL)
+			if ((t = track_init(data->paths[i], NULL)) != NULL)
 				view_add_track(data->view, t);
 			break;
 		default:
-			msg_errx("%s: Unsupported file type", g.gl_pathv[i]);
+			msg_errx("%s: Unsupported file type", data->paths[i]);
 			break;
 		}
 	}
-
-	globfree(&g);
 }
 
 static void
