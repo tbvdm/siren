@@ -73,7 +73,7 @@ browser_change_dir(const char *dir)
 {
 	char *newdir, *prevdir, *tmp;
 
-	if (dir[0] == '/' || dir[0] == '~')
+	if (dir[0] == '/')
 		newdir = path_normalise(dir);
 	else {
 		(void)xasprintf(&tmp, "%s/%s", browser_dir, dir);
