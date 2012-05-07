@@ -100,8 +100,6 @@ struct command_unbind_key_data {
 	int		  key;
 };
 
-static int command_string_to_argv(const char *, char ***, char **);
-
 #define COMMAND_EXEC_PROTOTYPE(cmd) \
     static void command_ ## cmd ## _exec(void *)
 #define COMMAND_FREE_PROTOTYPE(cmd) \
@@ -900,16 +898,6 @@ command_execute(struct command *cmd, void *data)
 	cmd->exec(data);
 }
 
-static void
-command_free_argv(int argc, char **argv)
-{
-	if (argc) {
-		while (argc-- > 0)
-			free(argv[argc]);
-		free(argv);
-	}
-}
-
 void
 command_free_data(struct command *cmd, void *data)
 {
@@ -951,8 +939,10 @@ command_parse_string(const char *str, struct command **cmd,
 	int		  argc, ret;
 	char		**argv;
 
-	if ((argc = command_string_to_argv(str, &argv, error)) == -1)
+	if ((ret = argv_parse(str, &argc, &argv)) != 0) {
+		*error = xstrdup(argv_error(ret));
 		return -1;
+	}
 
 	*cmd = NULL;
 	if (argc == 0)
@@ -972,7 +962,7 @@ command_parse_string(const char *str, struct command **cmd,
 		ret = (*cmd)->parse(argc, argv, cmd_data, error);
 	}
 
-	command_free_argv(argc, argv);
+	argv_free(argc, argv);
 	return ret;
 }
 
@@ -1649,129 +1639,6 @@ static void
 command_stop_exec(UNUSED void *datap)
 {
 	player_stop();
-}
-
-static int
-command_string_to_argv(const char *line, char ***argv, char **error)
-{
-	size_t	 argsize;
-	int	 argc, backslash, done, i;
-	char	*arg;
-	enum {
-		QUOTE_NONE,
-		QUOTE_DOUBLE,
-		QUOTE_SINGLE
-	} quote;
-
-	arg = NULL;
-	*argv = NULL;
-	argsize = 0;
-	argc = backslash = done = i = 0;
-	quote = QUOTE_NONE;
-
-	while (!done) {
-		if (quote == QUOTE_NONE) {
-			if (backslash) {
-				switch (line[i]) {
-				case '\0':
-					/* Syntax error. */
-					*error = xstrdup("Syntax error: "
-					    "backslash at end of line");
-					done = 1;
-					break;
-				case '\\':
-				case '\'':
-				case '"':
-				case ' ':
-				case '#':
-					arg = xrealloc(arg, argsize + 1);
-					arg[argsize++] = line[i];
-					backslash = 0;
-					break;
-				default:
-					arg = xrealloc(arg, argsize + 2);
-					arg[argsize++] = '\\';
-					arg[argsize++] = line[i];
-					backslash = 0;
-					break;
-				}
-			} else {
-				switch (line[i]) {
-				case '\\':
-					backslash = 1;
-					break;
-				case '\'':
-					quote = QUOTE_SINGLE;
-					break;
-				case '"':
-					quote = QUOTE_DOUBLE;
-					break;
-				case '\0':
-				case '#':
-					done = 1;
-					/* FALLTHROUGH */
-				case ' ':
-				case '\t':
-					if (argsize) {
-						arg = xrealloc(arg,
-						    argsize + 1);
-						arg[argsize] = '\0';
-
-						*argv = xrecalloc(*argv,
-						    argc + 1, sizeof(char *));
-						(*argv)[argc++] = arg;
-
-						arg = NULL;
-						argsize = 0;
-					}
-					break;
-				default:
-					arg = xrealloc(arg, argsize + 1);
-					arg[argsize++] = line[i];
-					break;
-				}
-			}
-		} else {
-			if (line[i] == '\0') {
-				/* Syntax error. */
-				*error = xstrdup("Syntax error: missing "
-				    "quotation mark");
-				done = 1;
-			} else if (!backslash) {
-				if ((quote == QUOTE_SINGLE && line[i] == '\'')
-				    || (quote == QUOTE_DOUBLE && line[i] ==
-				    '"'))
-					quote = QUOTE_NONE;
-				else if (line[i] == '\\')
-					backslash = 1;
-				else {
-					arg = xrealloc(arg, argsize + 1);
-					arg[argsize++] = line[i];
-				}
-			} else {
-				if ((quote == QUOTE_SINGLE && line[i] == '\'')
-				    || (quote == QUOTE_DOUBLE && line[i] ==
-				    '"')) {
-					arg = xrealloc(arg, argsize + 1);
-					arg[argsize++] = line[i];
-				} else {
-					arg = xrealloc(arg, argsize + 2);
-					arg[argsize++] = '\\';
-					arg[argsize++] = line[i];
-				}
-				backslash = 0;
-			}
-		}
-		i++;
-	}
-
-	if (backslash || quote != QUOTE_NONE) {
-		command_free_argv(argc, *argv);
-		free(arg);
-		return -1;
-	}
-
-	return argc;
 }
 
 static void

@@ -319,6 +319,10 @@ struct op {
 	int		 (*write)(void *, size_t) NONNULL();
 };
 
+const char	*argv_error(int);
+void		 argv_free(int , char **);
+int		 argv_parse(const char *, int *, char ***);
+
 void		 bind_end(void);
 int		 bind_execute(enum bind_scope, int);
 const char	*bind_get_command(enum bind_scope, int key);
