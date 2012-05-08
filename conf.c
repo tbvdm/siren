@@ -97,7 +97,7 @@ conf_read_file(void)
 		}
 	}
 	if (ferror(fp)) {
-		LOG_ERR("fgetln: %s", buf);
+		LOG_ERR("fgetln: %s", file);
 		msg_err("Cannot read configuration file");
 	}
 	free(lbuf);
