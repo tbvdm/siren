@@ -171,8 +171,8 @@ argv_get_arg(const char **line, int *error)
 			case '*':
 			case '?':
 			case '[':
+				/* Prevent expansion by glob(). */
 				if (escaped) {
-					/* Prevent expansion by glob(). */
 					arg[len++] = '\\';
 					escaped = 0;
 				}
@@ -258,9 +258,7 @@ argv_get_arg(const char **line, int *error)
 				arg[len++] = *(*line)++;
 				break;
 			case '~':
-				/* Prevent expansion by
-				 * argv_expand_tilde().
-				 */
+				/* Prevent expansion by argv_expand_tilde(). */
 				if (escaped) {
 					arg[len++] = '\\';
 					arg[len++] = '\\';
