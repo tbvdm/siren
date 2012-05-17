@@ -27,9 +27,6 @@
 #include "compat/queue.h"
 #endif
 
-#define PLUGIN_IP_DIR	PLUGIN_DIR "/ip"
-#define PLUGIN_OP_DIR	PLUGIN_DIR "/op"
-
 struct plugin_ip_entry {
 	void		*handle;
 	const struct ip	*ip;

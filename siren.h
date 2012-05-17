@@ -30,6 +30,8 @@
 #define CACHE_FILE		"metadata"
 #define CONF_FILE		"config"
 #define LIBRARY_FILE		"library"
+#define PLUGIN_IP_DIR		PLUGIN_DIR "/ip"
+#define PLUGIN_OP_DIR		PLUGIN_DIR "/op"
 
 /* Return values of input plug-in functions. */
 #define IP_ERROR_PLUGIN		-1
