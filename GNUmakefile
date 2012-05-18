@@ -44,6 +44,7 @@ MKDEP?=		mkdep
 
 INSTALL_DIR=	install -dm 755
 INSTALL_BIN=	install -m 555
+INSTALL_LIB=	install -m 444
 INSTALL_MAN=	install -m 444
 
 CDIAGFLAGS+=	-Wall -W -Wbad-function-cast -Wcast-align -Wcast-qual \
@@ -120,8 +121,8 @@ install:
 	${INSTALL_DIR} ${DESTDIR}${PLUGINDIR}/op
 	${INSTALL_BIN} ${PROG} ${DESTDIR}${BINDIR}
 	${INSTALL_MAN} ${PROG}.1 ${DESTDIR}${MANDIR}/man1
-	${INSTALL_BIN} ${IP_LIBS} ${DESTDIR}${PLUGINDIR}/ip
-	${INSTALL_BIN} ${OP_LIBS} ${DESTDIR}${PLUGINDIR}/op
+	${INSTALL_LIB} ${IP_LIBS} ${DESTDIR}${PLUGINDIR}/ip
+	${INSTALL_LIB} ${OP_LIBS} ${DESTDIR}${PLUGINDIR}/op
 
 lint: ${LOBJS} ${IP_LOBJS} ${OP_LOBJS}
 	${LINT} ${LINTFLAGS} $(filter -l%, ${LDFLAGS}) ${LOBJS} ${IP_LOBJS} \
