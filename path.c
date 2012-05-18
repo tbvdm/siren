@@ -68,8 +68,11 @@ path_get_home_dir(const char *user)
 	int		 ret;
 	char		*buf, *home;
 
-	if (user == NULL && (home = getenv("HOME")) != NULL && home[0] != '\0')
-		return xstrdup(home);
+	if (user == NULL) {
+		home = getenv("HOME");
+		if (home != NULL && home[0] != '\0')
+			return xstrdup(home);
+	}
 
 	if ((bufsize = XSYSCONF(_SC_GETPW_R_SIZE_MAX)) == -1)
 		return NULL;
