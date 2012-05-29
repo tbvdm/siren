@@ -496,6 +496,7 @@ void		 option_get_number_range(const char *, int *, int *) NONNULL();
 char		*option_get_string(const char *) NONNULL();
 int		 option_get_type(const char *, enum option_type *) NONNULL();
 void		 option_init(void);
+void		 option_lock(void);
 void		 option_set_attrib(const char *, int) NONNULL();
 void		 option_set_boolean(const char *, int) NONNULL();
 void		 option_set_colour(const char *, enum colour) NONNULL();
@@ -507,6 +508,7 @@ int		 option_string_to_boolean(const char *) NONNULL();
 int		 option_string_to_colour(const char *, enum colour *)
 		    NONNULL();
 void		 option_toggle_boolean(const char *) NONNULL();
+void		 option_unlock(void);
 
 char		*path_get_cwd(void);
 char		*path_get_home_dir(const char *);

@@ -342,6 +342,10 @@ option_get_colour(const char *name)
 	return colour;
 }
 
+/*
+ * option_lock() must be called before calling this function, and
+ * option_unlock() must be called afterwards.
+ */
 struct format *
 option_get_format(const char *name)
 {
@@ -349,9 +353,7 @@ option_get_format(const char *name)
 	struct format		*format;
 
 	o = option_find_type(name, OPTION_TYPE_FORMAT);
-	XPTHREAD_MUTEX_LOCK(&option_entry_value_mtx);
 	format = o->value.format;
-	XPTHREAD_MUTEX_UNLOCK(&option_entry_value_mtx);
 	return format;
 }
 
@@ -480,6 +482,12 @@ option_insert_entry(struct option_entry *o)
 {
 	if (SPLAY_INSERT(option_tree, &option_tree, o) != NULL)
 		LOG_FATALX("%s: option already exists", o->name);
+}
+
+void
+option_lock(void)
+{
+	XPTHREAD_MUTEX_LOCK(&option_entry_value_mtx);
 }
 
 void
@@ -634,4 +642,10 @@ option_toggle_boolean(const char *name)
 	XPTHREAD_MUTEX_UNLOCK(&option_entry_value_mtx);
 	if (o->callback != NULL)
 		o->callback();
+}
+
+void
+option_unlock(void)
+{
+	XPTHREAD_MUTEX_UNLOCK(&option_entry_value_mtx);
 }

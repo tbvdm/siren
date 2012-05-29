@@ -1608,8 +1608,10 @@ command_show_option_exec(void *datap)
 		    option_colour_to_string(option_get_colour(name)));
 		break;
 	case OPTION_TYPE_FORMAT:
+		option_lock();
 		msg_info("%s",
 		    option_format_to_string(option_get_format(name)));
+		option_unlock();
 		break;
 	case OPTION_TYPE_NUMBER:
 		msg_info("%d", option_get_number(name));

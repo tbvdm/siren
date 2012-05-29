@@ -222,8 +222,6 @@ queue_print(void)
 	if (view_get_id() != VIEW_ID_QUEUE)
 		return;
 
-	queue_format = option_get_format("queue-format");
-
 	XPTHREAD_MUTEX_LOCK(&queue_menu_mtx);
 	screen_view_title_printf("Queue: %u track%s (%u:%02u:%02u)",
 	    menu_get_nentries(queue_menu),
@@ -231,7 +229,10 @@ queue_print(void)
 	    HOURS(queue_duration),
 	    HMINS(queue_duration),
 	    MSECS(queue_duration));
+	option_lock();
+	queue_format = option_get_format("queue-format");
 	menu_print(queue_menu);
+	option_unlock();
 	XPTHREAD_MUTEX_UNLOCK(&queue_menu_mtx);
 }
 

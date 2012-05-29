@@ -87,8 +87,6 @@ static pthread_mutex_t		 player_op_mtx = PTHREAD_MUTEX_INITIALIZER;
 static struct track		*player_track = NULL;
 static pthread_mutex_t		 player_track_mtx = PTHREAD_MUTEX_INITIALIZER;
 
-static struct format		*player_track_format;
-
 static enum byte_order		 player_byte_order;
 
 /*
@@ -465,8 +463,6 @@ player_playback_handler(UNUSED void *p)
 void
 player_print(void)
 {
-	player_track_format = option_get_format("player-track-format");
-
 	XPTHREAD_MUTEX_LOCK(&player_state_mtx);
 	player_print_track();
 	player_print_status();
@@ -547,17 +543,21 @@ player_print_status(void)
 static void
 player_print_track(void)
 {
-	size_t	 bufsize;
-	char	*buf;
+	struct format	*format;
+	size_t		 bufsize;
+	char		*buf;
 
 	bufsize = screen_get_ncols() + 1;
 	buf = xmalloc(bufsize);
 
 	if (player_track == NULL)
 		buf[0] = '\0';
-	else
-		format_track_snprintf(buf, bufsize, player_track_format,
-		    player_track);
+	else {
+		option_lock();
+		format = option_get_format("player-track-format");
+		format_track_snprintf(buf, bufsize, format, player_track);
+		option_unlock();
+	}
 
 	screen_player_track_print(buf);
 	free(buf);

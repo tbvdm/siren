@@ -251,8 +251,6 @@ library_print(void)
 	if (view_get_id() != VIEW_ID_LIBRARY)
 		return;
 
-	library_format = option_get_format("library-format");
-
 	XPTHREAD_MUTEX_LOCK(&library_menu_mtx);
 	screen_view_title_printf("Library: %u track%s (%u:%02u:%02u)",
 	    menu_get_nentries(library_menu),
@@ -260,7 +258,10 @@ library_print(void)
 	    HOURS(library_duration),
 	    HMINS(library_duration),
 	    MSECS(library_duration));
+	option_lock();
+	library_format = option_get_format("library-format");
 	menu_print(library_menu);
+	option_unlock();
 	XPTHREAD_MUTEX_UNLOCK(&library_menu_mtx);
 }
 
