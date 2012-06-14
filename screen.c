@@ -49,24 +49,25 @@
 #define clrtoeol		screen_clrtoeol
 #endif
 
-static short int		screen_get_colour(const char *, enum colour);
-static void			screen_msg_vprintf(int, const char *, va_list);
-static void			screen_print_row(const char *);
-static void			screen_resize(void);
-static void			screen_view_print_row(chtype, const char *);
-static void			screen_vprintf(const char *, va_list);
+static short int		 screen_get_colour(const char *, enum colour);
+static void			 screen_msg_vprintf(int, const char *,
+				    va_list);
+static void			 screen_print_row(const char *);
+static void			 screen_resize(void);
+static void			 screen_view_print_row(chtype, const char *);
+static void			 screen_vprintf(const char *, va_list);
 
-static pthread_mutex_t		screen_curses_mtx = PTHREAD_MUTEX_INITIALIZER;
-static int			screen_have_colours;
-static int			screen_player_row;
-static int			screen_status_col;
-static int			screen_status_row;
-static int			screen_view_current_row;
-static int			screen_view_selected_row;
-static int			screen_view_nrows;
+static pthread_mutex_t		 screen_curses_mtx = PTHREAD_MUTEX_INITIALIZER;
+static int			 screen_have_colours;
+static int			 screen_player_row;
+static int			 screen_status_col;
+static int			 screen_status_row;
+static int			 screen_view_current_row;
+static int			 screen_view_selected_row;
+static int			 screen_view_nrows;
 
 #ifdef HAVE_USE_DEFAULT_COLORS
-static int			screen_have_default_colours;
+static int			 screen_have_default_colours;
 #endif
 
 static const struct {
@@ -158,20 +159,6 @@ static struct {
 	{ A_NORMAL, 8, "view-title-attr", "view-title-bg", "view-title-fg" },
 	{ A_NORMAL, 9, "view-attr",       "view-bg",       "view-fg" }
 };
-
-static void
-screen_calculate_rows(void)
-{
-	if (LINES < SCREEN_TITLE_NROWS + SCREEN_PLAYER_NROWS +
-	    SCREEN_STATUS_NROWS)
-		screen_view_nrows = 0;
-	else
-		screen_view_nrows = LINES - SCREEN_TITLE_NROWS -
-		    SCREEN_PLAYER_NROWS - SCREEN_STATUS_NROWS;
-
-	screen_player_row = SCREEN_TITLE_NROWS + screen_view_nrows;
-	screen_status_row = screen_player_row + SCREEN_PLAYER_NROWS;
-}
 
 #ifdef HAVE_NETBSD_CURSES
 /*
@@ -267,6 +254,22 @@ screen_configure_objects(void)
 	screen_print();
 }
 
+static void
+screen_configure_rows(void)
+{
+	/* Calculate the number of rows available to the view area. */
+	if (LINES < SCREEN_TITLE_NROWS + SCREEN_PLAYER_NROWS +
+	    SCREEN_STATUS_NROWS)
+		screen_view_nrows = 0;
+	else
+		screen_view_nrows = LINES - SCREEN_TITLE_NROWS -
+		    SCREEN_PLAYER_NROWS - SCREEN_STATUS_NROWS;
+
+	/* Calculate the row offsets of the player and status areas. */
+	screen_player_row = SCREEN_TITLE_NROWS + screen_view_nrows;
+	screen_status_row = screen_player_row + SCREEN_PLAYER_NROWS;
+}
+
 void
 screen_end(void)
 {
@@ -345,7 +348,7 @@ screen_init(void)
 		}
 	}
 
-	screen_calculate_rows();
+	screen_configure_rows();
 	screen_configure_cursor();
 	screen_configure_attribs();
 	screen_configure_colours();
@@ -553,7 +556,7 @@ screen_resize(void)
 	screen_configure_cursor();
 #endif
 
-	screen_calculate_rows();
+	screen_configure_rows();
 }
 
 void
