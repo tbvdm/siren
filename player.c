@@ -543,24 +543,12 @@ player_print_status(void)
 static void
 player_print_track(void)
 {
-	struct format	*format;
-	size_t		 bufsize;
-	char		*buf;
+	struct format *format;
 
-	bufsize = screen_get_ncols() + 1;
-	buf = xmalloc(bufsize);
-
-	if (player_track == NULL)
-		buf[0] = '\0';
-	else {
-		option_lock();
-		format = option_get_format("player-track-format");
-		format_track_snprintf(buf, bufsize, format, player_track);
-		option_unlock();
-	}
-
-	screen_player_track_print(buf);
-	free(buf);
+	option_lock();
+	format = option_get_format("player-track-format");
+	screen_player_track_printf(format, player_track);
+	option_unlock();
 }
 
 static void

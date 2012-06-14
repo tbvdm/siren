@@ -66,6 +66,9 @@ static int			 screen_view_current_row;
 static int			 screen_view_selected_row;
 static int			 screen_view_nrows;
 
+static char			*screen_row = NULL;
+static size_t			 screen_rowsize;
+
 #ifdef HAVE_USE_DEFAULT_COLORS
 static int			 screen_have_default_colours;
 #endif
@@ -268,12 +271,19 @@ screen_configure_rows(void)
 	/* Calculate the row offsets of the player and status areas. */
 	screen_player_row = SCREEN_TITLE_NROWS + screen_view_nrows;
 	screen_status_row = screen_player_row + SCREEN_PLAYER_NROWS;
+
+	/* (Re)allocate memory for the row buffer. */
+	if (screen_rowsize != (size_t)COLS + 1) {
+		screen_rowsize = COLS + 1;
+		screen_row = xrealloc(screen_row, screen_rowsize);
+	}
 }
 
 void
 screen_end(void)
 {
 	(void)endwin();
+	free(screen_row);
 }
 
 static short int
@@ -412,15 +422,20 @@ screen_player_status_printf(const char *fmt, ...)
 }
 
 void
-screen_player_track_print(const char *s)
+screen_player_track_printf(const struct format *fmt, const struct track *track)
 {
 	int col, row;
 
 	XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
+	if (track == NULL)
+		screen_row[0] = '\0';
+	else
+		format_track_snprintf(screen_row, screen_rowsize, fmt, track);
+
 	getyx(stdscr, row, col);
 	if (move(screen_player_row, 0) == OK) {
 		bkgdset(screen_objects[SCREEN_OBJ_PLAYER].attr);
-		screen_print_row(s);
+		screen_print_row(screen_row);
 		(void)move(row, col);
 		(void)refresh();
 	}
@@ -664,23 +679,19 @@ screen_view_title_printf(const char *fmt, ...)
 void
 screen_view_title_printf_right(const char *fmt, ...)
 {
-	va_list	 ap;
-	int	 len;
-	char	*buf;
+	va_list	ap;
+	int	len;
 
 	va_start(ap, fmt);
-	len = xvasprintf(&buf, fmt, ap);
-	va_end(ap);
-
 	XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
+	len = xvsnprintf(screen_row, screen_rowsize, fmt, ap);
 	if (len < COLS)
-		(void)mvaddstr(SCREEN_TITLE_ROW, COLS - len, buf);
+		(void)mvaddstr(SCREEN_TITLE_ROW, COLS - len, screen_row);
 	else
-		(void)mvaddstr(SCREEN_TITLE_ROW, 0, buf + len - COLS);
+		(void)mvaddstr(SCREEN_TITLE_ROW, 0, screen_row + len - COLS);
 	/* No refresh() yet; screen_view_print_end() will do that. */
 	XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
-
-	free(buf);
+	va_end(ap);
 }
 
 /*
@@ -689,12 +700,10 @@ screen_view_title_printf_right(const char *fmt, ...)
 static void
 screen_vprintf(const char *fmt, va_list ap)
 {
-	int	 col UNUSED, len, row;
-	char	*buf;
+	int col UNUSED, len, row;
 
-	len = xvasprintf(&buf, fmt, ap);
-	(void)addnstr(buf, COLS);
-	free(buf);
+	len = xvsnprintf(screen_row, screen_rowsize, fmt, ap);
+	(void)addnstr(screen_row, COLS);
 
 	if (len < COLS)
 		(void)clrtoeol();

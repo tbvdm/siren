@@ -582,7 +582,8 @@ void		 screen_msg_info_vprintf(const char *, va_list) NONNULL()
 		    PRINTFLIKE(1, 0);
 void		 screen_player_status_printf(const char *, ...) NONNULL()
 		    PRINTFLIKE(1, 2);
-void		 screen_player_track_print(const char *) NONNULL();
+void		 screen_player_track_printf(const struct format *,
+		    const struct track *) NONNULL(1);
 void		 screen_print(void);
 void		 screen_prompt_begin(void);
 void		 screen_prompt_end(void);
