@@ -645,7 +645,9 @@ player_set_volume(int volume, int relative)
 
 out:
 	XPTHREAD_MUTEX_UNLOCK(&player_op_mtx);
+	XPTHREAD_MUTEX_LOCK(&player_state_mtx);
 	player_print_status();
+	XPTHREAD_MUTEX_UNLOCK(&player_state_mtx);
 }
 
 void
