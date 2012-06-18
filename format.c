@@ -498,11 +498,14 @@ format_write_field(char *buf, size_t off, size_t bufsize, const char *value,
 
 	if (fld->align == FORMAT_ALIGN_RIGHT) {
 		(void)memset(buf + off, fld->padchar, padlen);
-		(void)memcpy(buf + off + padlen, value, valuelen);
-	} else {
-		(void)memcpy(buf + off, value, valuelen);
-		(void)memset(buf + off + valuelen, fld->padchar, padlen);
+		off += padlen;
 	}
+	if (value != NULL) {
+		(void)memcpy(buf + off, value, valuelen);
+		off += valuelen;
+	}
+	if (fld->align == FORMAT_ALIGN_LEFT)
+		(void)memset(buf + off, fld->padchar, padlen);
 
 	return width;
 }
