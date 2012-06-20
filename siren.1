@@ -12,7 +12,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd June 18, 2012
+.Dd June 20, 2012
 .Dt SIREN 1
 .Os
 .Sh NAME
@@ -248,6 +248,41 @@ Replace the line with the next history entry.
 is controlled by issuing commands.
 Commands can be entered at the command prompt, bound to a key or added to the
 configuration file.
+.Pp
+Commands are parsed in a way similar to most shells.
+A command line is delimited by a newline character or a
+.Sq #
+character.
+A
+.Sq #
+character introduces a comment and extends to the end of the line.
+.Pp
+A command line is broken into separate words.
+A word is a sequence of characters and is delimited by one or more space or tab
+characters.
+On each word, tilde expansion and
+.Xr glob 3
+pattern expansion is performed.
+.Pp
+The
+.Sq # ,
+.Sq ~ ,
+.Sq * ,
+.Sq \&? ,
+.Sq \&[ ,
+.Sq \e ,
+.Sq \(aq
+and
+.Sq \&"
+characters and the space and tab characters are special characters.
+A special character can be escaped by prepending it with a
+.Sq \e
+character or by enclosing it by matching
+.Sq \(aq
+or
+.Sq \&"
+characters.
+.Pp
 The following commands are available.
 .Bl -tag -width Ds
 .It Ic activate-entry
