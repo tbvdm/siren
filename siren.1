@@ -12,7 +12,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd June 20, 2012
+.Dd June 21, 2012
 .Dt SIREN 1
 .Os
 .Sh NAME
@@ -98,7 +98,8 @@ see
 .Sx COMMANDS
 below
 .Pc .
-.Ss Common key bindings
+.Bl -tag -width Ds
+.It Sy Common key bindings
 .Bl -tag -width "^F, page-down" -compact
 .It q
 Quit
@@ -180,7 +181,7 @@ Search for the previous occurrence.
 .It n
 Search for the next occurrence.
 .El
-.Ss Library-view key-bindings
+.It Sy Library view key bindings
 .Bl -tag -width "^F, page-down" -compact
 .It a
 Add the selected entry to the queue.
@@ -189,7 +190,7 @@ Delete the selected entry.
 .It l
 Delete all entries.
 .El
-.Ss Queue-view key-bindings
+.It Sy Queue view key bindings
 .Bl -tag -width "^F, page-down" -compact
 .It J
 Move the selected entry downward.
@@ -200,7 +201,7 @@ Delete the selected entry.
 .It l
 Delete all entries.
 .El
-.Ss Browser-view key-bindings
+.It Sy Browser view key bindings
 .Bl -tag -width "^F, page-down" -compact
 .It a
 Add the selected entry to the queue.
@@ -211,7 +212,7 @@ Refresh the current directory.
 .It backspace
 Enter the parent directory.
 .El
-.Ss Prompt key-bindings
+.It Sy Prompt key bindings
 The key bindings for the prompt currently cannot be changed.
 This will be fixed in a future version.
 .Pp
@@ -242,6 +243,7 @@ Delete the entire line.
 Replace the line with the previous history entry.
 .It up
 Replace the line with the next history entry.
+.El
 .El
 .Sh COMMANDS
 .Nm
