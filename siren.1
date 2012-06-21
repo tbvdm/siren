@@ -63,6 +63,7 @@ Only one view can be displayed at a time, but each view can be selected by
 using the
 .Ic select-view
 command or the default key bindings.
+.Pp
 The available views are as follows.
 .Bl -tag -width Ds
 .It Sy Library view
@@ -87,17 +88,19 @@ The browser view can be displayed by pressing the
 key.
 .El
 .Sh KEY BINDINGS
-The default key bindings are as follows.
-They can be changed with the
+.Nm
+supports configurable key bindings.
+Each key binding has a scope: it is either specific to one view or common to
+all views.
+Key bindings are changed with the
 .Ic bind-key
 and
 .Ic unbind-key
-commands
-.Po
-see
-.Sx COMMANDS
-below
-.Pc .
+commands or shown with the
+.Ic show-binding
+command.
+.Pp
+The default key bindings are as follows.
 .Bl -tag -width Ds
 .It Sy Common key bindings
 .Bl -tag -width "^F, page-down" -compact
@@ -395,7 +398,7 @@ to
 .Pp
 The
 .Ar command
-argument can be any command.
+argument can be any command listed in this section.
 .It Ic cd Op Ar directory
 Open
 .Ar directory
@@ -447,7 +450,7 @@ as the prompt.
 The default is
 .Sq Execute Qq Ar command .
 The prompt will be followed by the string
-.Sq ? ([y]/n): .
+.Sq ? ([y]/n):\~ .
 .El
 .It Ic delete-entry Op Fl a
 Delete the selected entry in the current view.
@@ -590,7 +593,7 @@ is a Boolean value and
 is not specified, it is toggled.
 See
 .Sx OPTIONS
-below for a list of available options.
+for a list of available options.
 .It Xo
 .Ic set-volume
 .Op Fl d | i
@@ -645,7 +648,10 @@ The appearance and behaviour of
 may be modified by changing the value of various options.
 Options are changed with the
 .Ic set
+command or shown with the
+.Ic show-option
 command.
+.Pp
 There are six types of options.
 They are as follows.
 .Bl -tag -width Ds
@@ -944,12 +950,13 @@ for possible values.
 Upon start-up
 .Nm
 reads the configuration file
-.Pa ~/.siren/config .
-Each line in the configuration file should contain a command
-.Pq see Sx COMMANDS .
-Empty lines and lines beginning with the
-.Sq #
-character are ignored.
+.Pa ~/.siren/config ,
+if it exists.
+This file should contain a set of
+.Nm
+commands
+.Pq see Sx COMMANDS
+which are executed in sequence.
 .Sh FILES
 .Bl -tag -width Ds -compact
 .It Pa ~/.siren/config
