@@ -476,8 +476,6 @@ void		 msg_ip_err(int, const char *, const char *, ...)
 void		 msg_op_err(const struct op *, int, const char *, ...)
 		    NONNULL() PRINTFLIKE(3, 4);
 
-void		 option_add_boolean(const char *, int, void (*)(void))
-		    NONNULL(1);
 void		 option_add_number(const char *, int, int, int, void (*)(void))
 		    NONNULL(1);
 void		 option_add_string(const char *, const char *,

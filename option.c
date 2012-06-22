@@ -124,7 +124,7 @@ option_add_attrib(const char *name, int value, void (*callback)(void))
 	option_insert_entry(o);
 }
 
-void
+static void
 option_add_boolean(const char *name, int value, void (*callback)(void))
 {
 	struct option_entry *o;
