@@ -57,14 +57,14 @@ struct option_entry {
 
 SPLAY_HEAD(option_tree, option_entry);
 
-static int		 option_cmp_entry(struct option_entry *,
-			    struct option_entry *);
-static void		 option_insert_entry(struct option_entry *);
+static int			 option_cmp_entry(struct option_entry *,
+				    struct option_entry *);
+static void			 option_insert_entry(struct option_entry *);
 
 SPLAY_PROTOTYPE(option_tree, option_entry, entries, option_cmp_entry)
 
-static struct option_tree option_tree = SPLAY_INITIALIZER(option_tree);
-static pthread_mutex_t option_entry_value_mtx = PTHREAD_MUTEX_INITIALIZER;
+static struct option_tree	option_tree = SPLAY_INITIALIZER(option_tree);
+static pthread_mutex_t		option_tree_mtx = PTHREAD_MUTEX_INITIALIZER;
 
 static const struct {
 	const int		 attrib;
@@ -274,6 +274,9 @@ option_end(void)
 	}
 }
 
+/*
+ * The option_tree_mtx mutex must be locked before calling this function.
+ */
 static struct option_entry *
 option_find(const char *name)
 {
@@ -285,6 +288,9 @@ option_find(const char *name)
 	return o;
 }
 
+/*
+ * The option_tree_mtx mutex must be locked before calling this function.
+ */
 static struct option_entry *
 option_find_type(const char *name, enum option_type type)
 {
@@ -309,10 +315,10 @@ option_get_attrib(const char *name)
 	struct option_entry	*o;
 	int			 attrib;
 
+	XPTHREAD_MUTEX_LOCK(&option_tree_mtx);
 	o = option_find_type(name, OPTION_TYPE_ATTRIB);
-	XPTHREAD_MUTEX_LOCK(&option_entry_value_mtx);
 	attrib = o->value.attrib;
-	XPTHREAD_MUTEX_UNLOCK(&option_entry_value_mtx);
+	XPTHREAD_MUTEX_UNLOCK(&option_tree_mtx);
 	return attrib;
 }
 
@@ -322,10 +328,10 @@ option_get_boolean(const char *name)
 	struct option_entry	*o;
 	int			 boolean;
 
+	XPTHREAD_MUTEX_LOCK(&option_tree_mtx);
 	o = option_find_type(name, OPTION_TYPE_BOOLEAN);
-	XPTHREAD_MUTEX_LOCK(&option_entry_value_mtx);
 	boolean = o->value.boolean;
-	XPTHREAD_MUTEX_UNLOCK(&option_entry_value_mtx);
+	XPTHREAD_MUTEX_UNLOCK(&option_tree_mtx);
 	return boolean;
 }
 
@@ -335,10 +341,10 @@ option_get_colour(const char *name)
 	struct option_entry	*o;
 	enum colour		 colour;
 
+	XPTHREAD_MUTEX_LOCK(&option_tree_mtx);
 	o = option_find_type(name, OPTION_TYPE_COLOUR);
-	XPTHREAD_MUTEX_LOCK(&option_entry_value_mtx);
 	colour = o->value.colour;
-	XPTHREAD_MUTEX_UNLOCK(&option_entry_value_mtx);
+	XPTHREAD_MUTEX_UNLOCK(&option_tree_mtx);
 	return colour;
 }
 
@@ -363,10 +369,10 @@ option_get_number(const char *name)
 	struct option_entry	*o;
 	int			 number;
 
+	XPTHREAD_MUTEX_LOCK(&option_tree_mtx);
 	o = option_find_type(name, OPTION_TYPE_NUMBER);
-	XPTHREAD_MUTEX_LOCK(&option_entry_value_mtx);
 	number = o->value.number.cur;
-	XPTHREAD_MUTEX_UNLOCK(&option_entry_value_mtx);
+	XPTHREAD_MUTEX_UNLOCK(&option_tree_mtx);
 	return number;
 }
 
@@ -375,11 +381,11 @@ option_get_number_range(const char *name, int *min, int *max)
 {
 	struct option_entry *o;
 
+	XPTHREAD_MUTEX_LOCK(&option_tree_mtx);
 	o = option_find_type(name, OPTION_TYPE_NUMBER);
-	XPTHREAD_MUTEX_LOCK(&option_entry_value_mtx);
 	*min = o->value.number.min;
 	*max = o->value.number.max;
-	XPTHREAD_MUTEX_UNLOCK(&option_entry_value_mtx);
+	XPTHREAD_MUTEX_UNLOCK(&option_tree_mtx);
 }
 
 char *
@@ -388,23 +394,28 @@ option_get_string(const char *name)
 	struct option_entry	*o;
 	char			*string;
 
+	XPTHREAD_MUTEX_LOCK(&option_tree_mtx);
 	o = option_find_type(name, OPTION_TYPE_STRING);
-	XPTHREAD_MUTEX_LOCK(&option_entry_value_mtx);
 	string = xstrdup(o->value.string);
-	XPTHREAD_MUTEX_UNLOCK(&option_entry_value_mtx);
+	XPTHREAD_MUTEX_UNLOCK(&option_tree_mtx);
 	return string;
 }
 
 int
 option_get_type(const char *name, enum option_type *type)
 {
-	struct option_entry *o;
+	struct option_entry	*o;
+	int			 ret;
 
+	XPTHREAD_MUTEX_LOCK(&option_tree_mtx);
 	if ((o = option_find(name)) == NULL)
-		return -1;
-
-	*type = o->type;
-	return 0;
+		ret = -1;
+	else {
+		*type = o->type;
+		ret = 0;
+	}
+	XPTHREAD_MUTEX_UNLOCK(&option_tree_mtx);
+	return ret;
 }
 
 void
@@ -480,14 +491,16 @@ option_init(void)
 static void
 option_insert_entry(struct option_entry *o)
 {
+	XPTHREAD_MUTEX_LOCK(&option_tree_mtx);
 	if (SPLAY_INSERT(option_tree, &option_tree, o) != NULL)
 		LOG_FATALX("%s: option already exists", o->name);
+	XPTHREAD_MUTEX_UNLOCK(&option_tree_mtx);
 }
 
 void
 option_lock(void)
 {
-	XPTHREAD_MUTEX_LOCK(&option_entry_value_mtx);
+	XPTHREAD_MUTEX_LOCK(&option_tree_mtx);
 }
 
 void
@@ -495,13 +508,13 @@ option_set_attrib(const char *name, int value)
 {
 	struct option_entry *o;
 
+	XPTHREAD_MUTEX_LOCK(&option_tree_mtx);
 	o = option_find_type(name, OPTION_TYPE_ATTRIB);
-	XPTHREAD_MUTEX_LOCK(&option_entry_value_mtx);
 	if (value == o->value.attrib)
-		XPTHREAD_MUTEX_UNLOCK(&option_entry_value_mtx);
+		XPTHREAD_MUTEX_UNLOCK(&option_tree_mtx);
 	else {
 		o->value.attrib = value;
-		XPTHREAD_MUTEX_UNLOCK(&option_entry_value_mtx);
+		XPTHREAD_MUTEX_UNLOCK(&option_tree_mtx);
 		if (o->callback != NULL)
 			o->callback();
 	}
@@ -517,13 +530,13 @@ option_set_boolean(const char *name, int value)
 		value = 1;
 	}
 
+	XPTHREAD_MUTEX_LOCK(&option_tree_mtx);
 	o = option_find_type(name, OPTION_TYPE_BOOLEAN);
-	XPTHREAD_MUTEX_LOCK(&option_entry_value_mtx);
 	if (value == o->value.boolean)
-		XPTHREAD_MUTEX_UNLOCK(&option_entry_value_mtx);
+		XPTHREAD_MUTEX_UNLOCK(&option_tree_mtx);
 	else {
 		o->value.boolean = value;
-		XPTHREAD_MUTEX_UNLOCK(&option_entry_value_mtx);
+		XPTHREAD_MUTEX_UNLOCK(&option_tree_mtx);
 		if (o->callback != NULL)
 			o->callback();
 	}
@@ -534,13 +547,13 @@ option_set_colour(const char *name, enum colour value)
 {
 	struct option_entry *o;
 
+	XPTHREAD_MUTEX_LOCK(&option_tree_mtx);
 	o = option_find_type(name, OPTION_TYPE_COLOUR);
-	XPTHREAD_MUTEX_LOCK(&option_entry_value_mtx);
 	if (value == o->value.colour)
-		XPTHREAD_MUTEX_UNLOCK(&option_entry_value_mtx);
+		XPTHREAD_MUTEX_UNLOCK(&option_tree_mtx);
 	else {
 		o->value.colour = value;
-		XPTHREAD_MUTEX_UNLOCK(&option_entry_value_mtx);
+		XPTHREAD_MUTEX_UNLOCK(&option_tree_mtx);
 		if (o->callback != NULL)
 			o->callback();
 	}
@@ -551,11 +564,11 @@ option_set_format(const char *name, struct format *format)
 {
 	struct option_entry *o;
 
+	XPTHREAD_MUTEX_LOCK(&option_tree_mtx);
 	o = option_find_type(name, OPTION_TYPE_FORMAT);
-	XPTHREAD_MUTEX_LOCK(&option_entry_value_mtx);
 	format_free(o->value.format);
 	o->value.format = format;
-	XPTHREAD_MUTEX_UNLOCK(&option_entry_value_mtx);
+	XPTHREAD_MUTEX_UNLOCK(&option_tree_mtx);
 	if (o->callback != NULL)
 		o->callback();
 }
@@ -565,14 +578,14 @@ option_set_number(const char *name, int value)
 {
 	struct option_entry *o;
 
+	XPTHREAD_MUTEX_LOCK(&option_tree_mtx);
 	o = option_find_type(name, OPTION_TYPE_NUMBER);
-	XPTHREAD_MUTEX_LOCK(&option_entry_value_mtx);
 	if (value == o->value.number.cur || value < o->value.number.min ||
 	    value > o->value.number.max)
-		XPTHREAD_MUTEX_UNLOCK(&option_entry_value_mtx);
+		XPTHREAD_MUTEX_UNLOCK(&option_tree_mtx);
 	else {
 		o->value.number.cur = value;
-		XPTHREAD_MUTEX_UNLOCK(&option_entry_value_mtx);
+		XPTHREAD_MUTEX_UNLOCK(&option_tree_mtx);
 		if (o->callback != NULL)
 			o->callback();
 	}
@@ -583,14 +596,14 @@ option_set_string(const char *name, const char *value)
 {
 	struct option_entry *o;
 
+	XPTHREAD_MUTEX_LOCK(&option_tree_mtx);
 	o = option_find_type(name, OPTION_TYPE_STRING);
-	XPTHREAD_MUTEX_LOCK(&option_entry_value_mtx);
 	if (!strcmp(value, o->value.string))
-		XPTHREAD_MUTEX_UNLOCK(&option_entry_value_mtx);
+		XPTHREAD_MUTEX_UNLOCK(&option_tree_mtx);
 	else {
 		free(o->value.string);
 		o->value.string = xstrdup(value);
-		XPTHREAD_MUTEX_UNLOCK(&option_entry_value_mtx);
+		XPTHREAD_MUTEX_UNLOCK(&option_tree_mtx);
 		if (o->callback != NULL)
 			o->callback();
 	}
@@ -636,10 +649,10 @@ option_toggle_boolean(const char *name)
 {
 	struct option_entry *o;
 
+	XPTHREAD_MUTEX_LOCK(&option_tree_mtx);
 	o = option_find_type(name, OPTION_TYPE_BOOLEAN);
-	XPTHREAD_MUTEX_LOCK(&option_entry_value_mtx);
 	o->value.boolean = !o->value.boolean;
-	XPTHREAD_MUTEX_UNLOCK(&option_entry_value_mtx);
+	XPTHREAD_MUTEX_UNLOCK(&option_tree_mtx);
 	if (o->callback != NULL)
 		o->callback();
 }
@@ -647,5 +660,5 @@ option_toggle_boolean(const char *name)
 void
 option_unlock(void)
 {
-	XPTHREAD_MUTEX_UNLOCK(&option_entry_value_mtx);
+	XPTHREAD_MUTEX_UNLOCK(&option_tree_mtx);
 }
