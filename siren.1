@@ -785,27 +785,27 @@ in the format string.
 .Pp
 The following options are available.
 .Bl -tag -width Ds
-.It Ic active-attr Ar attributes
+.It Cm active-attr Pq attribute
 Character attributes for the activated menu entry.
-.It Ic active-bg Ar colour
+.It Cm active-bg Pq colour
 Background colour for the activated menu entry.
-.It Ic active-fg Ar colour
+.It Cm active-fg Pq colour
 Foreground colour for the activated menu entry.
-.It Ic continue Ar boolean
+.It Cm continue Pq Boolean
 Whether to play the next track if the current track has finished.
-.It Ic error-attr Ar attributes
+.It Cm error-attr Pq attribute
 Character attributes for error messages.
-.It Ic error-bg Ar colour
+.It Cm error-bg Pq colour
 Background colour for error messages.
-.It Ic error-fg Ar colour
+.It Cm error-fg Pq colour
 Foreground colour for error messages.
-.It Ic info-attr Ar attributes
+.It Cm info-attr Pq attribute
 Character attributes for informational messages.
-.It Ic info-bg Ar colour
+.It Cm info-bg Pq colour
 Background colour for informational messages.
-.It Ic info-fg Ar colour
+.It Cm info-fg Pq colour
 Foreground colour for informational messages.
-.It Ic library-format Ar format
+.It Cm library-format Pq format
 The format used to display tracks in the library.
 The following variables are available.
 .Bl -column "tracknumber" "alias"
@@ -819,9 +819,9 @@ The following variables are available.
 .It title Ta t Ta Title
 .It tracknumber Ta n Ta Track number
 .El
-.It Ic max-history-entries Ar number
+.It Cm max-history-entries Pq number
 The maximum number of entries saved in the command and search histories.
-.It Ic output-plugin Ar string
+.It Cm output-plugin Pq string
 The name of the output plug-in to use.
 If the special name
 .Ar default
@@ -841,69 +841,69 @@ PulseAudio output plug-in.
 .It ao
 libao output plug-in.
 .El
-.It Ic player-attr Ar attributes
+.It Cm player-attr Pq attribute
 Character attributes for the player area.
-.It Ic player-bg Ar colour
+.It Cm player-bg Pq colour
 Background colour for the player area.
-.It Ic player-fg Ar colour
+.It Cm player-fg Pq colour
 Foreground colour of the player area.
-.It Ic player-track-format Ar format
+.It Cm player-track-format Pq format
 The format used to display the currently playing track.
 See the
-.Ic library-format
+.Cm library-format
 option for a list of available variables.
-.It Ic prompt-attr Ar attributes
+.It Cm prompt-attr Pq attribute
 Character attributes for the command, confirmation and search prompts.
-.It Ic prompt-bg Ar colour
+.It Cm prompt-bg Pq colour
 Background colour for the command, confirmation and search prompts.
-.It Ic prompt-fg Ar colour
+.It Cm prompt-fg Pq colour
 Foreground colour for the command, confirmation and search prompts.
-.It Ic queue-format Ar format
+.It Cm queue-format Pq format
 The format used to display tracks in the queue.
 See the
-.Ic library-format
+.Cm library-format
 option for a list of available variables.
-.It Ic repeat-all Ar boolean
+.It Cm repeat-all Pq Boolean
 Whether to repeat playback of the library.
-.It Ic repeat-track Ar boolean
+.It Cm repeat-track Pq Boolean
 Whether to repeat playback of the current track.
 This option takes precedence over the
-.Ic repeat-all
+.Cm repeat-all
 option.
-.It Ic selection-attr Ar attributes
+.It Cm selection-attr Pq attribute
 Character attributes for the selection indicator.
-.It Ic selection-bg Ar colour
+.It Cm selection-bg Pq colour
 Background colour for the selection indicator.
-.It Ic selection-fg Ar colour
+.It Cm selection-fg Pq colour
 Foreground colour for the selection indicator.
-.It Ic show-all-files Ar boolean
+.It Cm show-all-files Pq Boolean
 Whether to show all files in the file browser.
 If set to
 .Em false ,
 only directories and supported audio files are shown.
-.It Ic show-cursor Ar boolean
+.It Cm show-cursor Pq Boolean
 Whether to always show the cursor.
-.It Ic show-dirs-before-files Ar boolean
+.It Cm show-dirs-before-files Pq Boolean
 Whether to list directories before files in the file browser.
-.It Ic show-hidden-files Ar boolean
+.It Cm show-hidden-files Pq Boolean
 Whether to show hidden files and directories in the file browser.
-.It Ic status-attr Ar attributes
+.It Cm status-attr Pq attribute
 Character attributes for the status line.
-.It Ic status-bg Ar colour
+.It Cm status-bg Pq colour
 Background colour for the status line.
-.It Ic status-fg Ar colour
+.It Cm status-fg Pq colour
 Foreground colour for the status line.
-.It Ic view-attr Ar attributes
+.It Cm view-attr Pq attribute
 Character attributes for the view.
-.It Ic view-bg Ar colour
+.It Cm view-bg Pq colour
 Background colour for the view.
-.It Ic view-fg Ar colour
+.It Cm view-fg Pq colour
 Foreground colour for the view.
-.It Ic view-title-attr Ar attributes
+.It Cm view-title-attr Pq attribute
 Character attributes for the view title.
-.It Ic view-title-bg Ar colour
+.It Cm view-title-bg Pq colour
 Background colour for the view title.
-.It Ic view-title-fg Ar colour
+.It Cm view-title-fg Pq colour
 Foreground colour for the view title.
 .El
 .Pp
@@ -911,9 +911,9 @@ The following options are specific to the
 .Em ao
 output plug-in.
 .Bl -tag -width Ds
-.It Ic ao-buffer-size Ar number
+.It Cm ao-buffer-size Pq number
 The size of the output buffer, specified in bytes.
-.It Ic ao-driver Ar string
+.It Cm ao-driver Pq string
 The name of the driver to use.
 If empty, the default driver will be used.
 See
@@ -921,7 +921,7 @@ See
 and
 .Lk http://www.xiph.org/ao/doc/drivers.html
 for possible values.
-.It Ic ao-file Ar string
+.It Cm ao-file Pq string
 The path of the file to write the audio output to.
 If the file already exists, it is not overwritten.
 This option is relevant only if using a file output driver.
@@ -931,7 +931,7 @@ The following options are specific to the
 .Em pulse
 output plug-in.
 .Bl -tag -width Ds
-.It Ic pulse-buffer-size Ar number
+.It Cm pulse-buffer-size Pq number
 The size of the output buffer, specified in bytes.
 .El
 .Pp
@@ -939,7 +939,7 @@ The following options are specific to the
 .Em sndio
 output plug-in.
 .Bl -tag -width Ds
-.It Ic sndio-device Ar string
+.It Cm sndio-device Pq string
 The name of the device to use.
 If empty, the default device will be used.
 See
