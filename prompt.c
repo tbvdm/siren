@@ -206,6 +206,16 @@ prompt_line_handle_key(int key)
 		prompt_line = NULL;
 		done = 1;
 		break;
+	case K_CTRL('H'):
+	case K_BACKSPACE:
+		if (prompt_linepos == 0)
+			break;
+
+		prompt_linepos--;
+		for (i = prompt_linepos; i < prompt_linelen; i++)
+			prompt_line[i] = prompt_line[i + 1];
+		prompt_linelen--;
+		break;
 	case K_CTRL('K'):
 		prompt_linelen = prompt_linepos;
 		prompt_line[prompt_linelen] = '\0';
@@ -230,15 +240,6 @@ prompt_line_handle_key(int key)
 		prompt_linelen -= i;
 		for (j = prompt_linepos; j <= prompt_linelen; j++)
 			prompt_line[j] = prompt_line[j + i];
-		break;
-	case K_BACKSPACE:
-		if (prompt_linepos == 0)
-			break;
-
-		prompt_linepos--;
-		for (i = prompt_linepos; i < prompt_linelen; i++)
-			prompt_line[i] = prompt_line[i + 1];
-		prompt_linelen--;
 		break;
 	case K_DOWN:
 		if (prompt_history == NULL)
