@@ -427,6 +427,9 @@ option_init(void)
 	option_add_format("library-format", "%-*a %-*l %4y %2n. %-*t %5d",
 	    library_print);
 	option_add_string("output-plugin", "default", player_change_op);
+	option_add_format("player-status-format",
+	    "%-7s  %5p / %5d  %3v%%%{?c,  continue,}%{?r,  repeat-all,}"
+	    "%{?t,  repeat-track,}", player_print);
 	option_add_format("player-track-format", "%a - %l (%y) - %n. %t",
 	    player_print);
 	option_add_format("queue-format", "%-*a %-*t %5d", queue_print);

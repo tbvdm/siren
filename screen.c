@@ -403,22 +403,21 @@ screen_msg_vprintf(int obj, const char *fmt, va_list ap)
 }
 
 void
-screen_player_status_printf(const char *fmt, ...)
+screen_player_status_printf(const struct format *fmt,
+    const struct format_variable *fmtvar, size_t nfmtvars)
 {
-	va_list	ap;
-	int	col, row;
+	int col, row;
 
-	va_start(ap, fmt);
 	XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
+	format_snprintf(screen_row, screen_rowsize, fmt, fmtvar, nfmtvars);
 	getyx(stdscr, row, col);
 	if (move(screen_player_row + 1, 0) == OK) {
 		bkgdset(screen_objects[SCREEN_OBJ_PLAYER].attr);
-		screen_vprintf(fmt, ap);
+		screen_print_row(screen_row);
 		(void)move(row, col);
 		(void)refresh();
 	}
 	XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
-	va_end(ap);
 }
 
 void

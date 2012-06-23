@@ -847,6 +847,50 @@ Character attributes for the player area.
 Background colour for the player area.
 .It Cm player-fg Pq colour
 Foreground colour of the player area.
+.It Cm player-status-format Pq format
+The format used to display the player status.
+The following variables are available.
+.Bl -column "repeat-track" "alias"
+.It Sy Name Ta Sy Alias Ta Sy Description
+.It continue
+.Ta c
+.Ta Expands to
+.Sq continue
+or the empty string, depending on the value of the
+.Cm continue
+option
+.It duration
+.Ta d
+.Ta Duration of the currently playing track
+.Pq as So m:ss Sc or So h:mm:ss Sc
+.It position
+.Ta p
+.Ta Position in the currently playing track
+.Pq as So m:ss Sc or So h:mm:ss Sc
+.It repeat-all
+.Ta r
+.Ta Expands to
+.Sq repeat-all
+or the empty string, depending on the value of the
+.Cm repeat-all
+option
+.It repeat-track
+.Ta t
+.Ta Expands to
+.Sq repeat-track
+or the empty string, depending on the value of the
+.Cm repeat-track
+option
+.It state
+.Ta s
+.Ta Expands to
+.Sq Playing ,
+.Sq Paused
+or
+.Sq Stopped ,
+depending on the playback state
+.It volume Ta v Ta Sound volume
+.El
 .It Cm player-track-format Pq format
 The format used to display the currently playing track.
 See the

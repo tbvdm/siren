@@ -44,6 +44,15 @@
 #define PLAYER_SWAP16(i)	((uint16_t)(i) >> 8 | (uint16_t)(i) << 8)
 #endif
 
+#define PLAYER_FMT_CONTINUE	0
+#define PLAYER_FMT_DURATION	1
+#define PLAYER_FMT_POSITION	2
+#define PLAYER_FMT_REPEAT_ALL	3
+#define PLAYER_FMT_REPEAT_TRACK	4
+#define PLAYER_FMT_STATE	5
+#define PLAYER_FMT_VOLUME	6
+#define PLAYER_FMT_NVARS	7
+
 enum player_command {
 	PLAYER_COMMAND_PAUSE,
 	PLAYER_COMMAND_PLAY,
@@ -475,66 +484,107 @@ player_print(void)
 static void
 player_print_status(void)
 {
-	unsigned int	 duration, position;
-	int		 ret, volume;
-	char		*error;
-	const char	*mode, *repeat, *state;
+	struct format		*format;
+	struct format_variable	 vars[PLAYER_FMT_NVARS];
+	unsigned int		 pos;
+	int			 ret;
+	char			*error;
 
-	error = NULL;
+	vars[PLAYER_FMT_CONTINUE].lname = "continue";
+	vars[PLAYER_FMT_CONTINUE].sname = 'c';
+	vars[PLAYER_FMT_CONTINUE].type = FORMAT_VARIABLE_STRING;
+	vars[PLAYER_FMT_DURATION].lname = "duration";
+	vars[PLAYER_FMT_DURATION].sname = 'd';
+	vars[PLAYER_FMT_DURATION].type = FORMAT_VARIABLE_TIME;
+	vars[PLAYER_FMT_POSITION].lname = "position";
+	vars[PLAYER_FMT_POSITION].sname = 'p';
+	vars[PLAYER_FMT_POSITION].type = FORMAT_VARIABLE_TIME;
+	vars[PLAYER_FMT_REPEAT_ALL].lname = "repeat-all";
+	vars[PLAYER_FMT_REPEAT_ALL].sname = 'r';
+	vars[PLAYER_FMT_REPEAT_ALL].type = FORMAT_VARIABLE_STRING;
+	vars[PLAYER_FMT_REPEAT_TRACK].lname = "repeat-track";
+	vars[PLAYER_FMT_REPEAT_TRACK].sname = 't';
+	vars[PLAYER_FMT_REPEAT_TRACK].type = FORMAT_VARIABLE_STRING;
+	vars[PLAYER_FMT_STATE].lname = "state";
+	vars[PLAYER_FMT_STATE].sname = 's';
+	vars[PLAYER_FMT_STATE].type = FORMAT_VARIABLE_STRING;
+	vars[PLAYER_FMT_VOLUME].lname = "volume";
+	vars[PLAYER_FMT_VOLUME].sname = 'v';
+	vars[PLAYER_FMT_VOLUME].type = FORMAT_VARIABLE_NUMBER;
 
-	XPTHREAD_MUTEX_LOCK(&player_track_mtx);
+	/* Set the state variable. */
 	switch (player_state) {
 	case PLAYER_STATE_PAUSED:
-		state = "Paused";
-		ret = player_track->ip->get_position(player_track, &position,
-		    &error);
-		duration = player_track->duration;
+		vars[PLAYER_FMT_STATE].value.string = "Paused";
 		break;
 	case PLAYER_STATE_PLAYING:
-		state = "Playing";
-		ret = player_track->ip->get_position(player_track, &position,
-		    &error);
-		duration = player_track->duration;
+		vars[PLAYER_FMT_STATE].value.string = "Playing";
 		break;
 	case PLAYER_STATE_STOPPED:
-	default:
-		state = "Stopped";
-		position = 0;
-		duration = player_track == NULL ? 0 : player_track->duration;
-		ret = 0;
+		vars[PLAYER_FMT_STATE].value.string = "Stopped";
 		break;
 	}
-	XPTHREAD_MUTEX_UNLOCK(&player_track_mtx);
 
-	if (ret < 0) {
-		msg_ip_err(ret, error, "Cannot get current position");
-		free(error);
+	XPTHREAD_MUTEX_LOCK(&player_track_mtx);
+
+	/* Set the position variable. */
+	vars[PLAYER_FMT_POSITION].value.number = 0;
+	if (player_state != PLAYER_STATE_STOPPED) {
+		error = NULL;
+		ret = player_track->ip->get_position(player_track, &pos,
+		    &error);
+		if (ret < 0) {
+			msg_ip_err(ret, error, "Cannot get position");
+			free(error);
+		} else
+			vars[PLAYER_FMT_POSITION].value.number = pos;
 	}
 
+	/* Set the duration variable. */
+	if (player_track == NULL)
+		vars[PLAYER_FMT_DURATION].value.number = 0;
+	else
+		vars[PLAYER_FMT_DURATION].value.number =
+		    player_track->duration;
+
+	XPTHREAD_MUTEX_UNLOCK(&player_track_mtx);
+
+	/* Set the volume variable. */
 	XPTHREAD_MUTEX_LOCK(&player_op_mtx);
 	if (player_open_op() == -1 || !player_op->get_volume_support())
-		volume = 0;
-	else if ((volume = player_op->get_volume()) < 0) {
-		msg_op_err(player_op, volume, "Cannot get volume");
-		volume = 0;
+		vars[PLAYER_FMT_VOLUME].value.number = 0;
+	else {
+		if ((ret = player_op->get_volume()) < 0) {
+			msg_op_err(player_op, ret, "Cannot get volume");
+			vars[PLAYER_FMT_VOLUME].value.number = 0;
+		} else
+			vars[PLAYER_FMT_VOLUME].value.number = ret;
 	}
 	XPTHREAD_MUTEX_UNLOCK(&player_op_mtx);
 
+	/* Set the continue variable. */
 	if (option_get_boolean("continue"))
-		mode = "  continue";
+		vars[PLAYER_FMT_CONTINUE].value.string = "continue";
 	else
-		mode = "";
+		vars[PLAYER_FMT_CONTINUE].value.string = "";
 
+	/* Set the repeat-all variable. */
+	if (option_get_boolean("repeat-all"))
+		vars[PLAYER_FMT_REPEAT_ALL].value.string = "repeat-all";
+	else
+		vars[PLAYER_FMT_REPEAT_ALL].value.string = "";
+
+	/* Set the repeat-track variable. */
 	if (option_get_boolean("repeat-track"))
-		repeat = "  repeat-track";
-	else if (option_get_boolean("repeat-all"))
-		repeat = "  repeat-all";
+		vars[PLAYER_FMT_REPEAT_TRACK].value.string = "repeat-track";
 	else
-		repeat = "";
+		vars[PLAYER_FMT_REPEAT_TRACK].value.string = "";
 
-	screen_player_status_printf("%-7s  %d:%02d / %u:%02u  %d%%%s%s", state,
-	    MINS(position), MSECS(position), MINS(duration), MSECS(duration),
-	    volume, mode, repeat);
+	/* Print the status. */
+	option_lock();
+	format = option_get_format("player-status-format");
+	screen_player_status_printf(format, vars, PLAYER_FMT_NVARS);
+	option_unlock();
 }
 
 /*

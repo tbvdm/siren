@@ -578,8 +578,8 @@ void		 screen_msg_error_vprintf(const char *, va_list) NONNULL()
 		    PRINTFLIKE(1, 0);
 void		 screen_msg_info_vprintf(const char *, va_list) NONNULL()
 		    PRINTFLIKE(1, 0);
-void		 screen_player_status_printf(const char *, ...) NONNULL()
-		    PRINTFLIKE(1, 2);
+void		 screen_player_status_printf(const struct format *,
+		    const struct format_variable *, size_t) NONNULL();
 void		 screen_player_track_printf(const struct format *,
 		    const struct track *) NONNULL(1);
 void		 screen_print(void);
