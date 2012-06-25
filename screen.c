@@ -260,6 +260,8 @@ screen_configure_objects(void)
 static void
 screen_configure_rows(void)
 {
+	XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
+
 	/* Calculate the number of rows available to the view area. */
 	if (LINES < SCREEN_TITLE_NROWS + SCREEN_PLAYER_NROWS +
 	    SCREEN_STATUS_NROWS)
@@ -277,6 +279,8 @@ screen_configure_rows(void)
 		screen_rowsize = COLS + 1;
 		screen_row = xrealloc(screen_row, screen_rowsize);
 	}
+
+	XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
 }
 
 void
