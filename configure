@@ -208,6 +208,8 @@ OpenBSD)
 
 *)
 	echo "this system has not been tested; build may fail"
+
+	[ "$enable_sndio" != yes ] && enable_sndio=no
 	;;
 esac
 
