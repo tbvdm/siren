@@ -181,9 +181,6 @@ screen_clrtoeol(void)
 }
 #endif
 
-/*
- * The screen_curses_mtx mutex must be locked before calling this function.
- */
 static void
 screen_configure_attribs(void)
 {
@@ -191,6 +188,7 @@ screen_configure_attribs(void)
 	int	 attr;
 	chtype	 cattr;
 
+	XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
 	for (i = 0; i < NELEMENTS(screen_objects); i++) {
 		attr = option_get_attrib(screen_objects[i].option_attr);
 		cattr = A_NORMAL;
@@ -201,11 +199,9 @@ screen_configure_attribs(void)
 
 		screen_objects[i].attr = cattr;
 	}
+	XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
 }
 
-/*
- * The screen_curses_mtx mutex must be locked before calling this function.
- */
 static void
 screen_configure_colours(void)
 {
@@ -215,6 +211,7 @@ screen_configure_colours(void)
 	if (!screen_have_colours)
 		return;
 
+	XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
 	for (i = 0; i < NELEMENTS(screen_objects); i++) {
 		bg = screen_get_colour(screen_objects[i].option_bg,
 		    COLOUR_BLACK);
@@ -225,6 +222,7 @@ screen_configure_colours(void)
 			screen_objects[i].attr |=
 			    (chtype)COLOR_PAIR(screen_objects[i].colour_pair);
 	}
+	XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
 }
 
 void
@@ -250,10 +248,8 @@ screen_configure_cursor(void)
 void
 screen_configure_objects(void)
 {
-	XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
 	screen_configure_attribs();
 	screen_configure_colours();
-	XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
 	screen_print();
 }
 
