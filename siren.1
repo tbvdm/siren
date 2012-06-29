@@ -12,7 +12,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd June 23, 2012
+.Dd June 29, 2012
 .Dt SIREN 1
 .Os
 .Sh NAME
@@ -852,38 +852,32 @@ The format used to display the player status.
 The following variables are available.
 .Bl -column "repeat-track" "alias"
 .It Sy Name Ta Sy Alias Ta Sy Description
-.It continue
-.Ta c
-.Ta Expands to
+.It continue Ta c Ta
+Expands to
 .Sq continue
 or the empty string, depending on the value of the
 .Cm continue
 option
-.It duration
-.Ta d
-.Ta Duration of the currently playing track
+.It duration Ta d Ta
+Duration of the currently playing track
 .Pq as So m:ss Sc or So h:mm:ss Sc
-.It position
-.Ta p
-.Ta Position in the currently playing track
+.It position Ta p Ta
+Position in the currently playing track
 .Pq as So m:ss Sc or So h:mm:ss Sc
-.It repeat-all
-.Ta r
-.Ta Expands to
+.It repeat-all Ta r Ta
+Expands to
 .Sq repeat-all
 or the empty string, depending on the value of the
 .Cm repeat-all
 option
-.It repeat-track
-.Ta t
-.Ta Expands to
+.It repeat-track Ta t Ta
+Expands to
 .Sq repeat-track
 or the empty string, depending on the value of the
 .Cm repeat-track
 option
-.It state
-.Ta s
-.Ta Expands to
+.It state Ta s Ta
+Expands to
 .Sq Playing ,
 .Sq Paused
 or
