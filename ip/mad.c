@@ -458,7 +458,7 @@ ip_mad_read(struct track *t, int16_t *samples, size_t maxsamples, char **error)
 	ipd = t->ipdata;
 
 	nsamples = 0;
-	while (nsamples + (size_t)t->format.nchannels < maxsamples) {
+	while (nsamples + (size_t)t->format.nchannels <= maxsamples) {
 		if (ipd->sampleidx == ipd->synth.pcm.length) {
 			if ((ret = ip_mad_decode_frame(ipd, error)) !=
 			    IP_MAD_OK)

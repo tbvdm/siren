@@ -243,7 +243,7 @@ ip_flac_read(struct track *t, int16_t *samples, size_t maxsamples,
 	ipd = t->ipdata;
 
 	nsamples = 0;
-	while (nsamples + (size_t)t->format.nchannels < maxsamples) {
+	while (nsamples + (size_t)t->format.nchannels <= maxsamples) {
 		/* Fill the buffer. */
 		while (ipd->bufidx == ipd->buflen) {
 			/* Read a new frame. */
