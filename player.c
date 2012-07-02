@@ -132,7 +132,18 @@ player_begin_playback(struct player_sample_buffer *buf)
 		goto error;
 	}
 
+	/*
+	 * The buffer size is returned in bytes. Only 16-bit samples are
+	 * supported at the moment, so divide by 2 to get the maximum number of
+	 * samples that fit in the buffer.
+	 */
 	buf->maxsamples = player_op->get_buffer_size() / 2;
+	if (buf->maxsamples == 0) {
+		msg_errx("Output buffer too small");
+		player_track->ip->close(player_track);
+		goto error;
+	}
+
 	buf->samples = xcalloc(buf->maxsamples, sizeof *buf->samples);
 	buf->swap = player_track->format.byte_order != player_byte_order;
 
@@ -368,6 +379,10 @@ player_play_sample_buffer(struct player_sample_buffer *buf)
 			buf->samples[i] = PLAYER_SWAP16(buf->samples[i]);
 
 	XPTHREAD_MUTEX_LOCK(&player_op_mtx);
+	/*
+	 * Only 16-bit samples are supported at the moment, so multiply by 2 to
+	 * get the size in bytes.
+	 */
 	ret = player_op->write(buf->samples, buf->nsamples * 2);
 	XPTHREAD_MUTEX_UNLOCK(&player_op_mtx);
 
