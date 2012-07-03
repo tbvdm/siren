@@ -73,6 +73,7 @@ argv_expand_tilde(char **arg)
 
 	if (home != NULL) {
 		(void)xasprintf(&narg, "%s%s", home, *arg + userlen + 1);
+		free(home);
 		free(*arg);
 		*arg = narg;
 	}
