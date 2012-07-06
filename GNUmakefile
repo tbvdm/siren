@@ -111,6 +111,7 @@ dist:
 	chmod -R go+rX ${DIST}
 	GZIP=-9 tar -czf ${DIST}.tar.gz ${DIST}
 	rm -fr ${DIST}
+	sha256 ${DIST}.tar.gz > ${DIST}.tar.gz.sha256
 	gpg -bu 4cdfe96f ${DIST}.tar.gz
 
 install:
