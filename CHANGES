@@ -1,0 +1,15 @@
+This is a list of the most important changes only. See the repository history
+for a list of all changes.
+
+Siren 0.1 (2012-07-07):
+
+- Add the show-binding and show-option commands.
+- Add the player-status-format option.
+- Add support for glob(3) pathname patterns and other improvements to the
+  command-line parser.
+- Change and extend the format-string syntax.
+- Fix various minor bugs.
+
+Siren 0 (2012-01-14):
+
+- Initial release.
