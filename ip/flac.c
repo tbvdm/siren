@@ -177,6 +177,7 @@ ip_flac_open(struct track *t, char **error)
 
 	if ((fp = fopen(t->path, "r")) == NULL) {
 		LOG_ERR("fopen: %s", t->path);
+		FLAC__stream_decoder_delete(ipd->decoder);
 		free(ipd);
 		return IP_ERROR_SYSTEM;
 	}
