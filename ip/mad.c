@@ -423,6 +423,7 @@ ip_mad_open(struct track *t, char **error)
 
 	t->ipdata = ipd;
 	ipd->buf = xmalloc(IP_MAD_BUFSIZE + MAD_BUFFER_GUARD);
+	ipd->sampleidx = 0;
 
 	mad_stream_init(&ipd->stream);
 	mad_frame_init(&ipd->frame);
@@ -435,9 +436,6 @@ ip_mad_open(struct track *t, char **error)
 		return ret;
 	}
 
-	ipd->sampleidx = 0;
-
-	t->ipdata = ipd;
 	return 0;
 }
 
