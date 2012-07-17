@@ -17,9 +17,10 @@
 /* Silence gcc. */
 #define ENABLE_SNDFILE_WINDOWS_PROTOTYPES 0
 
+#include <fcntl.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include <sndfile.h>
 
@@ -105,22 +106,21 @@ ip_sndfile_close(struct track *t)
 static int
 ip_sndfile_get_metadata(struct track *t, char **error)
 {
-	FILE		*fp;
 	SNDFILE		*sffp;
 	SF_INFO		 sfinfo;
-	int		 ret;
+	int		 fd, ret;
 	const char	*value;
 
-	if ((fp = fopen(t->path, "r")) == NULL) {
-		LOG_ERR("fopen: %s", t->path);
+	if ((fd = open(t->path, O_RDONLY)) == -1) {
+		LOG_ERR("open: %s", t->path);
 		return IP_ERROR_SYSTEM;
 	}
 
 	sfinfo.format = 0;
-	if ((sffp = sf_open_fd(fileno(fp), SFM_READ, &sfinfo, SF_TRUE)) ==
-	    NULL) {
+	if ((sffp = sf_open_fd(fd, SFM_READ, &sfinfo, SF_TRUE)) == NULL) {
 		*error = xstrdup(sf_strerror(sffp));
 		LOG_ERRX("sf_open_fd: %s: %s", t->path, *error);
+		(void)close(fd);
 		return IP_ERROR_PLUGIN;
 	}
 
@@ -174,21 +174,22 @@ static int
 ip_sndfile_open(struct track *t, char **error)
 {
 	struct ip_sndfile_ipdata *ipd;
-	FILE *fp;
+	int fd;
 
-	if ((fp = fopen(t->path, "r")) == NULL) {
-		LOG_ERR("fopen: %s", t->path);
+	if ((fd = open(t->path, O_RDONLY)) == -1) {
+		LOG_ERR("open: %s", t->path);
 		return IP_ERROR_SYSTEM;
 	}
 
 	ipd = xmalloc(sizeof *ipd);
 
 	ipd->sfinfo.format = 0;
-	if ((ipd->sffp = sf_open_fd(fileno(fp), SFM_READ, &ipd->sfinfo,
-	    SF_TRUE)) == NULL) {
+	if ((ipd->sffp = sf_open_fd(fd, SFM_READ, &ipd->sfinfo, SF_TRUE)) ==
+	    NULL) {
 		*error = xstrdup(sf_strerror(ipd->sffp));
 		LOG_ERRX("sf_open_fd: %s: %s", t->path, *error);
 		free(ipd);
+		(void)close(fd);
 		return IP_ERROR_PLUGIN;
 	}
 
