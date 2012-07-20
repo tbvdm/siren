@@ -26,7 +26,7 @@
 /* Check if the GCC version is equal to or greater than the one specified. */
 #define GCC_VERSION(major, minor)					\
 	(defined(__GNUC__) && (__GNUC__ > major ||			\
-	(__GNUC__ == major && __GNUC_MINOR >= minor)))
+	(__GNUC__ == major && __GNUC_MINOR__ >= minor)))
 
 #if GCC_VERSION(3, 3) || defined(__clang__)
 #define NONNULL(...)		__attribute__((nonnull(__VA_ARGS__)))
