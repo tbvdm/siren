@@ -34,10 +34,8 @@
 #include <sys/types.h>
 #endif
 
-#ifdef HAVE_FREEBSD_BSWAP16
+#if defined(HAVE_FREEBSD_BSWAP16) || defined(HAVE_NETBSD_BSWAP16)
 #define PLAYER_SWAP16(i)	bswap16((uint16_t)(i))
-#elif defined(HAVE_NETBSD_BSWAP16)
-#define PLAYER_SWAP16(i)	bswap16((u_int16_t)(i))
 #elif defined(HAVE_OPENBSD_SWAP16)
 #define PLAYER_SWAP16(i)	swap16((u_int16_t)(i))
 #else
