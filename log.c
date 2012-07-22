@@ -14,9 +14,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* Prevent glibc from exposing a non-standard version of strerror_r(). */
-#undef _GNU_SOURCE
-
 #include <sys/types.h>
 #include <sys/utsname.h>
 

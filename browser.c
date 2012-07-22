@@ -14,6 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+/* Let glibc expose strcasestr(). */
+#define _GNU_SOURCE
+
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>

@@ -14,6 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+/* Let glibc expose vasprintf(). */
+#define _GNU_SOURCE
+
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
