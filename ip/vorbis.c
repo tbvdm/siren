@@ -20,6 +20,7 @@
  */
 #define OV_EXCLUDE_STATIC_CALLBACKS
 
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <strings.h>
