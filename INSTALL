@@ -47,8 +47,7 @@ pulse=yes|no
 	Whether to build the PulseAudio output plug-in. The default is "yes".
 
 sndio=yes|no
-	Whether to build the sndio output plug-in. sndio is available on
-	OpenBSD. On OpenBSD the default is "yes"; on other systems it is "no".
+	Whether to build the sndio output plug-in. The default is "yes".
 
 Uninstalling Siren
 ------------------
