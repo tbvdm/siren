@@ -14,35 +14,186 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
+# $1: function name
+# $2: statements
+# $3: headers
+# $4: macros
+# $5: compiler options
+check_function()
+{
+	print_check "for $1()"
+
+	if compile "$4" "$3" "$2" "$5"; then
+		print_result yes
+		return 0
+	else
+		print_result no
+		return 1
+	fi
+}
+
+check_header()
+{
+	print_check "for <$1>"
+
+	if compile "" "$1"; then
+		print_result yes
+		return 0
+	else
+		print_result no
+		return 1
+	fi
+}
+
+check_pkgconfig()
+{
+	print_check "for package $1"
+
+	if run_command pkg-config $1; then
+		print_result yes
+		return 0
+	else
+		print_result no
+		return 1
+	fi
+}
+
+# $1: value of $enable_$2
+# $2: plug-in name
+# $3: plug-in type (either "ip" or "op")
+# $4: packages to check for
+check_plugin_pkgconfig()
+{
+	local pkg
+
+	[ "$1" = no ] && return 1
+
+	for pkg in $4; do
+		check_pkgconfig $pkg || return 1
+	done
+
+	if [ "$3" = ip ]; then
+		enabled_ips="$enabled_ips $2"
+		makefile_append IP $2
+	else
+		enabled_ops="$enabled_ops $2"
+		makefile_append OP $2
+	fi
+
+	makefile_assign CPPFLAGS_$2 "$(pkg-config --cflags $4)"
+	makefile_assign LDFLAGS_$2 "$(pkg-config --libs $4)"
+
+	return 0
+}
+
+check_program()
+{
+	print_check "for $1"
+
+	if run_command which $1; then
+		print_result yes
+	else
+		print_result no
+		error "cannot find program $1"
+	fi
+}
+
+# $1: macros
+# $2: headers
+# $3: statements
+# $4: compiler options
+compile()
+{
+	local header macro outfile result srcfile
+
+	outfile=configure-test.o
+	srcfile=configure-test.c
+
+	rm -f $srcfile
+
+	for macro in $1; do
+		echo "#define $macro" >> $srcfile
+	done
+
+	for header in $2; do
+		echo "#include <$header>" >> $srcfile
+	done
+
+	echo "int main(void) { $3; return 0; }" >> $srcfile
+
+	echo compiling test program: >> $logfile
+	echo --- >> $logfile
+	cat $srcfile >> $logfile
+	echo --- >> $logfile
+
+	run_command $CC $CFLAGS $CPPFLAGS -o $outfile $srcfile $LDFLAGS $4
+	result=$?
+
+	rm -f $outfile $srcfile
+	return $result
+}
+
 error()
 {
-	echo "${0##*/}: $@" >&2
+	echo "${0##*/}: $@" >& 2
 	exit 1
+}
+
+# #1: the name of the variable to save the value to
+# #2: the "option=value" string
+get_option_value()
+{
+	local option value
+
+	option="${2%%=*}"
+	value="${2#*=}"
+
+	if [ "$value" = yes -o "$value" = no ]; then
+		eval $1=$value
+	else
+		error "option $option: $value: invalid value"
+	fi
 }
 
 header_define()
 {
-	if [ $# -eq 1 ]; then
-		echo "#define $1" >> "$header"
-	else
-		echo "#define $1 $2" >> "$header"
-	fi
-}
-
-makefile_assign()
-{
-	echo "$1=$2" >> "$makefile"
+	echo "#define $@" >> $header
 }
 
 makefile_append()
 {
-	if [ "$2" ]; then
-		echo "$1+=$2" >> "$makefile"
-	fi
+	[ "$2" ] && echo "$1+=$2" >> $makefile
 }
 
-set -e
+makefile_assign()
+{
+	echo "$1=$2" >> $makefile
+}
 
+print_check()
+{
+	echo -n "checking $@..."
+	echo "checking $@" >> $logfile
+}
+
+print_result()
+{
+	echo " $@"
+	echo "result: $@" >> $logfile
+}
+
+run_command()
+{
+	local status
+
+	echo "running command: $@" >> $logfile
+	eval $@ >> $logfile 2>& 1
+	status=$?
+	echo "exit status: $status" >> $logfile
+	return $status
+}
+
+logfile=configure.log
 header=config.h
 makefile=config.mk
 
@@ -51,31 +202,17 @@ bindir_suffix=bin
 mandir_suffix=man
 plugindir_suffix=lib/siren
 
-have_asprintf=0
-have_dirfd=0
-have_err=0
-have_fgetln=0
-have_freebsd_bswap16=0
-have_netbsd_bswap16=0
-have_netbsd_curses=0
-have_openbsd_swap16=0
-have_optreset=0
-have_queue_h=0
-have_resizeterm=0
-have_strcasestr=0
-have_strlcat=0
-have_strlcpy=0
-have_strsep=0
-have_strtonum=0
-have_tree_h=0
-have_use_default_colors=0
+enable_debug=no
+enable_flac=yes
+enable_mad=yes
+enable_sndfile=yes
+enable_vorbis=yes
+enable_ao=yes
+enable_pulse=yes
+enable_sndio=yes
 
 while [ $# -gt 0 ]; do
 	case "$1" in
-	debug=*)
-		enable_debug="${1#*=}"
-		;;
-
 	prefix=*)
 		prefix="${1#*=}"
 		;;
@@ -88,287 +225,206 @@ while [ $# -gt 0 ]; do
 	plugindir=*)
 		plugindir="${1#*=}"
 		;;
-
+	debug=*)
+		get_option_value enable_debug "$1"
+		;;
 	flac=*)
-		enable_flac="${1#*=}"
+		get_option_value enable_flac "$1"
 		;;
 	mad=*)
-		enable_mad="${1#*=}"
+		get_option_value enable_mad "$1"
 		;;
 	sndfile=*)
-		enable_sndfile="${1#*=}"
+		get_option_value enable_sndfile "$1"
 		;;
 	vorbis=*)
-		enable_vorbis="${1#*=}"
+		get_option_value enable_vorbis "$1"
 		;;
-
 	ao=*)
-		enable_ao="${1#*=}"
+		get_option_value enable_ao "$1"
 		;;
 	pulse=*)
-		enable_pulse="${1#*=}"
+		get_option_value enable_pulse "$1"
 		;;
 	sndio=*)
-		enable_sndio="${1#*=}"
+		get_option_value enable_sndio "$1"
 		;;
-
 	help|-h|--help)
 		error "see the INSTALL file for more information"
 		;;
 	*)
 		error "${1%%=*}: invalid option"
+		;;
 	esac
 	shift
 done
 
-if ! which pkg-config >/dev/null 2>&1; then
-	error "cannot run pkg-config"
-fi
+rm -f $logfile $header $makefile
 
-rm -f "$header" "$makefile"
-
-[ "$CC" ] && makefile_assign CC "$CC"
-[ "$CFLAGS" ] && makefile_assign CFLAGS "$CFLAGS"
-[ "$CPPFLAGS" ] && makefile_assign CPPFLAGS "$CPPFLAGS"
-[ "$LDFLAGS" ] && makefile_assign LDFLAGS "$LDFLAGS"
-
-uname=`uname`
-echo configuring for "$uname"
-
-case "$uname" in
-FreeBSD)
-	have_asprintf=1
-	have_dirfd=1
-	have_err=1
-	have_fgetln=1
-	have_freebsd_bswap16=1
-	have_optreset=1
-	have_resizeterm=1
-	have_strcasestr=1
-	have_strlcat=1
-	have_strlcpy=1
-	have_strsep=1
-	have_strtonum=1
-	have_use_default_colors=1
-
-	[ "$enable_sndio" != yes ] && enable_sndio=no
-	;;
-
-Linux)
-	have_asprintf=1
-	have_dirfd=1
-	have_err=1
-	have_resizeterm=1
-	have_strcasestr=1
-	have_strsep=1
-	have_use_default_colors=1
-
-	[ "$enable_sndio" != yes ] && enable_sndio=no
-
-	makefile_append LDFLAGS -ldl
-	;;
-
-NetBSD)
-	have_asprintf=1
-	have_dirfd=1
-	have_err=1
-	have_fgetln=1
-	have_netbsd_bswap16=1
-	have_netbsd_curses=1
-	have_optreset=1
-	have_resizeterm=1
-	have_strcasestr=1
-	have_strlcat=1
-	have_strlcpy=1
-	have_strsep=1
-	have_use_default_colors=1
-
-	[ "$enable_sndio" != yes ] && enable_sndio=no
-	;;
-
-OpenBSD)
-	have_asprintf=1
-	have_dirfd=1
-	have_err=1
-	have_fgetln=1
-	have_openbsd_swap16=1
-	have_optreset=1
-	have_queue_h=1
-	have_resizeterm=1
-	have_strcasestr=1
-	have_strlcat=1
-	have_strlcpy=1
-	have_strsep=1
-	have_strtonum=1
-	have_tree_h=1
-	have_use_default_colors=1
-	;;
-
-*)
-	echo "this system has not been tested; build may fail"
-
-	[ "$enable_sndio" != yes ] && enable_sndio=no
-	;;
-esac
+[ -z "$CC" ] && CC=cc
+makefile_assign CC "$CC"
+makefile_assign CFLAGS "$CFLAGS"
+makefile_assign CPPFLAGS "$CPPFLAGS"
+makefile_assign LDFLAGS "$LDFLAGS"
 
 [ -z "$bindir" ] && bindir="$prefix/$bindir_suffix"
 [ -z "$mandir" ] && mandir="$prefix/$mandir_suffix"
 [ -z "$plugindir" ] && plugindir="$prefix/$plugindir_suffix"
 
-header_define PLUGIN_DIR "\"$plugindir\""
 makefile_assign BINDIR "$bindir"
 makefile_assign MANDIR "$mandir"
 makefile_assign PLUGINDIR "$plugindir"
+header_define PLUGIN_DIR "\"$plugindir\""
 
-if [ "$have_asprintf" -eq 1 ]; then
+if [ "$enable_debug" = yes ]; then
+	header_define DEBUG
+	makefile_append CFLAGS -ggdb
+fi
+
+check_program "$CC"
+check_program pkg-config
+
+if check_function asprintf 'asprintf(NULL, "")' stdio.h _GNU_SOURCE; then
 	header_define HAVE_ASPRINTF
 else
 	makefile_append SRCS compat/asprintf.c
 fi
 
-if [ "$have_dirfd" -eq 1 ]; then
+if check_function dirfd "DIR *dirp; dirfd(dirp)" "sys/types.h dirent.h"; then
 	header_define HAVE_DIRFD
 fi
 
-if [ "$have_err" -eq 1 ]; then
+if check_function err 'err(0, "")' err.h; then
 	header_define HAVE_ERR
 else
 	makefile_append SRCS compat/err.c
 fi
 
-if [ "$have_fgetln" -eq 1 ]; then
+if check_function fgetln "fgetln(NULL, NULL)" stdio.h; then
 	header_define HAVE_FGETLN
 else
 	makefile_append SRCS compat/fgetln.c
 fi
 
-if [ "$have_freebsd_bswap16" -eq 1 ]; then
-	header_define HAVE_FREEBSD_BSWAP16
-fi
-
-if [ "$have_netbsd_bswap16" -eq 1 ]; then
-	header_define HAVE_NETBSD_BSWAP16
-fi
-
-if [ "$have_netbsd_curses" -eq 1 ]; then
-	header_define HAVE_NETBSD_CURSES
-fi
-
-if [ "$have_openbsd_swap16" -eq 1 ]; then
-	header_define HAVE_OPENBSD_SWAP16
-fi
-
-if [ "$have_optreset" -eq 1 ]; then
-	header_define HAVE_OPTRESET
-else
-	makefile_append SRCS compat/getopt.c
-fi
-
-if [ "$have_queue_h" -eq 1 ]; then
-	header_define HAVE_QUEUE_H
-fi
-
-if [ "$have_resizeterm" -eq 1 ]; then
+if check_function resizeterm "resizeterm(0, 0)" curses.h "" -lcurses; then
 	header_define HAVE_RESIZETERM
 fi
 
-if [ "$have_strcasestr" -eq 1 ]; then
+if check_function strcasestr "strcasestr(NULL, NULL)" string.h; then
 	header_define HAVE_STRCASESTR
 else
 	makefile_append SRCS compat/strcasestr.c
 fi
 
-if [ "$have_strlcat" -eq 1 ]; then
+if check_function strlcat "strlcat(NULL, NULL, 0)" string.h; then
 	header_define HAVE_STRLCAT
 else
 	makefile_append SRCS compat/strlcat.c
 fi
 
-if [ "$have_strlcpy" -eq 1 ]; then
+if check_function strlcpy "strlcpy(NULL, NULL, 0)" string.h; then
 	header_define HAVE_STRLCPY
 else
 	makefile_append SRCS compat/strlcpy.c
 fi
 
-if [ "$have_strsep" -eq 1 ]; then
+if check_function strsep "strsep(NULL, NULL)" string.h; then
 	header_define HAVE_STRSEP
 else
 	makefile_append SRCS compat/strsep.c
 fi
 
-if [ "$have_strtonum" -eq 1 ]; then
+if check_function strtonum "strtonum(NULL, 0, 0, NULL)" stdlib.h; then
 	header_define HAVE_STRTONUM
 else
 	makefile_append SRCS compat/strtonum.c
 fi
 
-if [ "$have_tree_h" -eq 1 ]; then
-	header_define HAVE_TREE_H
+if check_function swap16 "swap16(0)" sys/types.h; then
+	header_define HAVE_OPENBSD_SWAP16
+elif check_function "a NetBSD-like bswap16" "bswap16(0)" \
+    "sys/types.h machine/bswap.h"; then
+	header_define HAVE_NETBSD_BSWAP16
+elif check_function "a FreeBSD-like bswap16" "bswap16(0)" sys/endian.h; then
+	header_define HAVE_FREEBSD_BSWAP16
 fi
 
-if [ "$have_use_default_colors" -eq 1 ]; then
+if check_function use_default_colors "use_default_colors()" curses.h "" \
+    -lcurses; then
 	header_define HAVE_USE_DEFAULT_COLORS
 fi
 
-if [ "$enable_debug" = yes ]; then
-	echo enabling debug build
-	header_define DEBUG
-	makefile_append CFLAGS -ggdb
+if [ "$(uname)" = NetBSD ]; then
+	header_define HAVE_NETBSD_CURSES
 fi
 
-if [ "$enable_flac" != no ] && pkg-config flac; then
-	echo enabling flac plug-in
-	makefile_append IP flac
-	makefile_assign CPPFLAGS_flac "`pkg-config --cflags flac`"
-	makefile_assign LDFLAGS_flac "`pkg-config --libs flac`"
+print_check "whether <sys/queue.h> is usable"
+if [ "$(uname)" = OpenBSD ]; then
+	print_result yes
+	header_define HAVE_QUEUE_H
+else
+	print_result no
 fi
 
-if [ "$enable_mad" != no ] && pkg-config id3tag mad; then
-	echo enabling mad plug-in
-	makefile_append IP mad
-	makefile_assign CPPFLAGS_mad "`pkg-config --cflags id3tag mad`"
-	makefile_assign LDFLAGS_mad "`pkg-config --libs id3tag mad`"
+print_check "whether <sys/tree.h> is usable"
+if [ "$(uname)" = OpenBSD ]; then
+	print_result yes
+	header_define HAVE_TREE_H
+else
+	print_result no
 fi
 
-if [ "$enable_sndfile" != no ] && pkg-config sndfile; then
-	echo enabling sndfile plug-in
-	makefile_append IP sndfile
-	makefile_assign CPPFLAGS_sndfile "`pkg-config --cflags sndfile`"
-	makefile_assign LDFLAGS_sndfile "`pkg-config --libs sndfile`"
+print_check "whether getopt() supports optreset"
+if compile "" unistd.h "optreset = 1"; then
+	print_result yes
+	header_define HAVE_OPTRESET
+else
+	print_result no
+	makefile_append SRCS compat/getopt.c
+fi
 
+print_check "whether dlopen() requires libdl"
+if compile "" "dlfcn.h stddef.h" "dlopen(NULL, 0)"; then
+	print_result no
+elif compile "" "dlfcn.h stddef.h" "dlopen(NULL, 0)" -ldl; then
+	print_result yes
+	makefile_append LDFLAGS -ldl
+else
+	print_result no
+	error "cannot determine how to use dlopen()"
+fi
+
+check_plugin_pkgconfig $enable_flac flac ip flac
+
+check_plugin_pkgconfig $enable_mad mad ip "mad id3tag"
+
+if check_plugin_pkgconfig $enable_sndfile sndfile ip sndfile; then
 	if pkg-config --atleast-version 1.0.23 sndfile; then
 		header_define HAVE_SF_STR_GENRE
 		header_define HAVE_SF_STR_TRACKNUMBER
 	fi
 fi
 
-if [ "$enable_vorbis" != no ] && pkg-config vorbisfile; then
-	echo enabling vorbis plug-in
-	makefile_append IP vorbis
-	makefile_assign CPPFLAGS_vorbis "`pkg-config --cflags vorbisfile`"
-	makefile_assign LDFLAGS_vorbis "`pkg-config --libs vorbisfile`"
-fi
+check_plugin_pkgconfig $enable_vorbis vorbis ip vorbisfile
 
-if [ "$enable_ao" != no ] && pkg-config ao; then
-	echo enabling ao plug-in
-	makefile_append OP ao
-	makefile_assign CPPFLAGS_ao "`pkg-config --cflags ao`"
-	makefile_assign LDFLAGS_ao "`pkg-config --libs ao`"
-
+if check_plugin_pkgconfig $enable_ao ao op ao; then
 	if pkg-config --atleast-version 1.0.0 ao; then
 		header_define HAVE_AO_MATRIX
 	fi
 fi
 
-if [ "$enable_pulse" != no ] && pkg-config libpulse-simple; then
-	echo enabling pulse plug-in
-	makefile_append OP pulse
-	makefile_append CPPFLAGS_pulse "`pkg-config --cflags libpulse-simple`"
-	makefile_append LDFLAGS_pulse "`pkg-config --libs libpulse-simple`"
-fi
+check_plugin_pkgconfig $enable_pulse pulse op libpulse-simple
 
-if [ "$enable_sndio" != no ]; then
-	echo enabling sndio plug-in
+if [ "$enable_sndio" != no ] && check_header sndio.h; then
 	makefile_append OP sndio
 	makefile_assign LDFLAGS_sndio -lsndio
+	enabled_ops="$enabled_ops sndio"
 fi
+
+echo
+echo "bindir:          $bindir"
+echo "mandir:          $mandir"
+echo "plugindir:       $plugindir"
+echo "debug build:     $enable_debug"
+echo "input plug-ins:  ${enabled_ips# }"
+echo "output plug-ins: ${enabled_ops# }"
