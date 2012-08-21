@@ -124,8 +124,7 @@ player_begin_playback(struct player_sample_buffer *buf)
 		goto error;
 	}
 
-	if ((ret = player_op->start(&player_track->format))) {
-		msg_op_err(player_op, ret, "Cannot start playback");
+	if (player_op->start(&player_track->format) == -1) {
 		player_track->ip->close(player_track);
 		goto error;
 	}
@@ -159,7 +158,6 @@ void
 player_change_op(void)
 {
 	const struct op	*op;
-	int		 ret;
 	char		*name;
 
 	name = option_get_string("output-plugin");
@@ -170,10 +168,7 @@ player_change_op(void)
 		XPTHREAD_MUTEX_LOCK(&player_op_mtx);
 		player_close_op();
 		LOG_INFO("opening %s output plug-in", op->name);
-		if ((ret = op->open()))
-			msg_op_err(op, ret, "Cannot open %s output plug-in",
-			    op->name);
-		else {
+		if (op->open() == 0) {
 			player_op = op;
 			player_op_opened = 1;
 		}
@@ -218,17 +213,13 @@ player_end(void)
 static void
 player_end_playback(struct player_sample_buffer *buf)
 {
-	int ret;
-
 	XPTHREAD_MUTEX_LOCK(&player_track_mtx);
 	player_track->ip->close(player_track);
 	XPTHREAD_MUTEX_UNLOCK(&player_track_mtx);
 
 	XPTHREAD_MUTEX_LOCK(&player_op_mtx);
-	if ((ret = player_op->stop())) {
-		msg_op_err(player_op, ret, "Cannot stop playback");
+	if (player_op->stop() == -1)
 		player_close_op();
-	}
 	XPTHREAD_MUTEX_UNLOCK(&player_op_mtx);
 
 	free(buf->samples);
@@ -273,8 +264,7 @@ player_init(void)
 static int
 player_open_op(void)
 {
-	int	 ret;
-	char	*name;
+	char *name;
 
 	if (!player_op_opened) {
 		if (player_op == NULL) {
@@ -288,11 +278,8 @@ player_open_op(void)
 		}
 
 		LOG_INFO("opening %s output plug-in", player_op->name);
-		if ((ret = player_op->open())) {
-			msg_op_err(player_op, ret,
-			    "Cannot open %s output plug-in", player_op->name);
+		if (player_op->open() == -1)
 			return -1;
-		}
 
 		player_op_opened = 1;
 	}
@@ -384,10 +371,8 @@ player_play_sample_buffer(struct player_sample_buffer *buf)
 	ret = player_op->write(buf->samples, buf->nsamples * 2);
 	XPTHREAD_MUTEX_UNLOCK(&player_op_mtx);
 
-	if (ret == -1) {
-		msg_errx("Cannot play back");
+	if (ret == -1)
 		goto error;
-	}
 
 	return 0;
 
@@ -567,10 +552,9 @@ player_print_status(void)
 	if (player_open_op() == -1 || !player_op->get_volume_support())
 		vars[PLAYER_FMT_VOLUME].value.number = 0;
 	else {
-		if ((ret = player_op->get_volume()) < 0) {
-			msg_op_err(player_op, ret, "Cannot get volume");
+		if ((ret = player_op->get_volume()) == -1)
 			vars[PLAYER_FMT_VOLUME].value.number = 0;
-		} else
+		else
 			vars[PLAYER_FMT_VOLUME].value.number = ret;
 	}
 	XPTHREAD_MUTEX_UNLOCK(&player_op_mtx);
@@ -691,10 +675,8 @@ player_set_volume(int volume, int relative)
 	}
 
 	if (relative) {
-		if ((ret = player_op->get_volume()) < 0) {
-			msg_op_err(player_op, ret, "Cannot get volume");
+		if ((ret = player_op->get_volume()) == -1)
 			goto out;
-		}
 
 		volume += ret;
 		if (volume < 0)
@@ -703,8 +685,7 @@ player_set_volume(int volume, int relative)
 			volume = 100;
 	}
 
-	if ((ret = player_op->set_volume(volume)))
-		msg_op_err(player_op, ret, "Cannot set volume");
+	player_op->set_volume(volume);
 
 out:
 	XPTHREAD_MUTEX_UNLOCK(&player_op_mtx);

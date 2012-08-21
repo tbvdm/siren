@@ -24,7 +24,6 @@
 #define OP_PULSE_BUFSIZE 4096
 
 static void		 op_pulse_close(void);
-static const char	*op_pulse_error(int);
 static size_t		 op_pulse_get_buffer_size(void);
 static int		 op_pulse_get_volume_support(void);
 static void		 op_pulse_init(void);
@@ -37,7 +36,6 @@ const struct op		 op = {
 	"pulse",
 	OP_PRIORITY_PULSE,
 	op_pulse_close,
-	op_pulse_error,
 	op_pulse_get_buffer_size,
 	NULL,
 	op_pulse_get_volume_support,
@@ -54,12 +52,6 @@ static pa_simple	*op_pulse_conn;
 static void
 op_pulse_close(void)
 {
-}
-
-const char *
-op_pulse_error(int error)
-{
-	return pa_strerror(-error);
 }
 
 /* Return the buffer size in bytes. */
@@ -103,7 +95,8 @@ op_pulse_start(struct sample_format *sf)
 	if ((op_pulse_conn = pa_simple_new(NULL, "Siren", PA_STREAM_PLAYBACK,
 	    NULL, "Siren", &spec, NULL, NULL, &error)) == NULL) {
 		LOG_ERRX("pa_simple_new: %s", pa_strerror(error));
-		return -error;
+		msg_errx("Cannot connect to server: %s", pa_strerror(error));
+		return -1;
 	}
 
 	LOG_DEBUG("format=%s, rate=%u, channels=%u",
@@ -119,11 +112,13 @@ op_pulse_stop(void)
 	int error;
 
 	error = 0;
-	if (pa_simple_drain(op_pulse_conn, &error) < 0)
+	if (pa_simple_drain(op_pulse_conn, &error) < 0) {
 		LOG_ERRX("pa_simple_drain: %s", pa_strerror(error));
+		msg_errx("%s", pa_strerror(error));
+	}
 
 	pa_simple_free(op_pulse_conn);
-	return error ? -error : 0;
+	return error ? -1 : 0;
 }
 
 static int
@@ -133,6 +128,7 @@ op_pulse_write(void *buf, size_t bufsize)
 
 	if (pa_simple_write(op_pulse_conn, buf, bufsize, &error) < 0) {
 		LOG_ERRX("pa_simple_write: %s", pa_strerror(error));
+		msg_errx("Playback error: %s", pa_strerror(error));
 		return -1;
 	}
 	return 0;

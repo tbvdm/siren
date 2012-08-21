@@ -19,26 +19,17 @@
 
 #include "../siren.h"
 
-#define OP_SNDIO_ERROR_GETPAR		-1
-#define OP_SNDIO_ERROR_NEGOTIATE	-2
-#define OP_SNDIO_ERROR_OPEN		-3
-#define OP_SNDIO_ERROR_SETPAR		-4
-#define OP_SNDIO_ERROR_SETVOL		-5
-#define OP_SNDIO_ERROR_START		-6
-#define OP_SNDIO_ERROR_STOP		-7
-
 #define OP_SNDIO_PERCENT_TO_VOLUME(p)	((SIO_MAXVOL * (p) + 50) / 100)
 #define OP_SNDIO_VOLUME_TO_PERCENT(v)	\
 	((100 * (v) + ((SIO_MAXVOL + 1) / 2)) / SIO_MAXVOL)
 
 static void		 op_sndio_close(void);
-static const char	*op_sndio_error(int);
 static size_t		 op_sndio_get_buffer_size(void);
 static int		 op_sndio_get_volume(void);
 static int		 op_sndio_get_volume_support(void);
 static void		 op_sndio_init(void);
 static int		 op_sndio_open(void);
-static int		 op_sndio_set_volume(unsigned int);
+static void		 op_sndio_set_volume(unsigned int);
 static int		 op_sndio_start(struct sample_format *);
 static int		 op_sndio_stop(void);
 static void		 op_sndio_volume_cb(void *, unsigned int);
@@ -48,7 +39,6 @@ struct op		 op = {
 	"sndio",
 	OP_PRIORITY_SNDIO,
 	op_sndio_close,
-	op_sndio_error,
 	op_sndio_get_buffer_size,
 	op_sndio_get_volume,
 	op_sndio_get_volume_support,
@@ -69,30 +59,6 @@ static void
 op_sndio_close(void)
 {
 	sio_close(op_sndio_handle);
-}
-
-static const char *
-op_sndio_error(int errnum)
-{
-	switch (errnum) {
-	case OP_SNDIO_ERROR_GETPAR:
-		return "Cannot get stream parameters";
-	case OP_SNDIO_ERROR_NEGOTIATE:
-		return "Cannot negotiate paramaters";
-	case OP_SNDIO_ERROR_OPEN:
-		return "Cannot open stream";
-	case OP_SNDIO_ERROR_SETPAR:
-		return "Cannot set stream parameters";
-	case OP_SNDIO_ERROR_SETVOL:
-		return "Cannot set volume";
-	case OP_SNDIO_ERROR_START:
-		return "Cannot start stream";
-	case OP_SNDIO_ERROR_STOP:
-		return "Cannot stop stream";
-	default:
-		LOG_DEBUG("%d: unknown error", errnum);
-		return "Unknown error";
-	}
 }
 
 /* Return the buffer size in bytes. */
@@ -143,7 +109,8 @@ op_sndio_open(void)
 
 	if (op_sndio_handle == NULL) {
 		LOG_ERRX("sio_open() failed");
-		return OP_SNDIO_ERROR_OPEN;
+		msg_errx("Cannot open stream");
+		return -1;
 	}
 
 	if (!sio_onvol(op_sndio_handle, op_sndio_volume_cb, NULL))
@@ -154,15 +121,13 @@ op_sndio_open(void)
 	return 0;
 }
 
-static int
+static void
 op_sndio_set_volume(unsigned int volume)
 {
 	if (!sio_setvol(op_sndio_handle, OP_SNDIO_PERCENT_TO_VOLUME(volume))) {
 		LOG_ERRX("sio_setvol() failed");
-		return OP_SNDIO_ERROR_SETVOL;
+		msg_errx("Cannot set volume");
 	}
-
-	return 0;
 }
 
 static int
@@ -176,12 +141,14 @@ op_sndio_start(struct sample_format *sf)
 
 	if (!sio_setpar(op_sndio_handle, &op_sndio_par)) {
 		LOG_ERRX("sio_setpar() failed");
-		return OP_SNDIO_ERROR_SETPAR;
+		msg_errx("Cannot set stream parameters");
+		return -1;
 	}
 
 	if (!sio_getpar(op_sndio_handle, &op_sndio_par)) {
 		LOG_ERRX("sio_getpar() failed");
-		return OP_SNDIO_ERROR_GETPAR;
+		msg_errx("Cannot get stream parameters");
+		return -1;
 	}
 
 	if (op_sndio_par.bits != sf->nbits ||
@@ -189,8 +156,9 @@ op_sndio_start(struct sample_format *sf)
 	    op_sndio_par.pchan != sf->nchannels ||
 	    op_sndio_par.rate != sf->rate ||
 	    op_sndio_par.sig != 1U) {
-		LOG_ERRX("cannot negotiate parameters");
-		return OP_SNDIO_ERROR_NEGOTIATE;
+		LOG_ERRX("cannot negotiate stream parameters");
+		msg_errx("Cannot negotiate stream parameters");
+		return -1;
 	}
 
 	sf->byte_order = op_sndio_par.le ? BYTE_ORDER_LITTLE : BYTE_ORDER_BIG;
@@ -201,7 +169,8 @@ op_sndio_start(struct sample_format *sf)
 
 	if (!sio_start(op_sndio_handle)) {
 		LOG_ERRX("sio_start() failed");
-		return OP_SNDIO_ERROR_START;
+		msg_errx("Cannot start stream");
+		return -1;
 	}
 
 	return 0;
@@ -212,7 +181,8 @@ op_sndio_stop(void)
 {
 	if (!sio_stop(op_sndio_handle)) {
 		LOG_ERRX("sio_stop() failed");
-		return OP_SNDIO_ERROR_STOP;
+		msg_errx("Cannot stop stream");
+		return -1;
 	}
 	return 0;
 }

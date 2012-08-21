@@ -309,13 +309,12 @@ struct op {
 	const char	*name;
 	const int	 priority;
 	void		 (*close)(void);
-	const char	*(*error)(int);
 	size_t		 (*get_buffer_size)(void);
 	int		 (*get_volume)(void);
 	int		 (*get_volume_support)(void);
 	void		 (*init)(void);
 	int		 (*open)(void);
-	int		 (*set_volume)(unsigned int);
+	void		 (*set_volume)(unsigned int);
 	int		 (*start)(struct sample_format *) NONNULL();
 	int		 (*stop)(void);
 	int		 (*write)(void *, size_t) NONNULL();
@@ -472,8 +471,6 @@ void		 msg_err(const char *, ...) PRINTFLIKE(1, 2);
 void		 msg_errx(const char *, ...) PRINTFLIKE(1, 2);
 void		 msg_info(const char *, ...) PRINTFLIKE(1, 2);
 void		 msg_ip_err(int, const char *, const char *, ...)
-		    NONNULL() PRINTFLIKE(3, 4);
-void		 msg_op_err(const struct op *, int, const char *, ...)
 		    NONNULL() PRINTFLIKE(3, 4);
 
 void		 option_add_number(const char *, int, int, int, void (*)(void))

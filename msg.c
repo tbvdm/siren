@@ -79,26 +79,6 @@ msg_ip_err(int errnum, const char *errmsg, const char *fmt, ...)
 	va_end(ap);
 }
 
-void
-msg_op_err(const struct op *op, int errnum, const char *fmt, ...)
-{
-	va_list	ap;
-	char	errstr[STRERROR_BUFSIZE], *msg;
-
-	va_start(ap, fmt);
-	(void)xvasprintf(&msg, fmt, ap);
-	va_end(ap);
-
-	if (errnum < 0)
-		msg_errx("%s: %s", msg, op->error(errnum));
-	else {
-		(void)strerror_r(errnum, errstr, sizeof errstr);
-		msg_errx("%s: %s", msg, errstr);
-	}
-
-	free(msg);
-}
-
 static void
 msg_verr(const char *fmt, va_list ap)
 {

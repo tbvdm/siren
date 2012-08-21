@@ -24,18 +24,7 @@
 
 #define OP_AO_BUFSIZE			4096
 
-#define OP_AO_ERROR_CLOSE		-1
-#define OP_AO_ERROR_DEVICE_OPEN		-2
-#define OP_AO_ERROR_DRIVER		-3
-#define OP_AO_ERROR_DRIVER_FILE		-4
-#define OP_AO_ERROR_DRIVER_LIVE		-5
-#define OP_AO_ERROR_FILE_EXISTS		-6
-#define OP_AO_ERROR_FILE_OPEN		-7
-#define OP_AO_ERROR_OPTION		-8
-#define OP_AO_ERROR_OTHER		-9
-
 static void		 op_ao_close(void);
-static const char	*op_ao_error(int);
 static size_t		 op_ao_get_buffer_size(void);
 static int		 op_ao_get_volume_support(void);
 static void		 op_ao_init(void);
@@ -48,7 +37,6 @@ const struct op		 op = {
 	"ao",
 	OP_PRIORITY_AO,
 	op_ao_close,
-	op_ao_error,
 	op_ao_get_buffer_size,
 	NULL,
 	op_ao_get_volume_support,
@@ -69,34 +57,6 @@ static void
 op_ao_close(void)
 {
 	ao_shutdown();
-}
-
-static const char *
-op_ao_error(int errnum)
-{
-	switch (errnum) {
-	case OP_AO_ERROR_CLOSE:
-		return "Cannot close device or file";
-	case OP_AO_ERROR_DEVICE_OPEN:
-		return "Cannot open device";
-	case OP_AO_ERROR_DRIVER:
-		return "Cannot find driver";
-	case OP_AO_ERROR_DRIVER_FILE:
-		return "Driver is not a file output driver";
-	case OP_AO_ERROR_DRIVER_LIVE:
-		return "Driver is not a live output driver";
-	case OP_AO_ERROR_FILE_EXISTS:
-		return "Output file already exists";
-	case OP_AO_ERROR_FILE_OPEN:
-		return "Cannot open file";
-	case OP_AO_ERROR_OPTION:
-		return "Invalid option value";
-	case OP_AO_ERROR_OTHER:
-		return "Unspecified error";
-	default:
-		LOG_DEBUG("%d: unknown error", errnum);
-		return "Unknown error";
-	}
 }
 
 /* Return the buffer size in bytes. */
@@ -130,22 +90,27 @@ op_ao_open(void)
 
 	driver = option_get_string("ao-driver");
 	if (driver[0] == '\0') {
-		if ((op_ao_driver_id = ao_default_driver_id()) == -1)
+		if ((op_ao_driver_id = ao_default_driver_id()) == -1) {
 			LOG_ERRX("ao_default_driver_id() failed");
+			msg_errx("Cannot find default driver");
+		}
 	} else
-		if ((op_ao_driver_id = ao_driver_id(driver)) == -1)
+		if ((op_ao_driver_id = ao_driver_id(driver)) == -1) {
 			LOG_ERRX("ao_driver_id() failed");
+			msg_errx("Cannot find %s driver", driver);
+		}
 	free(driver);
 
 	if (op_ao_driver_id == -1) {
 		ao_shutdown();
-		return OP_AO_ERROR_DRIVER;
+		return -1;
 	}
 
 	if ((info = ao_driver_info(op_ao_driver_id)) == NULL) {
 		LOG_ERRX("ao_driver_info() failed");
+		msg_errx("Cannot get driver information");
 		ao_shutdown();
-		return OP_AO_ERROR_DRIVER;
+		return -1;
 	}
 
 	op_ao_driver_type = info->type;
@@ -190,33 +155,45 @@ op_ao_start(struct sample_format *sf)
 
 	if (op_ao_device == NULL) {
 		error = errno;
-		LOG_ERRX("ao_open_%s() failed",
-		    op_ao_driver_type == AO_TYPE_LIVE ? "live" : "file");
+		LOG_ERRX("ao_open_%s() failed: error %d",
+		    op_ao_driver_type == AO_TYPE_LIVE ? "live" : "file",
+		    error);
 
 		switch (error) {
 		/* Errors specific to live output drivers. */
 		case AO_ENOTLIVE:
-			return OP_AO_ERROR_DRIVER_LIVE;
+			msg_errx("Driver is not a live output driver");
+			break;
 		case AO_EOPENDEVICE:
-			return OP_AO_ERROR_DEVICE_OPEN;
+			msg_errx("Cannot open device");
+			break;
 
 		/* Errors specific to file output drivers. */
 		case AO_ENOTFILE:
-			return OP_AO_ERROR_DRIVER_FILE;
+			msg_errx("Driver is not a file output driver");
+			break;
 		case AO_EFILEEXISTS:
-			return OP_AO_ERROR_FILE_EXISTS;
+			msg_errx("Output file already exists");
+			break;
 		case AO_EOPENFILE:
-			return OP_AO_ERROR_FILE_OPEN;
+			msg_errx("Cannot open output file");
+			break;
 
 		/* Common errors. */
+		case AO_EBADFORMAT:
+			msg_errx("Sample format not supported");
+			break;
 		case AO_EBADOPTION:
-			return OP_AO_ERROR_OPTION;
+			msg_errx("An ao option has an invalid value");
+			break;
 		case AO_ENODRIVER:
-			return OP_AO_ERROR_DRIVER;
+			msg_errx("Cannot find driver");
 		case AO_EFAIL:
 		default:
-			return OP_AO_ERROR_OTHER;
+			msg_errx("Unknown error");
+			break;
 		}
+		return -1;
 	}
 
 	switch (aosf.byte_format) {
@@ -243,7 +220,8 @@ op_ao_stop(void)
 {
 	if (ao_close(op_ao_device) == 0) {
 		LOG_ERRX("ao_close() failed");
-		return OP_AO_ERROR_CLOSE;
+		msg_errx("Cannot close device");
+		return -1;
 	}
 	return 0;
 }
@@ -251,7 +229,10 @@ op_ao_stop(void)
 static int
 op_ao_write(void *buf, size_t bufsize)
 {
-	if (ao_play(op_ao_device, buf, bufsize) == 0)
+	if (ao_play(op_ao_device, buf, bufsize) == 0) {
+		LOG_ERRX("ao_play() failed");
+		msg_errx("Playback error");
 		return -1;
+	}
 	return 0;
 }
