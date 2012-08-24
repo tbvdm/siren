@@ -102,22 +102,14 @@ static enum byte_order		 player_byte_order;
 static int
 player_begin_playback(struct player_sample_buffer *buf)
 {
-	int	 ret;
-	char	*error;
-
-	error = NULL;
-
 	XPTHREAD_MUTEX_LOCK(&player_track_mtx);
 	XPTHREAD_MUTEX_LOCK(&player_op_mtx);
 
 	if (player_track == NULL)
 		goto error;
 
-	if ((ret = player_track->ip->open(player_track, &error))) {
-		msg_ip_err(ret, error, "Cannot open track");
-		free(error);
+	if (player_track->ip->open(player_track))
 		goto error;
-	}
 
 	if (player_open_op() == -1) {
 		player_track->ip->close(player_track);
@@ -335,27 +327,21 @@ player_play_prev(void)
 static int
 player_play_sample_buffer(struct player_sample_buffer *buf)
 {
-	size_t	 i;
-	int	 ret;
-	char	*error;
-
-	error = NULL;
+	size_t	i;
+	int	ret;
 
 	XPTHREAD_MUTEX_LOCK(&player_track_mtx);
 	ret = player_track->ip->read(player_track, buf->samples,
-	    buf->maxsamples, &error);
+	    buf->maxsamples);
 	XPTHREAD_MUTEX_UNLOCK(&player_track_mtx);
 
 	if (ret == 0)
 		/* EOF reached. */
 		return -1;
 
-	if (ret < 0) {
+	if (ret < 0)
 		/* Error encountered. */
-		msg_ip_err(ret, error, "Cannot read from track");
-		free(error);
 		goto error;
-	}
 
 	buf->nsamples = ret;
 
@@ -485,8 +471,7 @@ player_print_status(void)
 	struct format		*format;
 	struct format_variable	 vars[PLAYER_FMT_NVARS];
 	unsigned int		 pos;
-	int			 ret;
-	char			*error;
+	int			 vol;
 
 	vars[PLAYER_FMT_CONTINUE].lname = "continue";
 	vars[PLAYER_FMT_CONTINUE].sname = 'c';
@@ -526,17 +511,11 @@ player_print_status(void)
 	XPTHREAD_MUTEX_LOCK(&player_track_mtx);
 
 	/* Set the position variable. */
-	vars[PLAYER_FMT_POSITION].value.number = 0;
-	if (player_state != PLAYER_STATE_STOPPED) {
-		error = NULL;
-		ret = player_track->ip->get_position(player_track, &pos,
-		    &error);
-		if (ret < 0) {
-			msg_ip_err(ret, error, "Cannot get position");
-			free(error);
-		} else
-			vars[PLAYER_FMT_POSITION].value.number = pos;
-	}
+	if (player_state == PLAYER_STATE_STOPPED ||
+	    player_track->ip->get_position(player_track, &pos) == -1)
+		vars[PLAYER_FMT_POSITION].value.number = 0;
+	else
+		vars[PLAYER_FMT_POSITION].value.number = pos;
 
 	/* Set the duration variable. */
 	if (player_track == NULL)
@@ -549,14 +528,11 @@ player_print_status(void)
 
 	/* Set the volume variable. */
 	XPTHREAD_MUTEX_LOCK(&player_op_mtx);
-	if (player_open_op() == -1 || !player_op->get_volume_support())
+	if (player_open_op() == -1 || !player_op->get_volume_support() ||
+	    (vol = player_op->get_volume()) == -1)
 		vars[PLAYER_FMT_VOLUME].value.number = 0;
-	else {
-		if ((ret = player_op->get_volume()) == -1)
-			vars[PLAYER_FMT_VOLUME].value.number = 0;
-		else
-			vars[PLAYER_FMT_VOLUME].value.number = ret;
-	}
+	else
+		vars[PLAYER_FMT_VOLUME].value.number = vol;
 	XPTHREAD_MUTEX_UNLOCK(&player_op_mtx);
 
 	/* Set the continue variable. */
@@ -611,9 +587,7 @@ player_quit(void)
 void
 player_seek(int pos, int relative)
 {
-	unsigned int	 curpos;
-	int		 ret;
-	char		*error;
+	unsigned int curpos;
 
 	XPTHREAD_MUTEX_LOCK(&player_state_mtx);
 	XPTHREAD_MUTEX_LOCK(&player_track_mtx);
@@ -621,16 +595,9 @@ player_seek(int pos, int relative)
 	if (player_state == PLAYER_STATE_STOPPED)
 		goto out;
 
-	error = NULL;
-
 	if (relative) {
-		if ((ret = player_track->ip->get_position(player_track,
-		    &curpos, &error))) {
-			msg_ip_err(ret, error, "Cannot get current position");
-			free(error);
+		if (player_track->ip->get_position(player_track, &curpos))
 			goto out;
-		}
-
 		pos += curpos;
 	}
 
@@ -639,10 +606,7 @@ player_seek(int pos, int relative)
 	else if ((unsigned int)pos > player_track->duration)
 		pos = player_track->duration;
 
-	if ((ret = player_track->ip->seek(player_track, pos, &error))) {
-		msg_ip_err(ret, error, "Cannot seek");
-		free(error);
-	}
+	player_track->ip->seek(player_track, pos);
 
 out:
 	XPTHREAD_MUTEX_UNLOCK(&player_track_mtx);

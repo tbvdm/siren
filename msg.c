@@ -62,23 +62,6 @@ msg_info(const char *fmt, ...)
 	}
 }
 
-void
-msg_ip_err(int errnum, const char *errmsg, const char *fmt, ...)
-{
-	va_list	 ap;
-	char	*msg;
-
-	va_start(ap, fmt);
-	if (errnum == IP_ERROR_SYSTEM)
-		msg_verr(fmt, ap);
-	else {
-		(void)xvasprintf(&msg, fmt, ap);
-		msg_errx("%s: %s", msg, errmsg);
-		free(msg);
-	}
-	va_end(ap);
-}
-
 static void
 msg_verr(const char *fmt, va_list ap)
 {

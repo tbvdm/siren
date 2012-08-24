@@ -41,14 +41,12 @@ struct ip_sndfile_ipdata {
 };
 
 static void		 ip_sndfile_close(struct track *);
-static int		 ip_sndfile_get_metadata(struct track *, char **);
+static int		 ip_sndfile_get_metadata(struct track *);
 static int		 ip_sndfile_get_position(struct track *,
-			    unsigned int *, char **);
-static int		 ip_sndfile_open(struct track *, char **);
-static int		 ip_sndfile_read(struct track *, int16_t *, size_t,
-			    char **);
-static int		 ip_sndfile_seek(struct track *, unsigned int,
-			    char **);
+			    unsigned int *);
+static int		 ip_sndfile_open(struct track *);
+static int		 ip_sndfile_read(struct track *, int16_t *, size_t);
+static void		 ip_sndfile_seek(struct track *, unsigned int);
 
 /*
  * Based on <http://www.mega-nerd.com/libsndfile/> and src/command.c in the
@@ -104,7 +102,7 @@ ip_sndfile_close(struct track *t)
 }
 
 static int
-ip_sndfile_get_metadata(struct track *t, char **error)
+ip_sndfile_get_metadata(struct track *t)
 {
 	SNDFILE		*sffp;
 	SF_INFO		 sfinfo;
@@ -113,15 +111,17 @@ ip_sndfile_get_metadata(struct track *t, char **error)
 
 	if ((fd = open(t->path, O_RDONLY)) == -1) {
 		LOG_ERR("open: %s", t->path);
-		return IP_ERROR_SYSTEM;
+		msg_err("%s: Cannot open track", t->path);
+		return -1;
 	}
 
 	sfinfo.format = 0;
 	if ((sffp = sf_open_fd(fd, SFM_READ, &sfinfo, SF_TRUE)) == NULL) {
-		*error = xstrdup(sf_strerror(sffp));
-		LOG_ERRX("sf_open_fd: %s: %s", t->path, *error);
+		LOG_ERRX("sf_open_fd: %s: %s", t->path, sf_strerror(sffp));
+		msg_errx("%s: Cannot open track: %s", t->path,
+		    sf_strerror(sffp));
 		(void)close(fd);
-		return IP_ERROR_PLUGIN;
+		return -1;
 	}
 
 	if ((value = sf_get_string(sffp, SF_STR_ALBUM)) != NULL)
@@ -152,10 +152,8 @@ ip_sndfile_get_metadata(struct track *t, char **error)
 	return 0;
 }
 
-/* ARGSUSED2 */
 static int
-ip_sndfile_get_position(struct track *t, unsigned int *pos,
-    UNUSED char **error)
+ip_sndfile_get_position(struct track *t, unsigned int *pos)
 {
 	struct ip_sndfile_ipdata *ipd;
 
@@ -171,14 +169,15 @@ ip_sndfile_get_position(struct track *t, unsigned int *pos,
 }
 
 static int
-ip_sndfile_open(struct track *t, char **error)
+ip_sndfile_open(struct track *t)
 {
 	struct ip_sndfile_ipdata *ipd;
 	int fd;
 
 	if ((fd = open(t->path, O_RDONLY)) == -1) {
 		LOG_ERR("open: %s", t->path);
-		return IP_ERROR_SYSTEM;
+		msg_err("%s: Cannot open track", t->path);
+		return -1;
 	}
 
 	ipd = xmalloc(sizeof *ipd);
@@ -186,11 +185,13 @@ ip_sndfile_open(struct track *t, char **error)
 	ipd->sfinfo.format = 0;
 	if ((ipd->sffp = sf_open_fd(fd, SFM_READ, &ipd->sfinfo, SF_TRUE)) ==
 	    NULL) {
-		*error = xstrdup(sf_strerror(ipd->sffp));
-		LOG_ERRX("sf_open_fd: %s: %s", t->path, *error);
+		LOG_ERRX("sf_open_fd: %s: %s", t->path,
+		    sf_strerror(ipd->sffp));
+		msg_errx("%s: Cannot open track: %s", t->path,
+		    sf_strerror(ipd->sffp));
 		free(ipd);
 		(void)close(fd);
-		return IP_ERROR_PLUGIN;
+		return -1;
 	}
 
 	t->format.nbits = 16;
@@ -207,8 +208,7 @@ ip_sndfile_open(struct track *t, char **error)
 }
 
 static int
-ip_sndfile_read(struct track *t, int16_t *samples, size_t maxsamples,
-    char **error)
+ip_sndfile_read(struct track *t, int16_t *samples, size_t maxsamples)
 {
 	struct ip_sndfile_ipdata *ipd;
 	size_t nsamples;
@@ -224,10 +224,11 @@ ip_sndfile_read(struct track *t, int16_t *samples, size_t maxsamples,
 
 			/* Check for error. */
 			if (sf_error(ipd->sffp) != SF_ERR_NO_ERROR) {
-				*error = xstrdup(sf_strerror(ipd->sffp));
 				LOG_ERRX("sf_read_short: %s: %s", t->path,
-				    *error);
-				return IP_ERROR_PLUGIN;
+				    sf_strerror(ipd->sffp));
+				msg_errx("%s: Cannot read from track: %s",
+				    t->path, sf_strerror(ipd->sffp));
+				return -1;
 			}
 
 			/* Check for EOF. */
@@ -242,8 +243,8 @@ ip_sndfile_read(struct track *t, int16_t *samples, size_t maxsamples,
 	return (int)nsamples;
 }
 
-static int
-ip_sndfile_seek(struct track *t, unsigned int pos, char **error)
+static void
+ip_sndfile_seek(struct track *t, unsigned int pos)
 {
 	struct ip_sndfile_ipdata *ipd;
 	sf_count_t frame, seekframe;
@@ -252,16 +253,13 @@ ip_sndfile_seek(struct track *t, unsigned int pos, char **error)
 
 	seekframe = (sf_count_t)pos * ipd->sfinfo.samplerate;
 	if ((frame = sf_seek(ipd->sffp, seekframe, SEEK_SET)) == -1) {
-		*error = xstrdup(sf_strerror(ipd->sffp));
-		LOG_ERRX("sf_seek: %s: %s", t->path, *error);
-		return IP_ERROR_PLUGIN;
+		LOG_ERRX("sf_seek: %s: %s", t->path, sf_strerror(ipd->sffp));
+		msg_errx("Cannot seek: %s", sf_strerror(ipd->sffp));
+	} else {
+		ipd->position = frame * ipd->sfinfo.channels;
+
+		/* Discard buffered samples from the old position. */
+		ipd->bufidx = 0;
+		ipd->buflen = 0;
 	}
-
-	ipd->position = frame * ipd->sfinfo.channels;
-
-	/* Discard buffered samples from the old position. */
-	ipd->bufidx = 0;
-	ipd->buflen = 0;
-
-	return 0;
 }

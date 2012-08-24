@@ -33,10 +33,6 @@
 #define PLUGIN_IP_DIR		PLUGIN_DIR "/ip"
 #define PLUGIN_OP_DIR		PLUGIN_DIR "/op"
 
-/* Return values of input plug-in functions. */
-#define IP_ERROR_PLUGIN		-1
-#define IP_ERROR_SYSTEM		-2
-
 /* Priority of output plug-ins. */
 #define OP_PRIORITY_SNDIO	1
 #define OP_PRIORITY_PULSE	2
@@ -294,14 +290,12 @@ struct ip {
 	const char	 *name;
 	const char	**extensions;
 	void		  (*close)(struct track *) NONNULL();
-	int		  (*get_metadata)(struct track *, char **) NONNULL();
-	int		  (*get_position)(struct track *, unsigned int *,
-			    char **) NONNULL();
-	int		  (*open)(struct track *, char **) NONNULL();
-	int		  (*read)(struct track *, int16_t *, size_t, char **)
+	int		  (*get_metadata)(struct track *) NONNULL();
+	int		  (*get_position)(struct track *, unsigned int *)
 			    NONNULL();
-	int		  (*seek)(struct track *, unsigned int, char **)
-			    NONNULL();
+	int		  (*open)(struct track *) NONNULL();
+	int		  (*read)(struct track *, int16_t *, size_t) NONNULL();
+	void		  (*seek)(struct track *, unsigned int) NONNULL();
 };
 
 /* Output plug-in. */
@@ -470,8 +464,6 @@ void		 msg_clear(void);
 void		 msg_err(const char *, ...) PRINTFLIKE(1, 2);
 void		 msg_errx(const char *, ...) PRINTFLIKE(1, 2);
 void		 msg_info(const char *, ...) PRINTFLIKE(1, 2);
-void		 msg_ip_err(int, const char *, const char *, ...)
-		    NONNULL() PRINTFLIKE(3, 4);
 
 void		 option_add_number(const char *, int, int, int, void (*)(void))
 		    NONNULL(1);

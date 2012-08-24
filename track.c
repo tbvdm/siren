@@ -112,9 +112,7 @@ track_hold(struct track *t)
 struct track *
 track_init(const char *path, const struct ip *ip)
 {
-	struct track	*t;
-	int		 ret;
-	char		*error;
+	struct track *t;
 
 	if (access(path, R_OK) == -1) {
 		msg_err("%s", path);
@@ -143,10 +141,7 @@ track_init(const char *path, const struct ip *ip)
 	if (cache_get_metadata(t) == 0)
 		return t;
 
-	error = NULL;
-	if ((ret = t->ip->get_metadata(t, &error)) != 0) {
-		msg_ip_err(ret, error, "%s: Cannot read metadata", path);
-		free(error);
+	if (t->ip->get_metadata(t)) {
 		free(t);
 		return NULL;
 	}

@@ -32,6 +32,7 @@
  */
 #define IP_MAD_BUFSIZE		65536
 
+#define IP_MAD_ERROR		-1
 #define IP_MAD_EOF		0
 #define IP_MAD_OK		1
 
@@ -53,13 +54,11 @@ static int		 ip_mad_decode_frame_header(FILE *fp,
 			    unsigned char *, size_t);
 static int		 ip_mad_fill_stream(FILE *, struct mad_stream *,
 			    unsigned char *, size_t);
-static int		 ip_mad_get_position(struct track *, unsigned int *,
-			    char **);
-static int		 ip_mad_get_metadata(struct track *, char **);
-static int		 ip_mad_open(struct track *, char **);
-static int		 ip_mad_read(struct track *, int16_t *, size_t,
-			    char **);
-static int		 ip_mad_seek(struct track *, unsigned int, char **);
+static int		 ip_mad_get_position(struct track *, unsigned int *);
+static int		 ip_mad_get_metadata(struct track *);
+static int		 ip_mad_open(struct track *);
+static int		 ip_mad_read(struct track *, int16_t *, size_t);
+static void		 ip_mad_seek(struct track *, unsigned int);
 
 static const char	*ip_mad_extensions[] = { "mp1", "mp2", "mp3", NULL };
 
@@ -91,6 +90,7 @@ ip_mad_calculate_duration(const char *file)
 
 	if ((fp = fopen(file, "r")) == NULL) {
 		LOG_ERR("fopen: %s", file);
+		msg_err("%s: Cannot open track", file);
 		return 0;
 	}
 
@@ -133,7 +133,7 @@ ip_mad_close(struct track *t)
 }
 
 static int
-ip_mad_decode_frame(struct ip_mad_ipdata *ipd, char **error)
+ip_mad_decode_frame(struct ip_mad_ipdata *ipd)
 {
 	int ret;
 
@@ -154,10 +154,11 @@ ip_mad_decode_frame(struct ip_mad_ipdata *ipd, char **error)
 				continue;
 			else {
 				/* Fatal error. */
-				*error = xstrdup(mad_stream_errorstr(
-				    &ipd->stream));
-				LOG_ERRX("mad_frame_decode: %s", *error);
-				return IP_ERROR_PLUGIN;
+				LOG_ERRX("mad_frame_decode: %s",
+				    mad_stream_errorstr(&ipd->stream));
+				msg_errx("Cannot decode frame: %s",
+				    mad_stream_errorstr(&ipd->stream));
+				return IP_MAD_ERROR;
 			}
 		}
 
@@ -191,7 +192,9 @@ ip_mad_decode_frame_header(FILE *fp, struct mad_stream *stream,
 				/* Fatal error. */
 				LOG_ERRX("mad_header_decode: %s",
 				    mad_stream_errorstr(stream));
-				return IP_ERROR_PLUGIN;
+				msg_errx("Cannot decode frame header: %s",
+				    mad_stream_errorstr(stream));
+				return IP_MAD_ERROR;
 			}
 		}
 
@@ -217,7 +220,8 @@ ip_mad_fill_stream(FILE *fp, struct mad_stream *stream, unsigned char *buf,
 	if ((nread = fread(buf + buflen, 1, buffree, fp)) < buffree) {
 		if (ferror(fp)) {
 			LOG_ERR("fread");
-			return IP_ERROR_SYSTEM;
+			msg_err("Cannot read from track");
+			return IP_MAD_ERROR;
 		}
 		if (feof(fp)) {
 			if (nread == 0)
@@ -305,7 +309,7 @@ ip_mad_get_id3_genre(struct id3_tag *tag)
 }
 
 static int
-ip_mad_get_metadata(struct track *t, char **error)
+ip_mad_get_metadata(struct track *t)
 {
 	struct id3_file		*file;
 	struct id3_tag		*tag;
@@ -314,8 +318,8 @@ ip_mad_get_metadata(struct track *t, char **error)
 
 	if ((file = id3_file_open(t->path, ID3_FILE_MODE_READONLY)) == NULL) {
 		LOG_ERRX("%s: id3_file_open() failed", t->path);
-		*error = xstrdup("Cannot open file");
-		return IP_ERROR_PLUGIN;
+		msg_errx("%s: Cannot open file", t->path);
+		return IP_MAD_ERROR;
 	}
 
 	tag = id3_file_tag(file);
@@ -353,9 +357,8 @@ ip_mad_get_metadata(struct track *t, char **error)
 	return 0;
 }
 
-/* ARGSUSED2 */
 static int
-ip_mad_get_position(struct track *t, unsigned int *pos, UNUSED char **error)
+ip_mad_get_position(struct track *t, unsigned int *pos)
 {
 	struct ip_mad_ipdata *ipd;
 
@@ -366,7 +369,7 @@ ip_mad_get_position(struct track *t, unsigned int *pos, UNUSED char **error)
 
 static int
 ip_mad_get_sample_format(const char *file, struct sample_format *sf,
-    unsigned char *buf, size_t bufsize, char **error)
+    unsigned char *buf, size_t bufsize)
 {
 	FILE			*fp;
 	struct mad_stream	 stream;
@@ -375,40 +378,31 @@ ip_mad_get_sample_format(const char *file, struct sample_format *sf,
 
 	if ((fp = fopen(file, "r")) == NULL) {
 		LOG_ERR("fopen: %s", file);
-		return IP_ERROR_SYSTEM;
+		msg_err("%s: Cannot open track", file);
+		return IP_MAD_ERROR;
 	}
 
 	mad_stream_init(&stream);
 	mad_header_init(&header);
 
 	ret = ip_mad_decode_frame_header(fp, &stream, &header, buf, bufsize);
-	switch (ret) {
-	case IP_ERROR_SYSTEM:
-		break;
-	case IP_ERROR_PLUGIN:
-		*error = xstrdup(mad_stream_errorstr(&stream));
-		break;
-	case IP_MAD_EOF:
-		*error = xstrdup("File empty");
-		ret = IP_ERROR_PLUGIN;
-		break;
-	case IP_MAD_OK:
-	default:
+	if (ret == IP_MAD_EOF)
+		msg_errx("File is empty");
+	else if (ret == IP_MAD_OK) {
 		sf->nbits = 16;
 		sf->nchannels = MAD_NCHANNELS(&header);
 		sf->rate = header.samplerate;
-		ret = 0;
-		break;
 	}
 
 	mad_header_finish(&header);
 	mad_stream_finish(&stream);
 	(void)fclose(fp);
-	return ret;
+
+	return ret == IP_MAD_OK ? 0 : -1;
 }
 
 static int
-ip_mad_open(struct track *t, char **error)
+ip_mad_open(struct track *t)
 {
 	struct ip_mad_ipdata	*ipd;
 	int			 ret;
@@ -417,8 +411,9 @@ ip_mad_open(struct track *t, char **error)
 
 	if ((ipd->fp = fopen(t->path, "r")) == NULL) {
 		LOG_ERR("fopen: %s", t->path);
+		msg_err("%s: Cannot open track", t->path);
 		free(ipd);
-		return IP_ERROR_SYSTEM;
+		return -1;
 	}
 
 	t->ipdata = ipd;
@@ -431,7 +426,7 @@ ip_mad_open(struct track *t, char **error)
 	mad_timer_reset(&ipd->timer);
 
 	if ((ret = ip_mad_get_sample_format(t->path, &t->format, ipd->buf,
-	    IP_MAD_BUFSIZE, error))) {
+	    IP_MAD_BUFSIZE))) {
 		ip_mad_close(t);
 		return ret;
 	}
@@ -440,7 +435,7 @@ ip_mad_open(struct track *t, char **error)
 }
 
 static int
-ip_mad_read(struct track *t, int16_t *samples, size_t maxsamples, char **error)
+ip_mad_read(struct track *t, int16_t *samples, size_t maxsamples)
 {
 	struct ip_mad_ipdata	*ipd;
 	size_t			 nsamples;
@@ -448,9 +443,9 @@ ip_mad_read(struct track *t, int16_t *samples, size_t maxsamples, char **error)
 
 	/* Sanity check. */
 	if (maxsamples < (size_t)t->format.nchannels) {
-		*error = xstrdup("Sample buffer too small");
-		LOG_ERRX("%s: %s", t->path, *error);
-		return IP_ERROR_PLUGIN;
+		LOG_ERRX("%s: sample buffer to small", t->path);
+		msg_errx("Cannot read from track: Sample buffer too small");
+		return -1;
 	}
 
 	ipd = t->ipdata;
@@ -458,8 +453,7 @@ ip_mad_read(struct track *t, int16_t *samples, size_t maxsamples, char **error)
 	nsamples = 0;
 	while (nsamples + (size_t)t->format.nchannels <= maxsamples) {
 		if (ipd->sampleidx == ipd->synth.pcm.length) {
-			if ((ret = ip_mad_decode_frame(ipd, error)) !=
-			    IP_MAD_OK)
+			if ((ret = ip_mad_decode_frame(ipd)) != IP_MAD_OK)
 				/* EOF reached or error encountered. */
 				return ret;
 
@@ -483,13 +477,12 @@ ip_mad_read(struct track *t, int16_t *samples, size_t maxsamples, char **error)
 	return (int)nsamples;
 }
 
-static int
-ip_mad_seek(struct track *t, unsigned int seekpos, char **error)
+static void
+ip_mad_seek(struct track *t, unsigned int seekpos)
 {
 	struct ip_mad_ipdata	*ipd;
 	struct mad_header	 header;
 	unsigned int		 pos;
-	int			 ret;
 
 	ipd = t->ipdata;
 
@@ -497,17 +490,17 @@ ip_mad_seek(struct track *t, unsigned int seekpos, char **error)
 	    MAD_UNITS_SECONDS)) > seekpos) {
 		if (fseek(ipd->fp, 0, SEEK_SET) == -1) {
 			LOG_ERR("fseek: %s", t->path);
-			return IP_ERROR_SYSTEM;
+			msg_err("Cannot seek");
+			return;
 		}
 		mad_timer_reset(&ipd->timer);
 		pos = 0;
 	}
 
 	mad_header_init(&header);
-	ret = 0;
 
-	while (pos < seekpos && (ret = ip_mad_decode_frame_header(ipd->fp,
-	    &ipd->stream, &header, ipd->buf, IP_MAD_BUFSIZE)) == IP_MAD_OK) {
+	while (pos < seekpos && ip_mad_decode_frame_header(ipd->fp,
+	    &ipd->stream, &header, ipd->buf, IP_MAD_BUFSIZE) == IP_MAD_OK) {
 		mad_timer_add(&ipd->timer, header.duration);
 		pos = mad_timer_count(ipd->timer, MAD_UNITS_SECONDS);
 	}
@@ -515,11 +508,4 @@ ip_mad_seek(struct track *t, unsigned int seekpos, char **error)
 	mad_header_finish(&header);
 	mad_frame_mute(&ipd->frame);
 	mad_synth_mute(&ipd->synth);
-
-	if (ret == IP_ERROR_PLUGIN)
-		*error = xstrdup(mad_stream_errorstr(&ipd->stream));
-	else if (ret == IP_MAD_OK)
-		ret = 0;
-
-	return ret;
 }

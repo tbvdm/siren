@@ -40,13 +40,12 @@ struct ip_vorbis_ipdata {
 
 static void		 ip_vorbis_close(struct track *);
 static const char	*ip_vorbis_error(int);
-static int		 ip_vorbis_get_metadata(struct track *, char **);
-static int		 ip_vorbis_get_position(struct track *, unsigned int *,
-			    char **);
-static int		 ip_vorbis_open(struct track *, char **);
-static int		 ip_vorbis_read(struct track *, int16_t *, size_t,
-			    char **);
-static int		 ip_vorbis_seek(struct track *, unsigned int, char **);
+static int		 ip_vorbis_get_metadata(struct track *);
+static int		 ip_vorbis_get_position(struct track *,
+			    unsigned int *);
+static int		 ip_vorbis_open(struct track *);
+static int		 ip_vorbis_read(struct track *, int16_t *, size_t);
+static void		 ip_vorbis_seek(struct track *, unsigned int);
 
 static const char	*ip_vorbis_extensions[] = { "oga", "ogg", NULL };
 
@@ -114,7 +113,7 @@ ip_vorbis_error(int errnum)
 }
 
 static int
-ip_vorbis_get_metadata(struct track *t, char **error)
+ip_vorbis_get_metadata(struct track *t)
 {
 	OggVorbis_File	  ovf;
 	vorbis_comment	 *vc;
@@ -125,20 +124,22 @@ ip_vorbis_get_metadata(struct track *t, char **error)
 
 	if ((fp = fopen(t->path, "r")) == NULL) {
 		LOG_ERR("fopen: %s", t->path);
-		return IP_ERROR_SYSTEM;
+		msg_err("%s: Cannot open track", t->path);
+		return -1;
 	}
 
 	if ((ret = ov_open(fp, &ovf, NULL, 0)) != 0) {
-		*error = xstrdup(ip_vorbis_error(ret));
-		LOG_ERRX("ov_open: %s: %s", t->path, *error);
-		return IP_ERROR_PLUGIN;
+		LOG_ERRX("ov_open: %s: %s", t->path, ip_vorbis_error(ret));
+		msg_errx("%s: Cannot open track: %s", t->path,
+		    ip_vorbis_error(ret));
+		return -1;
 	}
 
 	if ((vc = ov_comment(&ovf, -1)) == NULL) {
 		LOG_ERRX("%s: ov_comment() failed", t->path);
-		*error = xstrdup("Cannot get Vorbis comments");
+		msg_errx("%s: Cannot get Vorbis comments", t->path);
 		(void)ov_clear(&ovf);
-		return IP_ERROR_PLUGIN;
+		return -1;
 	}
 
 	/*
@@ -168,9 +169,9 @@ ip_vorbis_get_metadata(struct track *t, char **error)
 
 	if ((duration = ov_time_total(&ovf, -1)) == OV_EINVAL) {
 		LOG_ERRX("%s: ov_time_total() failed", t->path);
-		*error = xstrdup("Cannot get duration");
+		msg_errx("%s: Cannot get track duration", t->path);
 		(void)ov_clear(&ovf);
-		return IP_ERROR_PLUGIN;
+		return -1;
 	}
 
 	t->duration = (unsigned int)duration;
@@ -180,17 +181,19 @@ ip_vorbis_get_metadata(struct track *t, char **error)
 }
 
 static int
-ip_vorbis_get_position(struct track *t, unsigned int *pos, char **error)
+ip_vorbis_get_position(struct track *t, unsigned int *pos)
 {
 	struct ip_vorbis_ipdata *ipd;
 	double ret;
 
 	ipd = t->ipdata;
 	if ((ret = ov_time_tell(&ipd->ovf)) == OV_EINVAL) {
-		*error = xstrdup(ip_vorbis_error((int)ret));
-		LOG_ERRX("ov_time_tell: %s: %s", t->path, *error);
+		LOG_ERRX("ov_time_tell: %s: %s", t->path,
+		    ip_vorbis_error((int)ret));
+		msg_errx("Cannot get track position: %s",
+		    ip_vorbis_error((int)ret));
 		*pos = 0;
-		return IP_ERROR_PLUGIN;
+		return -1;
 	}
 
 	*pos = (unsigned int)ret;
@@ -198,7 +201,7 @@ ip_vorbis_get_position(struct track *t, unsigned int *pos, char **error)
 }
 
 static int
-ip_vorbis_open(struct track *t, char **error)
+ip_vorbis_open(struct track *t)
 {
 	struct ip_vorbis_ipdata	*ipd;
 	vorbis_info		*info;
@@ -207,24 +210,26 @@ ip_vorbis_open(struct track *t, char **error)
 
 	if ((fp = fopen(t->path, "r")) == NULL) {
 		LOG_ERR("fopen: %s", t->path);
-		return IP_ERROR_SYSTEM;
+		msg_err("%s: Cannot open track", t->path);
+		return -1;
 	}
 
 	ipd = xmalloc(sizeof *ipd);
 
 	if ((ret = ov_open(fp, &ipd->ovf, NULL, 0)) != 0) {
-		*error = xstrdup(ip_vorbis_error(ret));
-		LOG_ERRX("ov_open: %s: %s", t->path, *error);
+		LOG_ERRX("ov_open: %s: %s", t->path, ip_vorbis_error(ret));
+		msg_errx("%s: Cannot open track: %s", t->path,
+		    ip_vorbis_error(ret));
 		free(ipd);
-		return IP_ERROR_PLUGIN;
+		return -1;
 	}
 
 	if ((info = ov_info(&ipd->ovf, -1)) == NULL) {
 		LOG_ERRX("%s: ov_info() failed", t->path);
-		*error = xstrdup("Cannot get bitstream information");
+		msg_errx("%s: Cannot get bitstream information", t->path);
 		(void)ov_clear(&ipd->ovf);
 		free(ipd);
-		return IP_ERROR_PLUGIN;
+		return -1;
 	}
 
 	t->format.nbits = 16;
@@ -240,8 +245,7 @@ ip_vorbis_open(struct track *t, char **error)
 }
 
 static int
-ip_vorbis_read(struct track *t, int16_t *samples, size_t maxsamples,
-    char **error)
+ip_vorbis_read(struct track *t, int16_t *samples, size_t maxsamples)
 {
 	struct ip_vorbis_ipdata *ipd;
 	size_t nsamples;
@@ -265,9 +269,11 @@ ip_vorbis_read(struct track *t, int16_t *samples, size_t maxsamples,
 			if (ret == 0)
 				break;
 			if (ret < 0) {
-				*error = xstrdup(ip_vorbis_error(ret));
-				LOG_ERRX("ov_read: %s: %s", t->path, *error);
-				return IP_ERROR_PLUGIN;
+				LOG_ERRX("ov_read: %s: %s", t->path,
+				    ip_vorbis_error(ret));
+				msg_errx("%s: Cannot read from track: %s",
+				    t->path, ip_vorbis_error(ret));
+				return -1;
 			}
 
 			ipd->bufidx = 0;
@@ -283,17 +289,16 @@ ip_vorbis_read(struct track *t, int16_t *samples, size_t maxsamples,
 	return (int)nsamples;
 }
 
-static int
-ip_vorbis_seek(struct track *t, unsigned int sec, char **error)
+static void
+ip_vorbis_seek(struct track *t, unsigned int sec)
 {
 	struct ip_vorbis_ipdata *ipd;
 	int ret;
 
 	ipd = t->ipdata;
 	if ((ret = ov_time_seek_lap(&ipd->ovf, sec)) != 0) {
-		*error = xstrdup(ip_vorbis_error(ret));
-		LOG_ERRX("ov_time_seek_lap: %s: %s", t->path, *error);
-		return IP_ERROR_PLUGIN;
+		LOG_ERRX("ov_time_seek_lap: %s: %s", t->path,
+		    ip_vorbis_error(ret));
+		msg_errx("Cannot seek: %s", ip_vorbis_error(ret));
 	}
-	return 0;
 }

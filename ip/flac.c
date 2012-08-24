@@ -35,13 +35,11 @@ struct ip_flac_ipdata {
 };
 
 static void		 ip_flac_close(struct track *);
-static int		 ip_flac_get_metadata(struct track *, char **);
-static int		 ip_flac_get_position(struct track *, unsigned int *,
-			    char **);
-static int		 ip_flac_open(struct track *, char **);
-static int		 ip_flac_read(struct track *, int16_t *, size_t,
-			    char **);
-static int		 ip_flac_seek(struct track *, unsigned int, char **);
+static int		 ip_flac_get_metadata(struct track *);
+static int		 ip_flac_get_position(struct track *, unsigned int *);
+static int		 ip_flac_open(struct track *);
+static int		 ip_flac_read(struct track *, int16_t *, size_t);
+static void		 ip_flac_seek(struct track *, unsigned int);
 static FLAC__StreamDecoderWriteStatus ip_flac_write_cb(
 			    const FLAC__StreamDecoder *, const FLAC__Frame *,
 			    const FLAC__int32 * const *, void *);
@@ -88,7 +86,7 @@ ip_flac_error_cb(UNUSED const FLAC__StreamDecoder *decoder,
 }
 
 static int
-ip_flac_get_metadata(struct track *t, char **error)
+ip_flac_get_metadata(struct track *t)
 {
 	FLAC__StreamMetadata	 streaminfo, *comments;
 	FLAC__uint32		 i;
@@ -96,8 +94,8 @@ ip_flac_get_metadata(struct track *t, char **error)
 
 	if (FLAC__metadata_get_tags(t->path, &comments) == false) {
 		LOG_ERRX("%s: FLAC__metadata_get_tags() failed", t->path);
-		*error = xstrdup("Cannot get metadata");
-		return IP_ERROR_PLUGIN;
+		msg_errx("%s: Cannot get metadata", t->path);
+		return -1;
 	}
 
 	for (i = 0; i < comments->data.vorbis_comment.num_comments; i++) {
@@ -129,8 +127,8 @@ ip_flac_get_metadata(struct track *t, char **error)
 	if (FLAC__metadata_get_streaminfo(t->path, &streaminfo) == false) {
 		LOG_ERRX("%s: FLAC__metadata_get_streaminfo() failed",
 		    t->path);
-		*error = xstrdup("Cannot get stream information");
-		return IP_ERROR_PLUGIN;
+		msg_errx("%s: Cannot get stream information", t->path);
+		return -1;
 	}
 
 	if (streaminfo.data.stream_info.sample_rate == 0)
@@ -145,7 +143,7 @@ ip_flac_get_metadata(struct track *t, char **error)
 
 /* ARGSUSED2 */
 static int
-ip_flac_get_position(struct track *t, unsigned int *pos, UNUSED char **error)
+ip_flac_get_position(struct track *t, unsigned int *pos)
 {
 	struct ip_flac_ipdata *ipd;
 
@@ -160,7 +158,7 @@ ip_flac_get_position(struct track *t, unsigned int *pos, UNUSED char **error)
 }
 
 static int
-ip_flac_open(struct track *t, char **error)
+ip_flac_open(struct track *t)
 {
 	struct ip_flac_ipdata		*ipd;
 	FLAC__StreamDecoderInitStatus	 status;
@@ -171,16 +169,18 @@ ip_flac_open(struct track *t, char **error)
 
 	if ((ipd->decoder = FLAC__stream_decoder_new()) == NULL) {
 		LOG_ERRX("%s: FLAC__stream_decoder_new() failed", t->path);
-		*error = xstrdup("Cannot allocate memory");
+		msg_errx("%s: Cannot allocate memory for FLAC decoder",
+		    t->path);
 		free(ipd);
-		return IP_ERROR_PLUGIN;
+		return -1;
 	}
 
 	if ((fp = fopen(t->path, "r")) == NULL) {
 		LOG_ERR("fopen: %s", t->path);
+		msg_err("%s: Cannot open track", t->path);
 		FLAC__stream_decoder_delete(ipd->decoder);
 		free(ipd);
-		return IP_ERROR_SYSTEM;
+		return -1;
 	}
 
 	status = FLAC__stream_decoder_init_FILE(ipd->decoder, fp,
@@ -189,28 +189,29 @@ ip_flac_open(struct track *t, char **error)
 	if (status != FLAC__STREAM_DECODER_INIT_STATUS_OK) {
 		LOG_ERRX("FLAC__stream_decoder_init: %s: %s", t->path,
 		    ip_flac_init_status_to_string(status));
-		*error = xstrdup(ip_flac_init_status_to_string(status));
+		msg_errx("%s: Cannot initialise FLAC decoder: %s", t->path,
+		    ip_flac_init_status_to_string(status));
 		FLAC__stream_decoder_delete(ipd->decoder);
 		free(ipd);
-		return IP_ERROR_PLUGIN;
+		return -1;
 	}
 
 	if (FLAC__metadata_get_streaminfo(t->path, &metadata) == false) {
 		LOG_ERRX("%s: FLAC__metadata_get_streaminfo() failed",
 		    t->path);
-		*error = xstrdup("Cannot get stream information");
+		msg_errx("%s: Cannot get stream information", t->path);
 		FLAC__stream_decoder_delete(ipd->decoder);
 		free(ipd);
-		return IP_ERROR_PLUGIN;
+		return -1;
 	}
 
 	if (metadata.data.stream_info.bits_per_sample != 16) {
 		LOG_ERRX("%s: %u: unsupported bit depth", t->path,
 		    metadata.data.stream_info.bits_per_sample);
-		*error = xstrdup("Unsupported bit depth");
+		msg_errx("%s: Unsupported bit depth", t->path);
 		FLAC__stream_decoder_delete(ipd->decoder);
 		free(ipd);
-		return IP_ERROR_PLUGIN;
+		return -1;
 	}
 
 	t->format.nbits = 16;
@@ -226,8 +227,7 @@ ip_flac_open(struct track *t, char **error)
 }
 
 static int
-ip_flac_read(struct track *t, int16_t *samples, size_t maxsamples,
-    char **error)
+ip_flac_read(struct track *t, int16_t *samples, size_t maxsamples)
 {
 	struct ip_flac_ipdata *ipd;
 	FLAC__StreamDecoderState state;
@@ -237,9 +237,9 @@ ip_flac_read(struct track *t, int16_t *samples, size_t maxsamples,
 
 	/* Sanity check. */
 	if (maxsamples < (size_t)t->format.nchannels) {
-		*error = xstrdup("Sample buffer too small");
-		LOG_ERRX("%s: %s", t->path, *error);
-		return IP_ERROR_PLUGIN;
+		LOG_ERRX("%s: sample buffer too small", t->path);
+		msg_errx("Cannot read from track: Sample buffer too small");
+		return -1;
 	}
 
 	ipd = t->ipdata;
@@ -259,10 +259,12 @@ ip_flac_read(struct track *t, int16_t *samples, size_t maxsamples,
 
 			if (ret == false) {
 				/* Error. */
-				*error = xstrdup(ip_flac_state_to_string(
-				    state));
-				LOG_ERRX("%s: %s", t->path, *error);
-				return IP_ERROR_PLUGIN;
+				LOG_ERRX("FLAC__stream_decoder_process_single:"
+				    " %s: %s", t->path,
+				    ip_flac_state_to_string(state));
+				msg_errx("Cannot read from track: %s",
+				    ip_flac_state_to_string(state));
+				return -1;
 			}
 		}
 
@@ -275,9 +277,8 @@ ip_flac_read(struct track *t, int16_t *samples, size_t maxsamples,
 	return (int)nsamples;
 }
 
-/* ARGSUSED */
-static int
-ip_flac_seek(struct track *t, unsigned int sec, char **error)
+static void
+ip_flac_seek(struct track *t, unsigned int sec)
 {
 	struct ip_flac_ipdata *ipd;
 	unsigned int nsamples, sample;
@@ -297,15 +298,12 @@ ip_flac_seek(struct track *t, unsigned int sec, char **error)
 			(void)FLAC__stream_decoder_flush(ipd->decoder);
 			ipd->bufidx = 0;
 		}
-
-		*error = xstrdup("Cannot seek");
-		return IP_ERROR_PLUGIN;
+		msg_errx("Cannot seek");
+	} else {
+		ipd->cursample = sample;
+		ipd->bufidx = 0;
+		ipd->buflen = 0;
 	}
-
-	ipd->cursample = sample;
-	ipd->bufidx = ipd->buflen = 0;
-
-	return 0;
 }
 
 /* ARGSUSED */
