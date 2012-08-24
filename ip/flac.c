@@ -171,16 +171,13 @@ ip_flac_open(struct track *t)
 		LOG_ERRX("%s: FLAC__stream_decoder_new() failed", t->path);
 		msg_errx("%s: Cannot allocate memory for FLAC decoder",
 		    t->path);
-		free(ipd);
-		return -1;
+		goto error1;
 	}
 
 	if ((fp = fopen(t->path, "r")) == NULL) {
 		LOG_ERR("fopen: %s", t->path);
 		msg_err("%s: Cannot open track", t->path);
-		FLAC__stream_decoder_delete(ipd->decoder);
-		free(ipd);
-		return -1;
+		goto error2;
 	}
 
 	status = FLAC__stream_decoder_init_FILE(ipd->decoder, fp,
@@ -191,27 +188,22 @@ ip_flac_open(struct track *t)
 		    ip_flac_init_status_to_string(status));
 		msg_errx("%s: Cannot initialise FLAC decoder: %s", t->path,
 		    ip_flac_init_status_to_string(status));
-		FLAC__stream_decoder_delete(ipd->decoder);
-		free(ipd);
-		return -1;
+		(void)fclose(fp);
+		goto error2;
 	}
 
 	if (FLAC__metadata_get_streaminfo(t->path, &metadata) == false) {
 		LOG_ERRX("%s: FLAC__metadata_get_streaminfo() failed",
 		    t->path);
 		msg_errx("%s: Cannot get stream information", t->path);
-		FLAC__stream_decoder_delete(ipd->decoder);
-		free(ipd);
-		return -1;
+		goto error3;
 	}
 
 	if (metadata.data.stream_info.bits_per_sample != 16) {
 		LOG_ERRX("%s: %u: unsupported bit depth", t->path,
 		    metadata.data.stream_info.bits_per_sample);
 		msg_errx("%s: Unsupported bit depth", t->path);
-		FLAC__stream_decoder_delete(ipd->decoder);
-		free(ipd);
-		return -1;
+		goto error3;
 	}
 
 	t->format.nbits = 16;
@@ -224,6 +216,14 @@ ip_flac_open(struct track *t)
 
 	t->ipdata = ipd;
 	return 0;
+
+error3:
+	(void)FLAC__stream_decoder_finish(ipd->decoder);
+error2:
+	FLAC__stream_decoder_delete(ipd->decoder);
+error1:
+	free(ipd);
+	return -1;
 }
 
 static int
