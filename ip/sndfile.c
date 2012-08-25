@@ -91,12 +91,10 @@ static void
 ip_sndfile_close(struct track *t)
 {
 	struct ip_sndfile_ipdata *ipd;
-	int ret;
 
 	ipd = t->ipdata;
 
-	if ((ret = sf_close(ipd->sffp)) != 0)
-		LOG_ERRX("sf_close: %s: %s", t->path, sf_error_number(ret));
+	(void)sf_close(ipd->sffp);
 	free(ipd->buf);
 	free(ipd);
 }
@@ -106,7 +104,7 @@ ip_sndfile_get_metadata(struct track *t)
 {
 	SNDFILE		*sffp;
 	SF_INFO		 sfinfo;
-	int		 fd, ret;
+	int		 fd;
 	const char	*value;
 
 	if ((fd = open(t->path, O_RDONLY)) == -1) {
@@ -146,8 +144,7 @@ ip_sndfile_get_metadata(struct track *t)
 	else
 		t->duration = sfinfo.frames / sfinfo.samplerate;
 
-	if ((ret = sf_close(sffp)))
-		LOG_ERRX("sf_close: %s: %s", t->path, sf_error_number(ret));
+	(void)sf_close(sffp);
 
 	return 0;
 }
