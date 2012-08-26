@@ -40,6 +40,9 @@ sndfile=yes|no
 vorbis=yes|no
 	Whether to build the Ogg Vorbis input plug-in. The default is "yes".
 
+wavpack=yes|no
+	Whether to build the WavPack input plug-in. The default is "yes".
+
 ao=yes|no
 	Whether to build the ao output plug-in. The default is "yes".
 
