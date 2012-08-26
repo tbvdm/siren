@@ -139,8 +139,8 @@ error()
 	exit 1
 }
 
-# #1: the name of the variable to save the value to
-# #2: the "option=value" string
+# $1: the name of the variable to save the value to
+# $2: the "option=value" string
 get_option_value()
 {
 	local option value
@@ -270,7 +270,6 @@ makefile_assign LDFLAGS "$LDFLAGS"
 [ -z "$bindir" ] && bindir="$prefix/$bindir_suffix"
 [ -z "$mandir" ] && mandir="$prefix/$mandir_suffix"
 [ -z "$plugindir" ] && plugindir="$prefix/$plugindir_suffix"
-
 makefile_assign BINDIR "$bindir"
 makefile_assign MANDIR "$mandir"
 makefile_assign PLUGINDIR "$plugindir"
