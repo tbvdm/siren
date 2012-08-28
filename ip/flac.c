@@ -281,6 +281,7 @@ static void
 ip_flac_seek(struct track *t, unsigned int sec)
 {
 	struct ip_flac_ipdata *ipd;
+	FLAC__StreamDecoderState state;
 	unsigned int nsamples, sample;
 
 	ipd = t->ipdata;
@@ -293,12 +294,17 @@ ip_flac_seek(struct track *t, unsigned int sec)
 
 	if (FLAC__stream_decoder_seek_absolute(ipd->decoder,
 	    (FLAC__uint64)sample) == false) {
-		if (FLAC__stream_decoder_get_state(ipd->decoder) ==
-		    FLAC__STREAM_DECODER_SEEK_ERROR) {
+		state = FLAC__stream_decoder_get_state(ipd->decoder);
+
+		LOG_ERRX("FLAC__stream_decoder_seek_absolute: %s: %s", t->path,
+		    ip_flac_state_to_string(state));
+		msg_errx("Cannot seek: %s", ip_flac_state_to_string(state));
+
+		/* The decoder must be flushed after a seek error. */
+		if (state == FLAC__STREAM_DECODER_SEEK_ERROR) {
 			(void)FLAC__stream_decoder_flush(ipd->decoder);
 			ipd->bufidx = 0;
 		}
-		msg_errx("Cannot seek");
 	} else {
 		ipd->cursample = sample;
 		ipd->bufidx = 0;
@@ -336,7 +342,7 @@ ip_flac_write_cb(UNUSED const FLAC__StreamDecoder *decoder,
  * The FLAC__StreamDecoderErrorStatusString,
  * FLAC__StreamDecoderInitStatusString and FLAC__StreamDecoderStateString
  * string arrays do not provide very useful messages, so we use the messages
- * from the functions below instead. Their messages are based on information in
+ * from the functions below instead. The messages are based on information in
  * <http://flac.sourceforge.net/api/group__flac__stream__decoder.html>.
  */
 
