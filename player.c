@@ -258,24 +258,25 @@ player_open_op(void)
 {
 	char *name;
 
-	if (!player_op_opened) {
-		if (player_op == NULL) {
-			name = option_get_string("output-plugin");
-			if ((player_op = plugin_find_op(name)) == NULL) {
-				msg_errx("Output plug-in not found: %s", name);
-				free(name);
-				return -1;
-			}
+	if (player_op_opened)
+		/* Output plug-in already opened. */
+		return 0;
+
+	if (player_op == NULL) {
+		name = option_get_string("output-plugin");
+		if ((player_op = plugin_find_op(name)) == NULL) {
+			msg_errx("Output plug-in not found: %s", name);
 			free(name);
-		}
-
-		LOG_INFO("opening %s output plug-in", player_op->name);
-		if (player_op->open() == -1)
 			return -1;
-
-		player_op_opened = 1;
+		}
+		free(name);
 	}
 
+	LOG_INFO("opening %s output plug-in", player_op->name);
+	if (player_op->open() == -1)
+		return -1;
+
+	player_op_opened = 1;
 	return 0;
 }
 

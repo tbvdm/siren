@@ -109,8 +109,7 @@ ip_mad_calculate_duration(const char *file)
 	mad_stream_finish(&stream);
 	(void)fclose(fp);
 
-	if (ret != IP_MAD_EOF)
-		/* ip_mad_decode_frame_header() failed. */
+	if (ret == IP_MAD_ERROR)
 		return 0;
 
 	return (unsigned int)mad_timer_count(timer, MAD_UNITS_SECONDS);
@@ -139,12 +138,13 @@ ip_mad_decode_frame(struct ip_mad_ipdata *ipd)
 
 	for (;;) {
 		/* Fill the stream buffer if necessary. */
-		if ((ipd->stream.buffer == NULL ||
-		    ipd->stream.error == MAD_ERROR_BUFLEN) &&
-		    (ret = ip_mad_fill_stream(ipd->fp, &ipd->stream, ipd->buf,
-		    IP_MAD_BUFSIZE)) != IP_MAD_OK)
-			/* EOF reached or error encountered. */
-			return ret;
+		if (ipd->stream.buffer == NULL || ipd->stream.error ==
+		    MAD_ERROR_BUFLEN) {
+			ret = ip_mad_fill_stream(ipd->fp, &ipd->stream,
+			    ipd->buf, IP_MAD_BUFSIZE);
+			if (ret == IP_MAD_EOF || ret == IP_MAD_ERROR)
+				return ret;
+		}
 
 		if (mad_frame_decode(&ipd->frame, &ipd->stream) == -1) {
 			/* Error encountered. */
@@ -175,12 +175,12 @@ ip_mad_decode_frame_header(FILE *fp, struct mad_stream *stream,
 
 	for (;;) {
 		/* Fill the stream buffer if necessary. */
-		if ((stream->buffer == NULL ||
-		    stream->error == MAD_ERROR_BUFLEN) &&
-		    (ret = ip_mad_fill_stream(fp, stream, buf, bufsize)) !=
-		    IP_MAD_OK)
-			/* EOF reached or error encountered. */
-			return ret;
+		if (stream->buffer == NULL || stream->error ==
+		    MAD_ERROR_BUFLEN) {
+			ret = ip_mad_fill_stream(fp, stream, buf, bufsize);
+			if (ret == IP_MAD_EOF || ret == IP_MAD_ERROR)
+				return ret;
+		}
 
 		if (mad_header_decode(header, stream) == -1) {
 			/* Error encountered. */
@@ -453,8 +453,8 @@ ip_mad_read(struct track *t, int16_t *samples, size_t maxsamples)
 	nsamples = 0;
 	while (nsamples + (size_t)t->format.nchannels <= maxsamples) {
 		if (ipd->sampleidx == ipd->synth.pcm.length) {
-			if ((ret = ip_mad_decode_frame(ipd)) != IP_MAD_OK)
-				/* EOF reached or error encountered. */
+			ret = ip_mad_decode_frame(ipd);
+			if (ret == IP_MAD_EOF || IP_MAD_ERROR)
 				return ret;
 
 			mad_synth_frame(&ipd->synth, &ipd->frame);
@@ -486,8 +486,8 @@ ip_mad_seek(struct track *t, unsigned int seekpos)
 
 	ipd = t->ipdata;
 
-	if ((pos = (unsigned int)mad_timer_count(ipd->timer,
-	    MAD_UNITS_SECONDS)) > seekpos) {
+	pos = (unsigned int)mad_timer_count(ipd->timer, MAD_UNITS_SECONDS);
+	if (pos > seekpos) {
 		if (fseek(ipd->fp, 0, SEEK_SET) == -1) {
 			LOG_ERR("fseek: %s", t->path);
 			msg_err("Cannot seek");
@@ -499,8 +499,12 @@ ip_mad_seek(struct track *t, unsigned int seekpos)
 
 	mad_header_init(&header);
 
-	while (pos < seekpos && ip_mad_decode_frame_header(ipd->fp,
-	    &ipd->stream, &header, ipd->buf, IP_MAD_BUFSIZE) == IP_MAD_OK) {
+	for (;;) {
+		if (pos >= seekpos)
+			break;
+		if (ip_mad_decode_frame_header(ipd->fp, &ipd->stream, &header,
+		    ipd->buf, IP_MAD_BUFSIZE) != IP_MAD_OK)
+			break;
 		mad_timer_add(&ipd->timer, header.duration);
 		pos = mad_timer_count(ipd->timer, MAD_UNITS_SECONDS);
 	}
