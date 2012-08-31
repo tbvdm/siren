@@ -45,6 +45,19 @@ check_header()
 	fi
 }
 
+check_library()
+{
+	print_check "for lib$1"
+
+	if compile "" "" "" -l$1; then
+		print_result yes
+		return 0
+	else
+		print_result no
+		return 1
+	fi
+}
+
 check_pkgconfig()
 {
 	print_check "for package $1"
@@ -209,6 +222,7 @@ enable_sndfile=yes
 enable_vorbis=yes
 enable_wavpack=yes
 enable_ao=yes
+enable_oss=yes
 enable_pulse=yes
 enable_sndio=yes
 
@@ -246,6 +260,9 @@ while [ $# -gt 0 ]; do
 		;;
 	ao=*)
 		get_option_value enable_ao "$1"
+		;;
+	oss=*)
+		get_option_value enable_oss "$1"
 		;;
 	pulse=*)
 		get_option_value enable_pulse "$1"
@@ -415,6 +432,25 @@ check_plugin_pkgconfig $enable_wavpack wavpack ip wavpack
 if check_plugin_pkgconfig $enable_ao ao op ao; then
 	if pkg-config --atleast-version 1.0.0 ao; then
 		header_define HAVE_AO_MATRIX
+	fi
+fi
+
+if [ "$enable_oss" != no ]; then
+	# Check for <soundcard.h> first, then for <sys/soundcard.h>.
+	if ! check_header soundcard.h; then
+		if check_header sys/soundcard.h; then
+			header_define HAVE_SYS_SOUNDCARD_H
+		else
+			enable_oss=no
+		fi
+	fi
+
+	if [ "$enable_oss" != no ]; then
+		makefile_append OP oss
+		if check_library ossaudio; then
+			makefile_append LDFLAGS_oss -lossaudio
+		fi
+		enabled_ops="$enabled_ops oss"
 	fi
 fi
 

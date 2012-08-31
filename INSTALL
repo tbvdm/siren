@@ -46,6 +46,11 @@ wavpack=yes|no
 ao=yes|no
 	Whether to build the ao output plug-in. The default is "yes".
 
+oss=yes|no
+	Whether to build the OSS output plug-in. Both OSS 3 and OSS 4 are
+	supported, but volume support is available only for OSS 4. The default
+	is "yes".
+
 pulse=yes|no
 	Whether to build the PulseAudio output plug-in. The default is "yes".
 

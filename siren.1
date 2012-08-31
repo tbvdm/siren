@@ -12,7 +12,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd July 3, 2012
+.Dd August 31, 2012
 .Dt SIREN 1
 .Os
 .Sh NAME
@@ -838,6 +838,8 @@ OpenBSD
 output plug-in.
 .It pulse
 PulseAudio output plug-in.
+.It oss
+OSS output plug-in.
 .It ao
 libao output plug-in.
 .El
@@ -963,6 +965,14 @@ for possible values.
 The path of the file to write the audio output to.
 If the file already exists, it is not overwritten.
 This option is relevant only if using a file output driver.
+.El
+.Pp
+The following options are specific to the
+.Em oss
+output plug-in.
+.Bl -tag -width Ds
+.It Cm oss-device Pq string
+The path of the audio device to use.
 .El
 .Pp
 The following options are specific to the
