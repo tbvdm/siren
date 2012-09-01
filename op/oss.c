@@ -292,6 +292,7 @@ op_oss_write(void *buf, size_t bufsize)
 {
 	if (write(op_oss_fd, buf, bufsize) == -1) {
 		LOG_ERR("write: %s", op_oss_device);
+		msg_err("Playback error");
 		return -1;
 	}
 	return 0;
