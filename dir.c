@@ -83,47 +83,15 @@ dir_get_entry(struct dir *d)
 	return &d->entry;
 }
 
-#ifndef NAME_MAX
-/*
- * Return the maximum number of bytes in a file name (excluding "\0") for the
- * specified directory. If an error occurs, 0 is returned.
- *
- * This function is used only if the system has not defined NAME_MAX in
- * <limits.h>. Otherwise the value is obtained from fpathconf().
- *
- * We use dirfd() and fpathconf() instead of pathconf() to avoid a race
- * condition. See <http://womble.decadentplace.org.uk/readdir_r-advisory.html>
- * for more information.
- */
-NONNULL() static size_t
-dir_get_name_max(DIR *dirp)
-{
-	long int	name_max;
-	int		fd;
-
-	if ((fd = dirfd(dirp)) == -1) {
-		LOG_ERR("dirfd");
-		return 0;
-	}
-
-	if ((name_max = XFPATHCONF(fd, _PC_NAME_MAX)) == -1) {
-		if (errno == 0)
-			errno = ENOTSUP;
-		return 0;
-	}
-
-	return (size_t)name_max;
-}
-#endif
-
 struct dir *
 dir_open(const char *dir)
 {
 	struct dir	*d;
 	DIR		*dirp;
-	size_t		 dirent_size, name_max;
+	size_t		 direntsize, pathsize;
 #ifndef NAME_MAX
-	int		 oerrno;
+	long int	 namemax;
+	int		 fd, oerrno;
 #endif
 
 	if ((dirp = opendir(dir)) == NULL) {
@@ -132,27 +100,52 @@ dir_open(const char *dir)
 		return NULL;
 	}
 
+	/*
+	 * In order to allocate space for struct dirent, we need to know the
+	 * maximum length of a file name in the specified directory. If
+	 * NAME_MAX is defined, we use that. Otherwise, we obtain the value
+	 * from fpathconf().
+	 *
+	 * We use dirfd() and fpathconf() instead of pathconf() to avoid a race
+	 * condition. See
+	 * <http://womble.decadentplace.org.uk/readdir_r-advisory.html>.
+	 */
 #ifdef NAME_MAX
-	name_max = NAME_MAX;
+	direntsize = offsetof(struct dirent, d_name) + NAME_MAX + 1;
+	pathsize = strlen(dir) + NAME_MAX + 2;
 #else
-	if ((name_max = dir_get_name_max(dirp)) == 0) {
-		oerrno = errno;
-		while (closedir(dirp) == -1 && errno == EINTR);
-		errno = oerrno;
-		return NULL;
+	if ((fd = dirfd(dirp)) == -1) {
+		LOG_ERR("dirfd: %s", dir);
+		goto error;
 	}
+
+	if ((namemax = XFPATHCONF(fd, _PC_NAME_MAX)) == -1) {
+		if (errno == 0)
+			errno = ENOTSUP;
+		goto error;
+	}
+
+	direntsize = offsetof(struct dirent, d_name) + namemax + 1;
+	pathsize = strlen(dir) + namemax + 2;
 #endif
 
-	dirent_size = offsetof(struct dirent, d_name) + name_max + 1;
-	if (sizeof(struct dirent) > dirent_size)
-		dirent_size = sizeof(struct dirent);
+	if (sizeof(struct dirent) > direntsize)
+		direntsize = sizeof(struct dirent);
 
 	d = xmalloc(sizeof *d);
 	d->dirp = dirp;
 	d->dir = xstrdup(dir);
-	d->entry.pathsize = strlen(dir) + name_max + 2;
+	d->entry.pathsize = pathsize;
 	d->entry.path = xmalloc(d->entry.pathsize);
-	d->dp = xmalloc(dirent_size);
+	d->dp = xmalloc(direntsize);
 
 	return d;
+
+#ifndef NAME_MAX
+error:
+	oerrno = errno;
+	while (closedir(dirp) == -1 && errno == EINTR);
+	errno = oerrno;
+	return NULL;
+#endif
 }
