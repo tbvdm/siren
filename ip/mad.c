@@ -454,7 +454,7 @@ ip_mad_read(struct track *t, int16_t *samples, size_t maxsamples)
 	while (nsamples + (size_t)t->format.nchannels <= maxsamples) {
 		if (ipd->sampleidx == ipd->synth.pcm.length) {
 			ret = ip_mad_decode_frame(ipd);
-			if (ret == IP_MAD_EOF || IP_MAD_ERROR)
+			if (ret == IP_MAD_EOF || ret == IP_MAD_ERROR)
 				return ret;
 
 			mad_synth_frame(&ipd->synth, &ipd->frame);
