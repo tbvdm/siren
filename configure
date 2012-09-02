@@ -310,10 +310,6 @@ else
 	makefile_append SRCS compat/asprintf.c
 fi
 
-if check_function dirfd "DIR *dirp; dirfd(dirp)" "sys/types.h dirent.h"; then
-	header_define HAVE_DIRFD
-fi
-
 if check_function err 'err(0, "")' err.h; then
 	header_define HAVE_ERR
 else

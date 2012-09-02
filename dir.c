@@ -89,35 +89,24 @@ dir_get_entry(struct dir *d)
  * specified directory. If an error occurs, 0 is returned.
  *
  * This function is used only if the system has not defined NAME_MAX in
- * <limits.h>. Otherwise the value is obtained by calling fpathconf() or
- * pathconf() for the specified directory.
+ * <limits.h>. Otherwise the value is obtained from fpathconf().
  *
- * There exists a race condition between the call to opendir() and the call to
- * pathconf(). This race can be averted by using dirfd() and fpathconf().
- * Unfortunately, dirfd() is not available on all UNIX systems (e.g. AIX,
- * HP-UX and Solaris). We use fpathconf() on systems where dirfd() is
- * available. On other systems we resort to pathconf() and hope for the best.
- *
- * See <http://womble.decadentplace.org.uk/readdir_r-advisory.html> for more
- * information.
+ * We use dirfd() and fpathconf() instead of pathconf() to avoid a race
+ * condition. See <http://womble.decadentplace.org.uk/readdir_r-advisory.html>
+ * for more information.
  */
-/* ARGSUSED1 */
 NONNULL() static size_t
-dir_get_name_max(const char *dir, UNUSED DIR *dirp)
+dir_get_name_max(DIR *dirp)
 {
 	long int	name_max;
-#ifdef HAVE_DIRFD
 	int		fd;
 
 	if ((fd = dirfd(dirp)) == -1) {
-		LOG_ERR("dirfd: %s", dir);
+		LOG_ERR("dirfd");
 		return 0;
 	}
 
 	if ((name_max = XFPATHCONF(fd, _PC_NAME_MAX)) == -1) {
-#else
-	if ((name_max = XPATHCONF(dir, _PC_NAME_MAX)) == -1) {
-#endif
 		if (errno == 0)
 			errno = ENOTSUP;
 		return 0;
@@ -146,7 +135,7 @@ dir_open(const char *dir)
 #ifdef NAME_MAX
 	name_max = NAME_MAX;
 #else
-	if ((name_max = dir_get_name_max(dirp, dir)) == 0) {
+	if ((name_max = dir_get_name_max(dirp)) == 0) {
 		oerrno = errno;
 		while (closedir(dirp) == -1 && errno == EINTR);
 		errno = oerrno;
