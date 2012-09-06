@@ -138,6 +138,7 @@ op_sndio_start(struct sample_format *sf)
 	op_sndio_par.pchan = sf->nchannels;
 	op_sndio_par.rate = sf->rate;
 	op_sndio_par.sig = 1U;
+	op_sndio_par.bps = 2U;
 
 	if (!sio_setpar(op_sndio_handle, &op_sndio_par)) {
 		LOG_ERRX("sio_setpar() failed");

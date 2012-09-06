@@ -136,7 +136,7 @@ op_ao_start(struct sample_format *sf)
 	int			 error;
 	char			*file;
 
-	aosf.bits = sf->nbits;
+	aosf.bits = 16;
 	aosf.byte_format = op_ao_byte_format;
 	aosf.channels = sf->nchannels;
 	aosf.rate = sf->rate;
