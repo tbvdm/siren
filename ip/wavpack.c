@@ -156,7 +156,12 @@ ip_wavpack_open(struct track *t)
 		return -1;
 	}
 
-	t->format.nbits = WavpackGetBitsPerSample(wpc);
+	/*
+	 * WavPack aligns samples whose bit depth is not a multiple of 8 on the
+	 * MSB rather than the LSB. Therefore, determine the bit depth from the
+	 * number of bytes per sample.
+	 */
+	t->format.nbits = 8 * WavpackGetBytesPerSample(wpc);
 	t->format.nchannels = WavpackGetNumChannels(wpc);
 	t->format.rate = WavpackGetSampleRate(wpc);
 
