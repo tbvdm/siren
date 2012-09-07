@@ -32,6 +32,7 @@
 
 struct ip_wavpack_ipdata {
 	WavpackContext	*wpc;
+	int		 float_samples;
 	int32_t		*buf;
 	uint32_t	 bufsize;	/* Buffer size, in frames */
 	uint32_t	 bufidx;	/* Current sample */
@@ -70,6 +71,53 @@ ip_wavpack_close(struct track *t)
 	(void)WavpackCloseFile(ipd->wpc);
 	free(ipd->buf);
 	free(ipd);
+}
+
+/*
+ * Perform a rudimentary conversion of a 32-bit IEEE 754 floating-point value
+ * between -1 and 1 to an integral value between -32767 and 32767.
+ */
+
+#define IP_WAVPACK_FLOAT_SIGN(flt)	((flt) & 0x80000000)
+#define IP_WAVPACK_FLOAT_EXP(flt)	(((flt) & 0x7f800000) >> 23)
+#define IP_WAVPACK_FLOAT_FRAC(flt)	((flt) & 0x007fffff)
+
+static int16_t
+ip_wavpack_float_to_int(int32_t flt)
+{
+	int32_t exp, frac;
+
+	exp = IP_WAVPACK_FLOAT_EXP(flt);
+	frac = IP_WAVPACK_FLOAT_FRAC(flt);
+
+	/* Handle the value 0. */
+	if (exp == 0 && frac == 0)
+		return 0;
+
+	/* Unbias the exponent. */
+	exp -= 127;
+
+	/* Handle the values -1 or less and 1 or greater. */
+	if (exp >= 0) {
+		if (IP_WAVPACK_FLOAT_SIGN(flt))
+			return -INT16_MAX;
+		else
+			return INT16_MAX;
+	}
+
+	/* Add the implicit 24th bit. */
+	frac |= 1 << 23;
+
+	/* Perform exponentiation. */
+	frac >>= -exp;
+
+	/* There is room only for 16 bits, so discard the 8 LSBs. */
+	frac >>= 8;
+
+	if (IP_WAVPACK_FLOAT_SIGN(flt))
+		frac = -frac;
+
+	return (int16_t)frac;
 }
 
 static int
@@ -146,6 +194,7 @@ ip_wavpack_open(struct track *t)
 {
 	struct ip_wavpack_ipdata	*ipd;
 	WavpackContext			*wpc;
+	int				 float_samples;
 	char				 errstr[IP_WAVPACK_ERRSTRLEN];
 
 	wpc = WavpackOpenFileInput(t->path, errstr, OPEN_NORMALIZE | OPEN_WVC,
@@ -156,26 +205,33 @@ ip_wavpack_open(struct track *t)
 		return -1;
 	}
 
-	/*
-	 * WavPack aligns samples whose bit depth is not a multiple of 8 on the
-	 * MSB rather than the LSB. Therefore, determine the bit depth from the
-	 * number of bytes per sample.
-	 */
-	t->format.nbits = 8 * WavpackGetBytesPerSample(wpc);
+	float_samples = WavpackGetMode(wpc) & MODE_FLOAT;
+	if (float_samples)
+		t->format.nbits = 16;
+	else {
+		/*
+		 * WavPack aligns samples whose bit depth is not a multiple of
+		 * 8 on the MSB rather than the LSB. Therefore, determine the
+		 * bit depth from the number of bytes per sample.
+		 */
+		t->format.nbits = 8 * WavpackGetBytesPerSample(wpc);
+
+		/* Only 16-bit samples or less are supported at the moment. */
+		if (t->format.nbits > 16) {
+			LOG_ERRX("%s: %d bits per sample not supported",
+			    t->path, t->format.nbits);
+			msg_errx("%s: %d bits per sample not supported",
+			    t->path, t->format.nbits);
+			return -1;
+		}
+	}
+
 	t->format.nchannels = WavpackGetNumChannels(wpc);
 	t->format.rate = WavpackGetSampleRate(wpc);
 
-	/* Only 16-bit samples or less are supported at the moment. */
-	if (t->format.nbits > 16) {
-		LOG_ERRX("%s: %d bits per sample not supported",
-		    t->path, t->format.nbits);
-		msg_errx("%s: %d bits per sample not supported",
-		    t->path, t->format.nbits);
-		return -1;
-	}
-
 	ipd = xmalloc(sizeof *ipd);
 	ipd->wpc = wpc;
+	ipd->float_samples = float_samples;
 	ipd->bufidx = 0;
 	ipd->buflen = 0;
 	ipd->bufsize = IP_WAVPACK_BUFSIZE;
@@ -212,7 +268,11 @@ ip_wavpack_read(struct track *t, int16_t *samples, size_t maxsamples)
 			ipd->bufidx = 0;
 		}
 
-		samples[i] = (int16_t)ipd->buf[ipd->bufidx++];
+		if (ipd->float_samples)
+			samples[i] =
+			    ip_wavpack_float_to_int(ipd->buf[ipd->bufidx++]);
+		else
+			samples[i] = (int16_t)ipd->buf[ipd->bufidx++];
 	}
 
 	return (int)i;
