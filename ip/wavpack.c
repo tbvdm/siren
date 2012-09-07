@@ -222,6 +222,7 @@ ip_wavpack_open(struct track *t)
 			    t->path, t->format.nbits);
 			msg_errx("%s: %d bits per sample not supported",
 			    t->path, t->format.nbits);
+			(void)WavpackCloseFile(wpc);
 			return -1;
 		}
 	}
