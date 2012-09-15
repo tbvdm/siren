@@ -53,9 +53,11 @@ static short int		 screen_get_colour(const char *, enum colour);
 static void			 screen_msg_vprintf(int, const char *,
 				    va_list);
 static void			 screen_print_row(const char *);
-static void			 screen_resize(void);
 static void			 screen_view_print_row(chtype, const char *);
 static void			 screen_vprintf(const char *, va_list);
+#if defined(HAVE_RESIZETERM) && defined(TIOCGWINSZ)
+static void			 screen_resize(void);
+#endif
 
 static pthread_mutex_t		 screen_curses_mtx = PTHREAD_MUTEX_INITIALIZER;
 static int			 screen_have_colours;
@@ -524,14 +526,16 @@ screen_refresh(void)
 	XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
 	(void)clear();
 	XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
+#if defined(HAVE_RESIZETERM) && defined(TIOCGWINSZ)
 	screen_resize();
+#endif
 	screen_print();
 }
 
+#if defined(HAVE_RESIZETERM) && defined(TIOCGWINSZ)
 static void
 screen_resize(void)
 {
-#if defined(HAVE_RESIZETERM) && defined(TIOCGWINSZ)
 	struct winsize ws;
 
 	if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) == -1) {
@@ -554,24 +558,10 @@ screen_resize(void)
 		 */
 		LOG_FATALX("resizeterm() failed");
 	XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
-#else
-	/*
-	 * This method is described in
-	 * <http://invisible-island.net/ncurses/ncurses.faq.html#
-	 * handle_resize>. It "relies on side-effects of the library functions,
-	 * and is moderately portable".
-	 */
-	XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
-	(void)endwin();
-	(void)refresh();
-	/* Re-enable keypad. */
-	(void)keypad(stdscr, TRUE);
-	XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
-	screen_configure_cursor();
-#endif
 
 	screen_configure_rows();
 }
+#endif
 
 void
 screen_status_clear(void)
