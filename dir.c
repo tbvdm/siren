@@ -44,6 +44,11 @@ dir_close(struct dir *d)
 	free(d);
 }
 
+/*
+ * Return a directory entry. NULL is returned if the end of the directory
+ * stream has been reached. On success, errno is set to 0; otherwise, errno is
+ * set to indicate the error.
+ */
 struct dir_entry *
 dir_get_entry(struct dir *d)
 {
@@ -66,6 +71,7 @@ dir_get_entry(struct dir *d)
 		LOG_ERR("stat: %s", d->entry.path);
 		d->entry.type = FILE_TYPE_OTHER;
 	} else {
+		/* Set errno to indicate success. */
 		errno = 0;
 		switch (sb.st_mode & S_IFMT) {
 		case S_IFDIR:
@@ -121,6 +127,12 @@ dir_open(const char *dir)
 
 	if ((namemax = XFPATHCONF(fd, _PC_NAME_MAX)) == -1) {
 		if (errno == 0)
+			/*
+			 * The value for _PC_NAME_MAX is indeterminate. While
+			 * this a valid result, it is one we cannot do much
+			 * with. Therefore, set errno to a somewhat appropriate
+			 * value and return failure.
+			 */
 			errno = ENOTSUP;
 		goto error;
 	}
