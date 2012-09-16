@@ -57,6 +57,9 @@ pulse=yes|no
 sndio=yes|no
 	Whether to build the sndio output plug-in. The default is "yes".
 
+sun=yes|no
+	Whether to build the Sun output plug-in. The default is "yes".
+
 Uninstalling Siren
 ------------------
 

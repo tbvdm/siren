@@ -36,8 +36,9 @@
 /* Priority of output plug-ins. */
 #define OP_PRIORITY_SNDIO	1
 #define OP_PRIORITY_PULSE	2
-#define OP_PRIORITY_OSS		3
-#define OP_PRIORITY_AO		4
+#define OP_PRIORITY_SUN		3
+#define OP_PRIORITY_OSS		4
+#define OP_PRIORITY_AO		5
 
 /* Size of the buffer to be passed to strerror_r(). The value is arbitrary. */
 #define STRERROR_BUFSIZE	256

@@ -12,7 +12,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd August 31, 2012
+.Dd September 16, 2012
 .Dt SIREN 1
 .Os
 .Sh NAME
@@ -840,6 +840,8 @@ output plug-in.
 PulseAudio output plug-in.
 .It oss
 OSS output plug-in.
+.It sun
+Sun audio output plug-in.
 .It ao
 libao output plug-in.
 .El
@@ -993,6 +995,14 @@ If empty, the default device will be used.
 See
 .Xr sndio 7
 for possible values.
+.El
+.Pp
+The following options are specific to the
+.Em sun
+output plug-in.
+.Bl -tag -width Ds
+.It Cm sun-device Pq string
+The path of the audio device to use.
 .El
 .Sh CONFIGURATION FILE
 Upon start-up
