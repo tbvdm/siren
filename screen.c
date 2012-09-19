@@ -44,7 +44,7 @@
 #define SCREEN_TITLE_ROW	0
 #define SCREEN_VIEW_ROW		1
 
-#ifdef HAVE_NETBSD_CURSES
+#if defined(__NetBSD__) && !defined(NCURSES_VERSION)
 #undef clrtoeol
 #define clrtoeol		screen_clrtoeol
 #endif
@@ -165,7 +165,7 @@ static struct {
 	{ A_NORMAL, 9, "view-attr",       "view-bg",       "view-fg" }
 };
 
-#ifdef HAVE_NETBSD_CURSES
+#if defined(__NetBSD__) && !defined(NCURSES_VERSION)
 /*
  * NetBSD's clrtoeol() does not set the background attributes of the characters
  * it clears. This will be fixed in NetBSD 6.0. We work around this by using
@@ -236,7 +236,7 @@ screen_configure_cursor(void)
 	else
 		(void)curs_set(0);
 
-#ifdef HAVE_NETBSD_CURSES
+#if defined(__NetBSD__) && !defined(NCURSES_VERSION)
 	/*
 	 * NetBSD's curs_set() does not let the cursor-visibility change take
 	 * effect immediately. This will be fixed in NetBSD 6.0. We work around
