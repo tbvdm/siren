@@ -167,6 +167,10 @@ player_change_op(void)
 		XPTHREAD_MUTEX_UNLOCK(&player_op_mtx);
 	}
 	free(name);
+
+	XPTHREAD_MUTEX_LOCK(&player_state_mtx);
+	player_print_status();
+	XPTHREAD_MUTEX_UNLOCK(&player_state_mtx);
 }
 
 /*
