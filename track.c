@@ -142,6 +142,7 @@ track_init(const char *path, const struct ip *ip)
 		return t;
 
 	if (t->ip->get_metadata(t)) {
+		free(t->path);
 		free(t);
 		return NULL;
 	}
