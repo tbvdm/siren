@@ -288,8 +288,12 @@ done
 
 rm -f $logfile $header $makefile
 
-[ -z "$CC" ] && CC=cc
-makefile_assign CC "$CC"
+if [ -z "$CC" ]; then
+	CC=cc
+else
+	makefile_assign CC "$CC"
+fi
+
 makefile_assign CFLAGS "$CFLAGS"
 makefile_assign CPPFLAGS "$CPPFLAGS"
 makefile_assign LDFLAGS "$LDFLAGS"
