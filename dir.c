@@ -54,11 +54,10 @@ dir_get_entry(struct dir *d)
 {
 	struct dirent	*result;
 	struct stat	 sb;
-	int		 ret;
 
-	if ((ret = readdir_r(d->dirp, d->dp, &result)) || result == NULL) {
+	if ((errno = readdir_r(d->dirp, d->dp, &result)) || result == NULL) {
 		/* Error or end of directory stream. */
-		if ((errno = ret))
+		if (errno)
 			LOG_ERR("readdir_r: %s", d->dir);
 		return NULL;
 	}
@@ -71,8 +70,6 @@ dir_get_entry(struct dir *d)
 		LOG_ERR("stat: %s", d->entry.path);
 		d->entry.type = FILE_TYPE_OTHER;
 	} else {
-		/* Set errno to indicate success. */
-		errno = 0;
 		switch (sb.st_mode & S_IFMT) {
 		case S_IFDIR:
 			d->entry.type = FILE_TYPE_DIRECTORY;
@@ -84,6 +81,9 @@ dir_get_entry(struct dir *d)
 			d->entry.type = FILE_TYPE_OTHER;
 			break;
 		}
+
+		/* Set errno to indicate success. */
+		errno = 0;
 	}
 
 	return &d->entry;
