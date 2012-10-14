@@ -57,6 +57,8 @@ static int		 cache_read_file(void);
 static int		 cache_read_number(char **, char *, unsigned int *);
 static int		 cache_read_string(char **, char *, char **);
 static void		 cache_remove_entry(struct cache_entry *);
+static void		 cache_write_number(FILE *, unsigned int);
+static void		 cache_write_string(FILE *, const char *);
 
 RB_PROTOTYPE(cache_tree, cache_entry, entries, cache_cmp_entry)
 
@@ -83,13 +85,13 @@ cache_add_metadata(const struct track *t)
 
 	e = xmalloc(sizeof *e);
 	e->path = xstrdup(t->path);
-	e->album = xstrdup(t->album == NULL ? "" : t->album);
-	e->artist = xstrdup(t->artist == NULL ? "" : t->artist);
-	e->date = xstrdup(t->date == NULL ? "" : t->date);
-	e->genre = xstrdup(t->genre == NULL ? "" : t->genre);
-	e->title = xstrdup(t->title == NULL ? "" : t->title);
-	e->tracknumber = xstrdup(t->tracknumber == NULL ? "" :
-	    t->tracknumber);
+	e->album = t->album == NULL ? NULL : xstrdup(t->album);
+	e->artist = t->artist == NULL ? NULL : xstrdup(t->artist);
+	e->date = t->date == NULL ? NULL : xstrdup(t->date);
+	e->genre = t->genre == NULL ? NULL : xstrdup(t->genre);
+	e->title = t->title == NULL ? NULL : xstrdup(t->title);
+	e->tracknumber = t->tracknumber == NULL ? NULL :
+	    xstrdup(t->tracknumber);
 	e->duration = t->duration;
 
 	cache_add_entry(e);
@@ -144,13 +146,15 @@ cache_get_metadata(struct track *t)
 	if ((find = RB_FIND(cache_tree, &cache_tree, &search)) == NULL)
 		return -1;
 
-	t->album = xstrdup(find->album);
-	t->artist = xstrdup(find->artist);
-	t->date = xstrdup(find->date);
-	t->genre = xstrdup(find->genre);
-	t->title = xstrdup(find->title);
-	t->tracknumber = xstrdup(find->tracknumber);
+	t->album = find->album == NULL ? NULL : xstrdup(find->album);
+	t->artist = find->artist == NULL ? NULL : xstrdup(find->artist);
+	t->date = find->date == NULL ? NULL : xstrdup(find->date);
+	t->genre = find->genre == NULL ? NULL : xstrdup(find->genre);
+	t->title = find->title == NULL ? NULL : xstrdup(find->title);
+	t->tracknumber = find->tracknumber == NULL ? NULL :
+	    xstrdup(find->tracknumber);
 	t->duration = find->duration;
+
 	return 0;
 }
 
@@ -280,7 +284,11 @@ cache_read_string(char **data, char *end, char **str)
 		return -1;
 	}
 
-	*str = xstrdup(field);
+	if (field[0] == '\0')
+		*str = NULL;
+	else
+		*str = xstrdup(field);
+
 	return 0;
 }
 
@@ -302,19 +310,33 @@ cache_write_file(void)
 		return -1;
 	}
 
-	(void)fprintf(fp, "%u%c", CACHE_VERSION, '\0');
-	RB_FOREACH(e, cache_tree, &cache_tree)
-		(void)fprintf(fp, "%s%c%s%c%s%c%s%c%s%c%s%c%u%c%s%c",
-		    e->path, '\0',
-		    e->artist, '\0',
-		    e->album, '\0',
-		    e->date, '\0',
-		    e->tracknumber, '\0',
-		    e->title, '\0',
-		    e->duration, '\0',
-		    e->genre, '\0');
+	cache_write_number(fp, CACHE_VERSION);
+	RB_FOREACH(e, cache_tree, &cache_tree) {
+		cache_write_string(fp, e->path);
+		cache_write_string(fp, e->artist);
+		cache_write_string(fp, e->album);
+		cache_write_string(fp, e->date);
+		cache_write_string(fp, e->tracknumber);
+		cache_write_string(fp, e->title);
+		cache_write_number(fp, e->duration);
+		cache_write_string(fp, e->genre);
+	}
 
 	(void)fclose(fp);
 	cache_modified = 0;
 	return 0;
+}
+
+static void
+cache_write_number(FILE *fp, unsigned int num)
+{
+	(void)fprintf(fp, "%u%c", num, '\0');
+}
+
+static void
+cache_write_string(FILE *fp, const char *str)
+{
+	if (str != NULL)
+		(void)fputs(str, fp);
+	(void)putc('\0', fp);
 }
