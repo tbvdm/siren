@@ -148,15 +148,11 @@
  * Wrappers for pthreads functions.
  */
 
-#ifndef DEBUG
-#define XPTHREAD_WRAPPER(func, ...) (void)pthread_ ## func(__VA_ARGS__)
-#else
 #define XPTHREAD_WRAPPER(func, ...)					\
 	do								\
 		if ((errno = pthread_ ## func(__VA_ARGS__)) != 0)	\
 			LOG_FATAL("pthread_" #func);			\
 	while (0)
-#endif
 
 #define XPTHREAD_COND_BROADCAST(cond)	XPTHREAD_WRAPPER(cond_broadcast, cond)
 #define XPTHREAD_COND_DESTROY(cond)	XPTHREAD_WRAPPER(cond_destroy, cond)
