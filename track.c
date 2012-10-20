@@ -22,7 +22,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
-#include <unistd.h>
 
 #include "siren.h"
 
@@ -113,11 +112,6 @@ struct track *
 track_init(const char *path, const struct ip *ip)
 {
 	struct track *t;
-
-	if (access(path, R_OK) == -1) {
-		msg_err("%s", path);
-		return NULL;
-	}
 
 	if (ip == NULL && (ip = plugin_find_ip(path)) == NULL) {
 		msg_errx("%s: Unsupported file format", path);

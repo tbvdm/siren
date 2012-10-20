@@ -20,7 +20,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h> /* for access(2) */
 
 #include "siren.h"
 
@@ -293,11 +292,6 @@ library_read_file(void)
 
 		if (buf[0] != '/') {
 			LOG_ERRX("%s:%zu: invalid entry", file, lineno);
-			continue;
-		}
-
-		if (access(buf, F_OK)) {
-			LOG_ERR("access: %s", buf);
 			continue;
 		}
 
