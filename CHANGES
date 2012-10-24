@@ -1,6 +1,14 @@
 This is a list of the most important changes only. See the repository history
 for a list of all changes.
 
+Siren 0.2 (2012-10-01):
+
+- Add the WavPack input plug-in.
+- Add the OSS output plug-in.
+- Add the Sun output plug-in.
+- Improve the configure script.
+- Fix various minor bugs.
+
 Siren 0.1 (2012-07-07):
 
 - Add the show-binding and show-option commands.
