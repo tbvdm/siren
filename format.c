@@ -481,20 +481,27 @@ format_write_field(char *buf, size_t off, size_t bufsize, const char *value,
 	else
 		valuelen = strlen(value);
 
-	if (fld->width == -1)
+	if (fld->width == -1) {
+		/* Variable-width field specified. */
 		width = varwidth;
-	else if (fld->width == 0)
+		if (valuelen > width)
+			valuelen = width;
+	} else if (fld->width == 0) {
+		/* No width specified; use value length. */
+		if (valuelen > bufsize - off - 1)
+			valuelen = bufsize - off - 1;
 		width = valuelen;
-	else if ((size_t)fld->width > bufsize - off - 1)
-		width = bufsize - off - 1;
-	else
-		width = fld->width;
+	} else {
+		/* Fixed width specified. */
+		if (fld->width < bufsize - off - 1)
+			width = fld->width;
+		else
+			width = bufsize - off - 1;
+		if (valuelen > width)
+			valuelen = width;
+	}
 
-	if (width < valuelen) {
-		padlen = 0;
-		valuelen = width;
-	} else
-		padlen = width - valuelen;
+	padlen = width - valuelen;
 
 	if (fld->align == FORMAT_ALIGN_RIGHT) {
 		(void)memset(buf + off, fld->padchar, padlen);
