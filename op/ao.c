@@ -188,6 +188,7 @@ op_ao_start(struct sample_format *sf)
 			break;
 		case AO_ENODRIVER:
 			msg_errx("Cannot find driver");
+			break;
 		case AO_EFAIL:
 		default:
 			msg_errx("Unknown error");
