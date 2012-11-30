@@ -493,7 +493,7 @@ format_write_field(char *buf, size_t off, size_t bufsize, const char *value,
 		width = valuelen;
 	} else {
 		/* Fixed width specified. */
-		if (fld->width < bufsize - off - 1)
+		if ((unsigned int)fld->width < bufsize - off - 1)
 			width = fld->width;
 		else
 			width = bufsize - off - 1;
