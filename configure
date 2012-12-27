@@ -153,9 +153,9 @@ compile()
 	echo "int main(void) { $3; return 0; }" >> $srcfile
 
 	echo compiling test program: >> $logfile
-	echo --- >> $logfile
-	cat $srcfile >> $logfile
-	echo --- >> $logfile
+	while read -r line; do
+		echo "\t$line" >> $logfile
+	done < $srcfile
 
 	run_command $CC $CFLAGS $CPPFLAGS -o $outfile $srcfile $LDFLAGS $4
 	result=$?
@@ -167,6 +167,7 @@ compile()
 error()
 {
 	echo "${0##*/}: $@" >& 2
+	echo "\nerror: $@" >> $logfile
 	exit 1
 }
 
@@ -204,7 +205,7 @@ makefile_assign()
 print_check()
 {
 	echo -n "checking $@..."
-	echo "checking $@" >> $logfile
+	echo "\nchecking $@" >> $logfile
 }
 
 print_result()
@@ -326,6 +327,8 @@ if [ "$enable_debug" = yes ]; then
 	header_define DEBUG
 	makefile_append CFLAGS -ggdb
 fi
+
+uname -srvm >> $logfile
 
 check_program "$CC"
 check_program pkg-config
