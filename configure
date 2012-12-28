@@ -135,7 +135,7 @@ check_program()
 # $4: compiler options
 compile()
 {
-	local header macro outfile result srcfile
+	local header line macro outfile result srcfile
 
 	outfile=configure-test.o
 	srcfile=configure-test.c
