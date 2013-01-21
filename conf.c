@@ -55,7 +55,7 @@ conf_init(const char *dir)
 }
 
 char *
-conf_path(const char *file)
+conf_get_path(const char *file)
 {
 	char *path;
 
@@ -73,7 +73,7 @@ conf_read_file(void)
 	size_t	 len, lineno;
 	char	*buf, *error, *file, *lbuf;
 
-	file = conf_path(CONF_FILE);
+	file = conf_get_path(CONF_FILE);
 	if ((fp = fopen(file, "r")) == NULL) {
 		if (errno != ENOENT) {
 			LOG_ERR("fopen: %s", file);

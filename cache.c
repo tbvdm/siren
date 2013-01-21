@@ -162,7 +162,7 @@ cache_get_metadata(struct track *t)
 void
 cache_init(void)
 {
-	cache_file = conf_path(CACHE_FILE);
+	cache_file = conf_get_path(CACHE_FILE);
 	if (cache_read_file() == -1)
 		msg_err("Cannot read metadata cache");
 }

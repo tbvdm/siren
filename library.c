@@ -272,7 +272,7 @@ library_read_file(void)
 	size_t		 len, lineno;
 	char		*buf, *file, *lbuf;
 
-	file = conf_path(LIBRARY_FILE);
+	file = conf_get_path(LIBRARY_FILE);
 	if ((fp = fopen(file, "r")) == NULL) {
 		if (errno != ENOENT) {
 			LOG_ERR("fopen: %s", file);
@@ -407,7 +407,7 @@ library_write_file(void)
 	int			 ret;
 	char			*file;
 
-	file = conf_path(LIBRARY_FILE);
+	file = conf_get_path(LIBRARY_FILE);
 	if ((fp = fopen(file, "w")) == NULL) {
 		LOG_ERR("fopen: %s", file);
 		msg_err("Cannot save library");
