@@ -117,7 +117,7 @@ xvasprintf(char **buf, const char *fmt, va_list ap)
 {
 	int ret;
 
-	if ((ret = vasprintf(buf, fmt, ap)) == -1)
+	if ((ret = vasprintf(buf, fmt, ap)) < 0)
 		LOG_FATALX("vasprintf() failed");
 	return ret;
 }
@@ -127,7 +127,7 @@ xvsnprintf(char *buf, size_t size, const char *fmt, va_list ap)
 {
 	int ret;
 
-	if ((ret = vsnprintf(buf, size, fmt, ap)) == -1)
+	if ((ret = vsnprintf(buf, size, fmt, ap)) < 0)
 		LOG_FATALX("vsnprintf() failed");
 	return ret;
 }
