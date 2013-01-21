@@ -152,13 +152,10 @@ log_vprintf(const char *func, const char *fmt, va_list ap)
 	if (log_enabled) {
 		(void)pthread_mutex_lock(&log_fp_mtx);
 		if (func != NULL)
-			if (fprintf(log_fp, "%s: ", func) == -1)
-				errx(1, "fprintf() failed");
+			(void)fprintf(log_fp, "%s: ", func);
 		if (fmt != NULL)
-			if (vfprintf(log_fp, fmt, ap) == -1)
-				errx(1, "vfprintf() failed");
-		if (putc('\n', log_fp) == EOF)
-			err(1, "putc");
+			(void)vfprintf(log_fp, fmt, ap);
+		(void)putc('\n', log_fp);
 		(void)pthread_mutex_unlock(&log_fp_mtx);
 	}
 }
