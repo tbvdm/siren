@@ -149,17 +149,17 @@ track_init(const char *path, const struct ip *ip)
 int
 track_search(const struct track *t, const char *search)
 {
-	if (t->album && strcasestr(t->album, search))
+	if (t->album != NULL && strcasestr(t->album, search))
 		return 0;
-	if (t->artist && strcasestr(t->artist, search))
+	if (t->artist != NULL && strcasestr(t->artist, search))
 		return 0;
-	if (t->date && strcasestr(t->date, search))
+	if (t->date != NULL && strcasestr(t->date, search))
 		return 0;
-	if (t->genre && strcasestr(t->genre, search))
+	if (t->genre != NULL && strcasestr(t->genre, search))
 		return 0;
-	if (t->title && strcasestr(t->title, search))
+	if (t->title != NULL && strcasestr(t->title, search))
 		return 0;
-	if (t->tracknumber && strcasestr(t->tracknumber, search))
+	if (t->tracknumber != NULL && strcasestr(t->tracknumber, search))
 		return 0;
 	if (strcasestr(t->path, search))
 		return 0;
