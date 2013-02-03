@@ -78,7 +78,7 @@ menu_adjust_scroll_offset(struct menu *m)
 		while (m->top->index != m->selected->index - nrows + 1);
 	/*
 	 * If the viewport extends below the last entry, then, if possible,
-	 * move the last entry to the bottom of the viewport if possible.
+	 * move the last entry to the bottom of the viewport.
 	 */
 	else
 		while (m->top->index > 0 &&
