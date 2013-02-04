@@ -52,6 +52,7 @@ static int		 cache_read_file(void);
 static int		 cache_read_number(unsigned int *);
 static int		 cache_read_string(char **);
 static void		 cache_remove_entry(struct cache_entry *);
+static void		 cache_write_file(void);
 static void		 cache_write_number(unsigned int);
 static void		 cache_write_string(const char *);
 
@@ -98,7 +99,7 @@ cache_add_metadata(const struct track *t)
 	cache_modified = 1;
 }
 
-void
+static void
 cache_clear(void)
 {
 	struct cache_entry *e;
@@ -118,7 +119,7 @@ void
 cache_end(void)
 {
 	if (cache_modified)
-		(void)cache_write_file();
+		cache_write_file();
 
 	cache_clear();
 	free(cache_file);
@@ -321,7 +322,7 @@ cache_remove_entry(struct cache_entry *e)
 	cache_free_entry(e);
 }
 
-int
+static void
 cache_write_file(void)
 {
 	struct cache_entry *e;
@@ -329,7 +330,7 @@ cache_write_file(void)
 	cache_fp = fopen(cache_file, "w");
 	if (cache_fp == NULL) {
 		LOG_ERR("fopen: %s", cache_file);
-		return -1;
+		return;
 	}
 
 	cache_write_number(CACHE_VERSION);
@@ -346,7 +347,6 @@ cache_write_file(void)
 
 	(void)fclose(cache_fp);
 	cache_modified = 0;
-	return 0;
 }
 
 static void
