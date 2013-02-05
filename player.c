@@ -203,7 +203,6 @@ player_end(void)
 	player_quit();
 	XPTHREAD_JOIN(player_playback_thd, NULL);
 	player_close_op();
-	track_free(player_track);
 }
 
 static void
@@ -238,7 +237,6 @@ player_get_track(void)
 			return -1;
 
 		XPTHREAD_MUTEX_LOCK(&player_track_mtx);
-		track_free(player_track);
 		player_track = t;
 		XPTHREAD_MUTEX_UNLOCK(&player_track_mtx);
 	}
@@ -379,7 +377,6 @@ player_play_track(struct track *t)
 {
 	player_stop();
 	XPTHREAD_MUTEX_LOCK(&player_track_mtx);
-	track_free(player_track);
 	player_track = t;
 	XPTHREAD_MUTEX_UNLOCK(&player_track_mtx);
 	player_play();

@@ -17,16 +17,55 @@
 /* Let glibc expose strcasestr(). */
 #define _GNU_SOURCE
 
-#include <ctype.h>
 #include <limits.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
+#include <unistd.h>
 
 #include "siren.h"
 
-static int track_cmp_number(const char *, const char *);
-static int track_cmp_string(const char *, const char *);
+#ifdef HAVE_TREE_H
+#include <sys/tree.h>
+#else
+#include "compat/tree.h"
+#endif
+
+struct track_entry {
+	struct track		track;
+	RB_ENTRY(track_entry)	entries;
+};
+
+RB_HEAD(track_tree, track_entry);
+
+static void		 track_add_entry(struct track_entry *);
+static struct track_entry *track_find_entry(const char *);
+static void		 track_free_entry(struct track_entry *);
+static int		 track_cmp_entry(struct track_entry *,
+			    struct track_entry *);
+static int		 track_cmp_number(const char *, const char *);
+static int		 track_cmp_string(const char *, const char *);
+static void		 track_read_cache(void);
+static void		 track_remove_entry(struct track_entry *);
+static int		 track_write_cache(void);
+
+RB_PROTOTYPE(track_tree, track_entry, entries, track_cmp_entry)
+
+static struct track_tree track_tree = RB_INITIALIZER(track_tree);
+static int		 track_tree_modified;
+static char		*track_cache_file;
+
+RB_GENERATE(track_tree, track_entry, entries, track_cmp_entry)
+
+static void
+track_add_entry(struct track_entry *te)
+{
+	if (RB_INSERT(track_tree, &track_tree, te) != NULL) {
+		/* This should not happen. */
+		LOG_ERRX("%s: track already in tree", te->track.path);
+		track_free_entry(te);
+	}
+}
 
 int
 track_cmp(const struct track *t1, const struct track *t2)
@@ -49,6 +88,12 @@ track_cmp(const struct track *t1, const struct track *t2)
 		return ret;
 
 	return strcmp(t1->path, t2->path);
+}
+
+static int
+track_cmp_entry(struct track_entry *t1, struct track_entry *t2)
+{
+	return strcmp(t1->track.path, t2->track.path);
 }
 
 static int
@@ -88,62 +133,127 @@ track_cmp_string(const char *s1, const char *s2)
 }
 
 void
-track_free(struct track *t)
+track_end(void)
 {
-	if (t != NULL && --t->nrefs == 0) {
-		free(t->album);
-		free(t->artist);
-		free(t->date);
-		free(t->genre);
-		free(t->path);
-		free(t->title);
-		free(t->tracknumber);
-		free(t);
-	}
+	struct track_entry *te;
+
+	if (track_tree_modified)
+		(void)track_write_cache();
+
+	while ((te = RB_ROOT(&track_tree)) != NULL)
+		track_remove_entry(te);
+
+	free(track_cache_file);
 }
 
-void
-track_hold(struct track *t)
+static struct track_entry *
+track_find_entry(const char *path)
 {
-	t->nrefs++;
+	struct track_entry *find, search;
+
+	search.track.path = xstrdup(path);
+	find = RB_FIND(track_tree, &track_tree, &search);
+	free(search.track.path);
+	return find;
+}
+
+static void
+track_free_entry(struct track_entry *te)
+{
+	free(te->track.path);
+	free(te->track.album);
+	free(te->track.artist);
+	free(te->track.date);
+	free(te->track.genre);
+	free(te->track.title);
+	free(te->track.tracknumber);
+	free(te);
 }
 
 struct track *
-track_init(const char *path, const struct ip *ip)
+track_get(const char *path, const struct ip *ip)
 {
-	struct track *t;
+	struct track_entry *te;
 
-	if (ip == NULL && (ip = plugin_find_ip(path)) == NULL) {
-		msg_errx("%s: Unsupported file format", path);
+	te = track_find_entry(path);
+	if (te != NULL) {
+		if (te->track.ip == NULL) {
+			if (ip != NULL)
+				te->track.ip = ip;
+			else {
+				te->track.ip = plugin_find_ip(te->track.path);
+				if (te->track.ip == NULL) {
+					msg_errx("%s: Unsupported file format",
+					    te->track.path);
+					return NULL;
+				}
+			}
+		}
+		return &te->track;
+	}
+
+	if (ip == NULL) {
+		ip = plugin_find_ip(path);
+		if (ip == NULL) {
+			msg_errx("%s: Unsupported file format", path);
+			return NULL;
+		}
+	}
+
+	te = xmalloc(sizeof *te);
+	te->track.path = xstrdup(path);
+	te->track.ip = ip;
+	te->track.ipdata = NULL;
+	te->track.album = NULL;
+	te->track.artist = NULL;
+	te->track.date = NULL;
+	te->track.genre = NULL;
+	te->track.title = NULL;
+	te->track.tracknumber = NULL;
+	te->track.duration = 0;
+
+	if (te->track.ip->get_metadata(&te->track)) {
+		track_free_entry(te);
 		return NULL;
 	}
 
-	t = xmalloc(sizeof *t);
-	t->path = xstrdup(path);
-	t->ip = ip;
-	t->ipdata = NULL;
-	t->nrefs = 1;
+	track_add_entry(te);
+	track_tree_modified = 1;
 
-	t->album = NULL;
-	t->artist = NULL;
-	t->date = NULL;
-	t->genre = NULL;
-	t->title = NULL;
-	t->tracknumber = NULL;
-	t->duration = 0;
+	return &te->track;
+}
 
-	if (cache_get_metadata(t) == 0)
-		return t;
+void
+track_init(void)
+{
+	track_read_cache();
+}
 
-	if (t->ip->get_metadata(t)) {
-		free(t->path);
-		free(t);
-		return NULL;
+static void
+track_read_cache(void)
+{
+	struct track_entry *te;
+
+	if (cache_open(CACHE_MODE_READ) == -1)
+		return;
+
+	for (;;) {
+		te = xmalloc(sizeof *te);
+		if (cache_read_entry(&te->track) < 0) {
+			track_free_entry(te);
+			break;
+		}
+		track_add_entry(te);
 	}
 
-	cache_add_metadata(t);
+	cache_close();
+}
 
-	return t;
+static void
+track_remove_entry(struct track_entry *te)
+{
+	(void)RB_REMOVE(track_tree, &track_tree, te);
+	track_free_entry(te);
 }
 
 int
@@ -164,4 +274,20 @@ track_search(const struct track *t, const char *search)
 	if (strcasestr(t->path, search))
 		return 0;
 	return -1;
+}
+
+static int
+track_write_cache(void)
+{
+	struct track_entry *te;
+
+	if (cache_open(CACHE_MODE_WRITE) == -1)
+		return -1;
+
+	RB_FOREACH(te, track_tree, &track_tree)
+		cache_write_entry(&te->track);
+
+	cache_close();
+	track_tree_modified = 0;
+	return 0;
 }

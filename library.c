@@ -23,7 +23,6 @@
 
 #include "siren.h"
 
-static void		 library_free_entry(void *);
 static void		 library_get_entry_text(const void *, char *, size_t);
 static int		 library_search_entry(const void *, const char *);
 
@@ -44,7 +43,6 @@ library_activate_entry(void)
 	if ((e = menu_get_selected_entry(library_menu)) != NULL) {
 		menu_activate_entry(library_menu, e);
 		t = menu_get_entry_data(e);
-		track_hold(t);
 	}
 	XPTHREAD_MUTEX_UNLOCK(&library_menu_mtx);
 
@@ -78,7 +76,7 @@ library_add_dir(const char *path)
 				library_add_dir(de->path);
 			break;
 		case FILE_TYPE_REGULAR:
-			if ((t = track_init(de->path, NULL)) != NULL)
+			if ((t = track_get(de->path, NULL)) != NULL)
 				library_add_track(t);
 			break;
 		default:
@@ -125,10 +123,8 @@ library_copy_entry(enum view_id view)
 		return;
 
 	XPTHREAD_MUTEX_LOCK(&library_menu_mtx);
-	if ((t = menu_get_selected_entry_data(library_menu)) != NULL) {
-		track_hold(t);
+	if ((t = menu_get_selected_entry_data(library_menu)) != NULL)
 		view_add_track(view, t);
-	}
 	XPTHREAD_MUTEX_UNLOCK(&library_menu_mtx);
 }
 
@@ -166,15 +162,6 @@ library_end(void)
 }
 
 static void
-library_free_entry(void *e)
-{
-	struct track *t;
-
-	t = e;
-	track_free(t);
-}
-
-static void
 library_get_entry_text(const void *e, char *buf, size_t bufsize)
 {
 	const struct track *t;
@@ -202,7 +189,6 @@ library_get_next_track(void)
 		else {
 			menu_activate_entry(library_menu, me);
 			t = menu_get_entry_data(me);
-			track_hold(t);
 		}
 	}
 	XPTHREAD_MUTEX_UNLOCK(&library_menu_mtx);
@@ -229,7 +215,6 @@ library_get_prev_track(void)
 		else {
 			menu_activate_entry(library_menu, me);
 			t = menu_get_entry_data(me);
-			track_hold(t);
 		}
 	}
 	XPTHREAD_MUTEX_UNLOCK(&library_menu_mtx);
@@ -240,7 +225,7 @@ library_get_prev_track(void)
 void
 library_init(void)
 {
-	library_menu = menu_init(library_free_entry, library_get_entry_text,
+	library_menu = menu_init(NULL, library_get_entry_text,
 	    library_search_entry);
 }
 
@@ -295,7 +280,7 @@ library_read_file(void)
 			continue;
 		}
 
-		if ((t = track_init(buf, NULL)) != NULL)
+		if ((t = track_get(buf, NULL)) != NULL)
 			library_add_track(t);
 	}
 	if (ferror(fp)) {

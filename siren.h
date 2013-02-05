@@ -179,6 +179,11 @@ enum byte_order {
 	BYTE_ORDER_LITTLE
 };
 
+enum cache_mode {
+	CACHE_MODE_READ,
+	CACHE_MODE_WRITE
+};
+
 enum colour {
 	COLOUR_BLACK,
 	COLOUR_BLUE,
@@ -279,8 +284,6 @@ struct track {
 	unsigned int	 duration;
 
 	struct sample_format format;
-
-	unsigned int	 nrefs;
 };
 
 /* Input plug-in. */
@@ -343,10 +346,10 @@ void		 browser_select_last_entry(void);
 void		 browser_select_next_entry(void);
 void		 browser_select_prev_entry(void);
 
-void		 cache_add_metadata(const struct track *) NONNULL();
-void		 cache_end(void);
-int		 cache_get_metadata(struct track *) NONNULL();
-void		 cache_init(void);
+void		 cache_close(void);
+int		 cache_open(enum cache_mode);
+int		 cache_read_entry(struct track *) NONNULL();
+void		 cache_write_entry(const struct track *) NONNULL();
 
 void		 command_execute(struct command *, void *) NONNULL(1);
 void		 command_free_data(struct command *, void *) NONNULL(1);
@@ -586,9 +589,9 @@ void		 screen_view_title_printf_right(const char *, ...)
 
 int		 track_cmp(const struct track *, const struct track *)
 		    NONNULL();
-void		 track_free(struct track *);
-void		 track_hold(struct track *) NONNULL();
-struct track	*track_init(const char *, const struct ip *) NONNULL(1);
+void		 track_end(void);
+struct track	*track_get(const char *, const struct ip *) NONNULL(1);
+void		 track_init(void);
 int		 track_search(const struct track *, const char *);
 
 void		 view_activate_entry(void);

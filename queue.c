@@ -20,7 +20,6 @@
 
 #include "siren.h"
 
-static void		 queue_free_entry(void *);
 static void		 queue_get_entry_text(const void *, char *, size_t);
 static int		 queue_search_entry(const void *, const char *);
 
@@ -36,7 +35,6 @@ queue_activate_entry(void)
 
 	XPTHREAD_MUTEX_LOCK(&queue_menu_mtx);
 	if ((t = menu_get_selected_entry_data(queue_menu)) != NULL) {
-		track_hold(t);
 		queue_duration -= t->duration;
 		menu_remove_selected_entry(queue_menu);
 	}
@@ -72,7 +70,7 @@ queue_add_dir(const char *path)
 				queue_add_dir(de->path);
 			break;
 		case FILE_TYPE_REGULAR:
-			if ((t = track_init(de->path, NULL)) != NULL)
+			if ((t = track_get(de->path, NULL)) != NULL)
 				queue_add_track(t);
 			break;
 		default:
@@ -106,10 +104,8 @@ queue_copy_entry(enum view_id view)
 		return;
 
 	XPTHREAD_MUTEX_LOCK(&queue_menu_mtx);
-	if ((t = menu_get_selected_entry_data(queue_menu)) != NULL) {
-		track_hold(t);
+	if ((t = menu_get_selected_entry_data(queue_menu)) != NULL)
 		view_add_track(view, t);
-	}
 	XPTHREAD_MUTEX_UNLOCK(&queue_menu_mtx);
 }
 
@@ -144,12 +140,6 @@ queue_end(void)
 }
 
 static void
-queue_free_entry(void *e)
-{
-	track_free((struct track *)e);
-}
-
-static void
 queue_get_entry_text(const void *e, char *buf, size_t bufsize)
 {
 	const struct track *t;
@@ -169,7 +159,6 @@ queue_get_next_track(void)
 		t = NULL;
 	else {
 		t = menu_get_entry_data(me);
-		track_hold(t);
 		queue_duration -= t->duration;
 		menu_remove_entry(queue_menu, me);
 	}
@@ -184,8 +173,7 @@ queue_get_next_track(void)
 void
 queue_init(void)
 {
-	queue_menu = menu_init(queue_free_entry, queue_get_entry_text,
-	    queue_search_entry);
+	queue_menu = menu_init(NULL, queue_get_entry_text, queue_search_entry);
 }
 
 void

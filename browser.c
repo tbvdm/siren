@@ -61,7 +61,7 @@ browser_activate_entry(void)
 		break;
 	case FILE_TYPE_REGULAR:
 		(void)xasprintf(&path, "%s/%s", browser_dir, e->name);
-		if ((t = track_init(path, e->ip)) != NULL)
+		if ((t = track_get(path, e->ip)) != NULL)
 			player_play_track(t);
 		free(path);
 		break;
@@ -130,7 +130,7 @@ browser_copy_entry(enum view_id view)
 
 	switch (e->type) {
 	case FILE_TYPE_REGULAR:
-		if ((t = track_init(path, e->ip)) != NULL)
+		if ((t = track_get(path, e->ip)) != NULL)
 			view_add_track(view, t);
 		break;
 	case FILE_TYPE_DIRECTORY:

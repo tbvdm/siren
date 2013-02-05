@@ -465,7 +465,7 @@ command_add_path_exec(void *datap)
 			view_add_dir(data->view, data->paths[i]);
 			break;
 		case S_IFREG:
-			if ((t = track_init(data->paths[i], NULL)) != NULL)
+			if ((t = track_get(data->paths[i], NULL)) != NULL)
 				view_add_track(data->view, t);
 			break;
 		default:
