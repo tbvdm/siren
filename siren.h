@@ -593,6 +593,7 @@ void		 track_end(void);
 struct track	*track_get(const char *, const struct ip *) NONNULL(1);
 void		 track_init(void);
 int		 track_search(const struct track *, const char *);
+int		 track_write_cache(void);
 
 void		 view_activate_entry(void);
 void		 view_add_dir(enum view_id, const char *) NONNULL();

@@ -12,7 +12,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd February 4, 2013
+.Dd February 6, 2013
 .Dt SIREN 1
 .Os
 .Sh NAME
@@ -481,8 +481,13 @@ Refresh the screen.
 .It Ic reread-directory
 Reread the current directory in the browser view.
 .It Ic save-library
-Save the library to disc.
+Save the library to disk.
 The library is automatically saved when
+.Nm
+quits.
+.It Ic save-metadata
+Save the metadata cache to disk.
+The metadata is automatically saved when
 .Nm
 quits.
 .It Xo

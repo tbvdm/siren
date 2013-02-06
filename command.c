@@ -139,6 +139,7 @@ COMMAND_EXEC_PROTOTYPE(quit);
 COMMAND_EXEC_PROTOTYPE(refresh_directory);
 COMMAND_EXEC_PROTOTYPE(refresh_screen);
 COMMAND_EXEC_PROTOTYPE(save_library);
+COMMAND_EXEC_PROTOTYPE(save_metadata);
 COMMAND_PARSE_PROTOTYPE(scroll);
 COMMAND_EXEC_PROTOTYPE(scroll_down);
 COMMAND_EXEC_PROTOTYPE(scroll_up);
@@ -282,6 +283,12 @@ static struct command command_list[] = {
 		"save-library",
 		command_generic_parse,
 		command_save_library_exec,
+		NULL
+	},
+	{
+		"save-metadata",
+		command_generic_parse,
+		command_save_metadata_exec,
 		NULL
 	},
 	{
@@ -1015,6 +1022,16 @@ command_save_library_exec(UNUSED void *datap)
 {
 	if (library_write_file() == 0)
 		msg_info("Library saved");
+}
+
+/* ARGSUSED */
+static void
+command_save_metadata_exec(UNUSED void *datap)
+{
+	if (track_write_cache())
+		msg_err("Cannot save metadata");
+	else
+		msg_info("Metadata saved");
 }
 
 static void

@@ -47,7 +47,6 @@ static int		 track_cmp_number(const char *, const char *);
 static int		 track_cmp_string(const char *, const char *);
 static void		 track_read_cache(void);
 static void		 track_remove_entry(struct track_entry *);
-static int		 track_write_cache(void);
 
 RB_PROTOTYPE(track_tree, track_entry, entries, track_cmp_entry)
 
@@ -276,7 +275,7 @@ track_search(const struct track *t, const char *search)
 	return -1;
 }
 
-static int
+int
 track_write_cache(void)
 {
 	struct track_entry *te;
