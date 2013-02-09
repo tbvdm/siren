@@ -160,12 +160,6 @@ op_sun_set_volume(unsigned int volume)
 		msg_err("Cannot set volume");
 		return;
 	}
-
-	if (ioctl(op_sun_fd, AUDIO_GETINFO, &info) == -1) {
-		LOG_ERR("ioctl: AUDIO_GETINFO");
-		msg_err("Cannot get volume");
-		return;
-	}
 }
 
 static int
