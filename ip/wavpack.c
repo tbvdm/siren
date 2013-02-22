@@ -19,6 +19,7 @@
  * channel" (i.e. a frame).
  */
 
+#include <limits.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -179,11 +180,13 @@ ip_wavpack_get_tag_item_value(WavpackContext *wpc, const char *key)
 	char	*value;
 
 	len = WavpackGetTagItem(wpc, key, NULL, 0);
-	if (len == 0)
+	if (len <= 0)
 		value = NULL;
 	else {
-		value = xmalloc(len + 1);
-		(void)WavpackGetTagItem(wpc, key, value, len + 1);
+		if (len < INT_MAX)
+			len++;
+		value = xmalloc(len);
+		(void)WavpackGetTagItem(wpc, key, value, len);
 	}
 
 	return value;
