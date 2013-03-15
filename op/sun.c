@@ -158,7 +158,6 @@ op_sun_set_volume(unsigned int volume)
 	if (ioctl(op_sun_fd, AUDIO_SETINFO, &info) == -1) {
 		LOG_ERR("ioctl: AUDIO_SETINFO");
 		msg_err("Cannot set volume");
-		return;
 	}
 }
 
