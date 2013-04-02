@@ -239,6 +239,7 @@ enable_mad=yes
 enable_sndfile=yes
 enable_vorbis=yes
 enable_wavpack=yes
+enable_alsa=yes
 enable_ao=yes
 enable_oss=yes
 enable_pulse=yes
@@ -276,6 +277,9 @@ while [ $# -gt 0 ]; do
 		;;
 	wavpack=*)
 		get_option_value enable_wavpack "$1"
+		;;
+	alsa=*)
+		get_option_value enable_alsa "$1"
 		;;
 	ao=*)
 		get_option_value enable_ao "$1"
@@ -448,6 +452,8 @@ fi
 check_plugin_pkgconfig $enable_vorbis vorbis ip vorbisfile
 
 check_plugin_pkgconfig $enable_wavpack wavpack ip wavpack
+
+check_plugin_pkgconfig $enable_alsa alsa op alsa
 
 if check_plugin_pkgconfig $enable_ao ao op ao; then
 	if pkg-config --atleast-version 1.0.0 ao; then

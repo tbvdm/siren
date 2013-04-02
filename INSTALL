@@ -43,6 +43,9 @@ vorbis=yes|no
 wavpack=yes|no
 	Whether to build the WavPack input plug-in. The default is "yes".
 
+alsa=yes|no
+	Whether to build the ALSA output plug-in. The default is "yes".
+
 ao=yes|no
 	Whether to build the ao output plug-in. The default is "yes".
 

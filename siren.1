@@ -12,7 +12,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd February 6, 2013
+.Dd April 2, 2013
 .Dt SIREN 1
 .Os
 .Sh NAME
@@ -838,6 +838,8 @@ output plug-in.
 PulseAudio output plug-in.
 .It sun
 Sun output plug-in.
+.It alsa
+ALSA output plug-in.
 .It oss
 OSS output plug-in.
 .It ao
@@ -945,6 +947,18 @@ Character attributes for the view title.
 Background colour for the view title.
 .It Cm view-title-fg Pq colour
 Foreground colour for the view title.
+.El
+.Pp
+The following options are specific to the
+.Em alsa
+output plug-in.
+.Bl -tag -width Ds
+.It Cm alsa-mixer-device Pq string
+The name of the mixer device to use.
+.It Cm alsa-mixer-element Pq string
+The name of the mixer element to use.
+.It Cm alsa-pcm-device Pq string
+The name of the PCM device to use.
 .El
 .Pp
 The following options are specific to the
