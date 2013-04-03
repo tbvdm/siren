@@ -235,7 +235,7 @@ error1:
 	op_alsa_mixer_handle = NULL;
 	free(op_alsa_mixer_dev);
 
-	return 1;
+	return -1;
 }
 
 static void
