@@ -155,7 +155,7 @@ op_alsa_open(void)
 	if (ret) {
 		LOG_ERRX("snd_mixer_open: %s", snd_strerror(ret));
 		msg_errx("Cannot open mixer: %s", snd_strerror(ret));
-		return -1;
+		return 0;
 	}
 
 	op_alsa_mixer_dev = option_get_string("alsa-mixer-device");
@@ -235,7 +235,7 @@ error1:
 	op_alsa_mixer_handle = NULL;
 	free(op_alsa_mixer_dev);
 
-	return -1;
+	return 0;
 }
 
 static void
