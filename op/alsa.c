@@ -161,7 +161,7 @@ op_alsa_open(void)
 	op_alsa_mixer_dev = option_get_string("alsa-mixer-device");
 
 	/* Attach to the mixer device. */
-	ret = snd_mixer_attach(op_alsa_mixer_handle, dev);
+	ret = snd_mixer_attach(op_alsa_mixer_handle, op_alsa_mixer_dev);
 	if (ret) {
 		LOG_ERRX("snd_mixer_attach: %s: %s", op_alsa_mixer_dev,
 		    snd_strerror(ret));
