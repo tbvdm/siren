@@ -593,7 +593,10 @@ int		 track_cmp(const struct track *, const struct track *)
 void		 track_end(void);
 struct track	*track_get(const char *, const struct ip *) NONNULL(1);
 void		 track_init(void);
+void		 track_lock_metadata(void);
 int		 track_search(const struct track *, const char *);
+void		 track_unlock_metadata(void);
+void		 track_update_metadata(void);
 int		 track_write_cache(void);
 
 void		 view_activate_entry(void);

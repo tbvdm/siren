@@ -19,6 +19,7 @@
 
 #include <limits.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <strings.h>
 #include <unistd.h>
@@ -52,7 +53,9 @@ static void		 track_remove_entry(struct track_entry *);
 
 RB_PROTOTYPE(track_tree, track_entry, entries, track_cmp_entry)
 
+static pthread_mutex_t	 track_metadata_mtx = PTHREAD_MUTEX_INITIALIZER;
 static struct track_tree track_tree = RB_INITIALIZER(track_tree);
+static size_t		 track_nentries;
 static int		 track_tree_modified;
 static char		*track_cache_file;
 
@@ -61,11 +64,19 @@ RB_GENERATE(track_tree, track_entry, entries, track_cmp_entry)
 static void
 track_add_entry(struct track_entry *te)
 {
+	if (track_nentries == SIZE_MAX) {
+		track_free_entry(te);
+		return;
+	}
+
 	if (RB_INSERT(track_tree, &track_tree, te) != NULL) {
 		/* This should not happen. */
 		LOG_ERRX("%s: track already in tree", te->track.path);
 		track_free_entry(te);
+		return;
 	}
+
+	track_nentries++;
 }
 
 int
@@ -242,6 +253,12 @@ track_init_metadata(struct track_entry *te)
 	te->track.duration = 0;
 }
 
+void
+track_lock_metadata(void)
+{
+	XPTHREAD_MUTEX_LOCK(&track_metadata_mtx);
+}
+
 static void
 track_read_cache(void)
 {
@@ -267,6 +284,7 @@ track_remove_entry(struct track_entry *te)
 {
 	(void)RB_REMOVE(track_tree, &track_tree, te);
 	track_free_entry(te);
+	track_nentries--;
 }
 
 int
@@ -287,6 +305,46 @@ track_search(const struct track *t, const char *search)
 	if (strcasestr(t->path, search))
 		return 0;
 	return -1;
+}
+
+void
+track_unlock_metadata(void)
+{
+	XPTHREAD_MUTEX_UNLOCK(&track_metadata_mtx);
+}
+
+void
+track_update_metadata(void)
+{
+	struct track_entry	*te;
+	size_t			 i;
+
+	i = 1;
+	RB_FOREACH(te, track_tree, &track_tree) {
+		msg_info("Updating track %zu of %zu (%zu%%)", i,
+		    track_nentries, 100 * i / track_nentries);
+		i++;
+
+		if (access(te->track.path, F_OK) == -1)
+			continue;
+
+		if (te->track.ip == NULL) {
+			te->track.ip = plugin_find_ip(te->track.path);
+			if (te->track.ip == NULL) {
+				LOG_ERRX("%s: no input plug-in found",
+				    te->track.path);
+				continue;
+			}
+		}
+
+		track_lock_metadata();
+		track_free_metadata(te);
+		track_init_metadata(te);
+		(void)te->track.ip->get_metadata(&te->track);
+		track_unlock_metadata();
+	}
+
+	track_tree_modified = 1;
 }
 
 int

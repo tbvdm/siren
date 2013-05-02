@@ -12,7 +12,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd April 2, 2013
+.Dd May 2, 2013
 .Dt SIREN 1
 .Os
 .Sh NAME
@@ -487,7 +487,7 @@ The library is automatically saved when
 quits.
 .It Ic save-metadata
 Save the metadata cache to disk.
-The metadata is automatically saved when
+The metadata cache is automatically saved when
 .Nm
 quits.
 .It Xo
@@ -639,6 +639,8 @@ and
 arguments are analogous to those of the
 .Ic bind-key
 command.
+.It Ic update-metadata
+Update the metadata cache.
 .El
 .Sh OPTIONS
 The appearance and behaviour of

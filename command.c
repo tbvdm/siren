@@ -169,6 +169,7 @@ COMMAND_PARSE_PROTOTYPE(show_option);
 COMMAND_EXEC_PROTOTYPE(stop);
 COMMAND_EXEC_PROTOTYPE(unbind_key);
 COMMAND_PARSE_PROTOTYPE(unbind_key);
+COMMAND_EXEC_PROTOTYPE(update_metadata);
 
 static struct command command_list[] = {
 	{
@@ -398,6 +399,12 @@ static struct command command_list[] = {
 		command_unbind_key_parse,
 		command_unbind_key_exec,
 		free
+	},
+	{
+		"update-metadata",
+		command_generic_parse,
+		command_update_metadata_exec,
+		NULL
 	}
 };
 
@@ -1664,4 +1671,12 @@ command_unbind_key_parse(int argc, char **argv, void **datap, char **error)
 
 	*datap = data;
 	return 0;
+}
+
+/* ARGSUSED */
+static void
+command_update_metadata_exec(UNUSED void *datap)
+{
+	track_update_metadata();
+	screen_print();
 }

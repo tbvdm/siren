@@ -522,9 +522,12 @@ player_print_status(void)
 	/* Set the duration variable. */
 	if (player_track == NULL)
 		vars[PLAYER_FMT_DURATION].value.number = 0;
-	else
+	else {
+		track_lock_metadata();
 		vars[PLAYER_FMT_DURATION].value.number =
 		    player_track->duration;
+		track_unlock_metadata();
+	}
 
 	XPTHREAD_MUTEX_UNLOCK(&player_track_mtx);
 
@@ -571,8 +574,10 @@ player_print_track(void)
 	struct format *format;
 
 	option_lock();
+	track_lock_metadata();
 	format = option_get_format("player-track-format");
 	screen_player_track_printf(format, player_track);
+	track_unlock_metadata();
 	option_unlock();
 }
 
