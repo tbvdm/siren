@@ -45,6 +45,8 @@ static int		 track_cmp_entry(struct track_entry *,
 			    struct track_entry *);
 static int		 track_cmp_number(const char *, const char *);
 static int		 track_cmp_string(const char *, const char *);
+static void		 track_free_metadata(struct track_entry *);
+static void		 track_init_metadata(struct track_entry *);
 static void		 track_read_cache(void);
 static void		 track_remove_entry(struct track_entry *);
 
@@ -159,14 +161,20 @@ track_find_entry(const char *path)
 static void
 track_free_entry(struct track_entry *te)
 {
+	track_free_metadata(te);
 	free(te->track.path);
+	free(te);
+}
+
+static void
+track_free_metadata(struct track_entry *te)
+{
 	free(te->track.album);
 	free(te->track.artist);
 	free(te->track.date);
 	free(te->track.genre);
 	free(te->track.title);
 	free(te->track.tracknumber);
-	free(te);
 }
 
 struct track *
@@ -203,13 +211,7 @@ track_get(const char *path, const struct ip *ip)
 	te->track.path = xstrdup(path);
 	te->track.ip = ip;
 	te->track.ipdata = NULL;
-	te->track.album = NULL;
-	te->track.artist = NULL;
-	te->track.date = NULL;
-	te->track.genre = NULL;
-	te->track.title = NULL;
-	te->track.tracknumber = NULL;
-	te->track.duration = 0;
+	track_init_metadata(te);
 
 	if (te->track.ip->get_metadata(&te->track)) {
 		track_free_entry(te);
@@ -226,6 +228,18 @@ void
 track_init(void)
 {
 	track_read_cache();
+}
+
+static void
+track_init_metadata(struct track_entry *te)
+{
+	te->track.album = NULL;
+	te->track.artist = NULL;
+	te->track.date = NULL;
+	te->track.genre = NULL;
+	te->track.title = NULL;
+	te->track.tracknumber = NULL;
+	te->track.duration = 0;
 }
 
 static void
