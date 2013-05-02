@@ -182,10 +182,8 @@ queue_move_entry_down(void)
 	struct menu_entry *e;
 
 	XPTHREAD_MUTEX_LOCK(&queue_menu_mtx);
-	if ((e = menu_get_selected_entry(queue_menu)) != NULL) {
-		menu_move_entry_down(e);
-		menu_select_next_entry(queue_menu);
-	}
+	if ((e = menu_get_selected_entry(queue_menu)) != NULL)
+		menu_move_entry_down(queue_menu, e);
 	XPTHREAD_MUTEX_UNLOCK(&queue_menu_mtx);
 	queue_print();
 }
@@ -196,10 +194,8 @@ queue_move_entry_up(void)
 	struct menu_entry *e;
 
 	XPTHREAD_MUTEX_LOCK(&queue_menu_mtx);
-	if ((e = menu_get_selected_entry(queue_menu)) != NULL) {
-		menu_move_entry_up(e);
-		menu_select_prev_entry(queue_menu);
-	}
+	if ((e = menu_get_selected_entry(queue_menu)) != NULL)
+		menu_move_entry_up(queue_menu, e);
 	XPTHREAD_MUTEX_UNLOCK(&queue_menu_mtx);
 	queue_print();
 }

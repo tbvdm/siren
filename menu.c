@@ -234,29 +234,21 @@ menu_move_entry_before(struct menu *m, struct menu_entry *be,
 }
 
 void
-menu_move_entry_down(struct menu_entry *e)
+menu_move_entry_down(struct menu *m, struct menu_entry *e)
 {
-	struct menu_entry	*f;
-	void			*data;
+	struct menu_entry *f;
 
-	if ((f = TAILQ_NEXT(e, entries)) != NULL) {
-		data = e->data;
-		e->data = f->data;
-		f->data = data;
-	}
+	if ((f = TAILQ_NEXT(e, entries)) != NULL)
+		menu_move_entry_before(m, e, f);
 }
 
 void
-menu_move_entry_up(struct menu_entry *e)
+menu_move_entry_up(struct menu *m, struct menu_entry *e)
 {
-	struct menu_entry	*f;
-	void			*data;
+	struct menu_entry *f;
 
-	if ((f = TAILQ_PREV(e, menu_list, entries)) != NULL) {
-		data = e->data;
-		e->data = f->data;
-		f->data = data;
-	}
+	if ((f = TAILQ_PREV(e, menu_list, entries)) != NULL)
+		menu_move_entry_before(m, f, e);
 }
 
 void

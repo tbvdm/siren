@@ -444,8 +444,10 @@ void		 menu_insert_before(struct menu *, struct menu_entry *,
 void		 menu_insert_tail(struct menu *, void *) NONNULL();
 void		 menu_move_entry_before(struct menu *m, struct menu_entry *,
 		    struct menu_entry *) NONNULL();
-void		 menu_move_entry_down(struct menu_entry *) NONNULL();
-void		 menu_move_entry_up(struct menu_entry *) NONNULL();
+void		 menu_move_entry_down(struct menu *, struct menu_entry *)
+		    NONNULL();
+void		 menu_move_entry_up(struct menu *m, struct menu_entry *)
+		    NONNULL();
 void		 menu_print(struct menu *) NONNULL();
 void		 menu_remove_all_entries(struct menu *) NONNULL();
 void		 menu_remove_entry(struct menu *, struct menu_entry *)
