@@ -304,3 +304,19 @@ queue_select_prev_entry(void)
 	XPTHREAD_MUTEX_UNLOCK(&queue_menu_mtx);
 	queue_print();
 }
+
+/* Recalculate the duration. */
+void
+queue_update(void)
+{
+	struct menu_entry	*e;
+	struct track		*t;
+
+	XPTHREAD_MUTEX_LOCK(&queue_menu_mtx);
+	queue_duration = 0;
+	MENU_FOR_EACH_ENTRY(queue_menu, e) {
+		t = menu_get_entry_data(e);
+		queue_duration += t->duration;
+	}
+	XPTHREAD_MUTEX_UNLOCK(&queue_menu_mtx);
+}

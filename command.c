@@ -1678,5 +1678,7 @@ static void
 command_update_metadata_exec(UNUSED void *datap)
 {
 	track_update_metadata();
+	library_update();
+	queue_update();
 	screen_print();
 }

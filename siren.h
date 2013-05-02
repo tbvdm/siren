@@ -411,6 +411,7 @@ void		 library_select_first_entry(void);
 void		 library_select_last_entry(void);
 void		 library_select_next_entry(void);
 void		 library_select_prev_entry(void);
+void		 library_update(void);
 int		 library_write_file(void);
 
 void		 log_end(void);
@@ -441,6 +442,8 @@ struct menu	*menu_init(void (*)(void *),
 void		 menu_insert_before(struct menu *, struct menu_entry *,
 		    void *) NONNULL();
 void		 menu_insert_tail(struct menu *, void *) NONNULL();
+void		 menu_move_entry_before(struct menu *m, struct menu_entry *,
+		    struct menu_entry *) NONNULL();
 void		 menu_move_entry_down(struct menu_entry *) NONNULL();
 void		 menu_move_entry_up(struct menu_entry *) NONNULL();
 void		 menu_print(struct menu *) NONNULL();
@@ -554,6 +557,7 @@ void		 queue_select_first_entry(void);
 void		 queue_select_last_entry(void);
 void		 queue_select_next_entry(void);
 void		 queue_select_prev_entry(void);
+void		 queue_update(void);
 
 void		 screen_configure_cursor(void);
 void		 screen_configure_objects(void);

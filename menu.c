@@ -216,6 +216,23 @@ menu_insert_tail(struct menu *m, void *data)
 		m->top = m->selected = e;
 }
 
+/* Move entry e before entry be. */
+void
+menu_move_entry_before(struct menu *m, struct menu_entry *be,
+    struct menu_entry *e)
+{
+	struct menu_entry *f;
+
+	/* Update the index of each relevant entry. */
+	e->index = be->index;
+	for (f = be; f != e; f = TAILQ_NEXT(f, entries))
+		f->index++;
+
+	/* Move the entry to its new position. */
+	TAILQ_REMOVE(&m->list, e, entries);
+	TAILQ_INSERT_BEFORE(be, e, entries);
+}
+
 void
 menu_move_entry_down(struct menu_entry *e)
 {

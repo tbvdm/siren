@@ -383,6 +383,42 @@ library_select_prev_entry(void)
 	library_print();
 }
 
+/* Resort the tracks and recalculate the duration. */
+void
+library_update(void)
+{
+	struct menu_entry	*be, *e, *ne, *pe;
+	struct track		*pt, *t;
+
+	XPTHREAD_MUTEX_LOCK(&library_menu_mtx);
+
+	library_duration = 0;
+
+	e = menu_get_first_entry(library_menu);
+	while (e != NULL) {
+		t = menu_get_entry_data(e);
+		library_duration += t->duration;
+
+		ne = menu_get_next_entry(e);
+
+		be = NULL;
+		pe = e;
+		while ((pe = menu_get_prev_entry(pe)) != NULL) {
+			pt = menu_get_entry_data(pe);
+			if (track_cmp(t, pt) < 0)
+				be = pe;
+			else
+				break;
+		}
+		if (be != NULL)
+			menu_move_entry_before(library_menu, be, e);
+
+		e = ne;
+	}
+
+	XPTHREAD_MUTEX_UNLOCK(&library_menu_mtx);
+}
+
 int
 library_write_file(void)
 {
