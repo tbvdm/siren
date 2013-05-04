@@ -14,6 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <errno.h>
+#include <stdarg.h>
 #include <string.h>
 
 #include <alsa/asoundlib.h>
@@ -113,11 +115,39 @@ op_alsa_get_volume_support(void)
 }
 
 static void
+op_alsa_handle_error(const char *file, int line, const char *func, int errnum,
+    const char *fmt, ...)
+{
+	va_list	 ap;
+	char	*msg;
+
+	va_start(ap, fmt);
+	(void)xvasprintf(&msg, fmt, ap);
+	va_end(ap);
+
+	if (errnum == 0)
+		LOG_ERRX("%s:%d: %s: %s", file, line, func, msg);
+	else {
+		errno = errnum;
+		LOG_ERR("%s:%d: %s: %s", file, line, func, msg);
+	}
+
+	free(msg);
+}
+
+static void
 op_alsa_init(void)
 {
 	option_add_string("alsa-mixer-device", OP_ALSA_MIXER_DEVICE, NULL);
 	option_add_string("alsa-mixer-element", OP_ALSA_MIXER_ELEM, NULL);
 	option_add_string("alsa-pcm-device", OP_ALSA_PCM_DEVICE, NULL);
+
+	/*
+	 * The default ALSA error handler prints error messages to stderr,
+	 * which clutters the screen. To prevent this, install an error handler
+	 * that writes these error messages to the log file.
+	 */
+	(void)snd_lib_error_set_handler(op_alsa_handle_error);
 }
 
 static int
