@@ -18,8 +18,8 @@
 #define _GNU_SOURCE
 
 #include <limits.h>
-#include <stdlib.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 #include <strings.h>
 #include <unistd.h>
@@ -40,12 +40,12 @@ struct track_entry {
 RB_HEAD(track_tree, track_entry);
 
 static void		 track_add_entry(struct track_entry *);
-static struct track_entry *track_find_entry(const char *);
-static void		 track_free_entry(struct track_entry *);
 static int		 track_cmp_entry(struct track_entry *,
 			    struct track_entry *);
 static int		 track_cmp_number(const char *, const char *);
 static int		 track_cmp_string(const char *, const char *);
+static struct track_entry *track_find_entry(const char *);
+static void		 track_free_entry(struct track_entry *);
 static void		 track_free_metadata(struct track_entry *);
 static void		 track_init_metadata(struct track_entry *);
 static void		 track_read_cache(void);
