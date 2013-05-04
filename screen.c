@@ -14,6 +14,10 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#ifdef __NetBSD__
+#include <sys/param.h>
+#endif
+
 #include <curses.h>
 #include <pthread.h>
 #include <stdarg.h>
@@ -44,7 +48,16 @@
 #define SCREEN_TITLE_ROW	0
 #define SCREEN_VIEW_ROW		1
 
-#if defined(__NetBSD__) && !defined(NCURSES_VERSION)
+/*
+ * NetBSD's curses implementation before version 6.0 has two bugs that need to
+ * be worked around.
+ */
+#if defined(__NetBSD_Version__) && __NetBSD_Version__ < 600000000 && \
+    !defined(NCURSES_VERSION)
+#define SCREEN_HAVE_NETBSD_CURSES_BUGS
+#endif
+
+#ifdef SCREEN_HAVE_NETBSD_CURSES_BUGS
 #undef clrtoeol
 #define clrtoeol		screen_clrtoeol
 #endif
@@ -165,10 +178,10 @@ static struct {
 	{ A_NORMAL, 9, "view-attr",       "view-bg",       "view-fg" }
 };
 
-#if defined(__NetBSD__) && !defined(NCURSES_VERSION)
+#ifdef SCREEN_HAVE_NETBSD_CURSES_BUGS
 /*
  * NetBSD's clrtoeol() does not set the background attributes of the characters
- * it clears. This will be fixed in NetBSD 6.0. We work around this by using
+ * it clears. This has been fixed in NetBSD 6.0. We work around this by using
  * our own version which simply writes spaces to the end of the row.
  */
 static void
@@ -236,11 +249,11 @@ screen_configure_cursor(void)
 	else
 		(void)curs_set(0);
 
-#if defined(__NetBSD__) && !defined(NCURSES_VERSION)
+#ifdef SCREEN_HAVE_NETBSD_CURSES_BUGS
 	/*
 	 * NetBSD's curs_set() does not let the cursor-visibility change take
-	 * effect immediately. This will be fixed in NetBSD 6.0. We work around
-	 * this by calling refresh() after curs_set().
+	 * effect immediately. This has been fixed in NetBSD 6.0. We work
+	 * around this by calling refresh() after curs_set().
 	 */
 	(void)refresh();
 #endif
