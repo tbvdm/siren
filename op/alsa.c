@@ -111,7 +111,7 @@ op_alsa_get_volume(void)
 static int
 op_alsa_get_volume_support(void)
 {
-	return op_alsa_mixer_handle == NULL ? 0 : 1;
+	return op_alsa_mixer_handle != NULL;
 }
 
 static void
