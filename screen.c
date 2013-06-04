@@ -203,7 +203,6 @@ screen_configure_attribs(void)
 	int	 attr;
 	chtype	 cattr;
 
-	XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
 	for (i = 0; i < NELEMENTS(screen_objects); i++) {
 		attr = option_get_attrib(screen_objects[i].option_attr);
 		cattr = A_NORMAL;
@@ -212,9 +211,10 @@ screen_configure_attribs(void)
 			if (attr & screen_attribs[j].attrib)
 				cattr |= screen_attribs[j].curses_attrib;
 
+		XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
 		screen_objects[i].attr = cattr;
+		XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
 	}
-	XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
 }
 
 static void
@@ -226,29 +226,28 @@ screen_configure_colours(void)
 	if (!screen_have_colours)
 		return;
 
-	XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
 	for (i = 0; i < NELEMENTS(screen_objects); i++) {
 		bg = screen_get_colour(screen_objects[i].option_bg,
 		    COLOUR_BLACK);
 		fg = screen_get_colour(screen_objects[i].option_fg,
 		    COLOUR_WHITE);
 
+		XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
 		if (init_pair(screen_objects[i].colour_pair, fg, bg) == OK)
 			screen_objects[i].attr |=
 			    (chtype)COLOR_PAIR(screen_objects[i].colour_pair);
+		XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
 	}
-	XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
 }
 
 void
 screen_configure_cursor(void)
 {
-	XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
-	if (option_get_boolean("show-cursor"))
-		(void)curs_set(1);
-	else
-		(void)curs_set(0);
+	int show;
 
+	show = option_get_boolean("show-cursor");
+	XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
+	(void)curs_set(show);
 #ifdef SCREEN_HAVE_NETBSD_CURSES_BUGS
 	/*
 	 * NetBSD's curs_set() does not let the cursor-visibility change take
@@ -502,9 +501,12 @@ screen_prompt_begin(void)
 void
 screen_prompt_end(void)
 {
+	int show;
+
+	show = option_get_boolean("show-cursor");
 	screen_status_clear();
 	XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
-	if (!option_get_boolean("show-cursor"))
+	if (!show)
 		(void)curs_set(0);
 	(void)move(screen_view_selected_row, 0);
 	(void)refresh();
