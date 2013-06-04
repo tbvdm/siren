@@ -1,6 +1,18 @@
 This is a list of the most important changes only. See the repository history
 for a list of all changes.
 
+Siren 0.3 (2013-06-04):
+
+- Add the ALSA output plug-in.
+- Add the update-metadata command.
+- Rename the save-cache command to save-metadata for consistency.
+- Remove the clear-cache command. It is no longer possible to clear the
+  metadata cache while Siren is running. To clear the metadata cache, remove
+  the ~/.siren/metadata file.
+- Fix a buffer overflow in the format-string parser.
+- Fix a mutex deadlock.
+- Fix various minor bugs.
+
 Siren 0.2 (2012-10-24):
 
 - Add the WavPack input plug-in.
