@@ -19,10 +19,15 @@
 #include <stdlib.h>
 #include <strings.h>
 
+#include "../siren.h"
+
+#ifdef HAVE_NEW_FLAC_INCLUDE_PATH
+#include <FLAC/metadata.h>
+#include <FLAC/stream_decoder.h>
+#else
 #include <metadata.h>
 #include <stream_decoder.h>
-
-#include "../siren.h"
+#endif
 
 struct ip_flac_ipdata {
 	FLAC__StreamDecoder *decoder;

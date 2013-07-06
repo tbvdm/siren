@@ -438,7 +438,13 @@ else
 	error "cannot determine how to use dlopen()"
 fi
 
-check_plugin_pkgconfig $enable_flac flac ip flac
+if check_plugin_pkgconfig $enable_flac flac ip flac; then
+	# The include path provided by the flac pkg-config file has changed in
+	# flac 1.3.0.
+	if pkg-config --atleast-version 1.3.0 flac; then
+		header_define HAVE_NEW_FLAC_INCLUDE_PATH
+	fi
+fi
 
 check_plugin_pkgconfig $enable_mad mad ip "mad id3tag"
 
