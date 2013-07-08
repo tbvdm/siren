@@ -1,6 +1,10 @@
 This is a list of the most important changes only. See the repository history
 for a list of all changes.
 
+Siren 0.3.1 (2013-07-08):
+
+- Accommodate the build to flac 1.3.0.
+
 Siren 0.3 (2013-06-04):
 
 - Add the ALSA output plug-in.
