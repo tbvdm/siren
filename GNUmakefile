@@ -122,8 +122,12 @@ install:
 	${INSTALL_DIR} ${DESTDIR}${PLUGINDIR}/op
 	${INSTALL_BIN} ${PROG} ${DESTDIR}${BINDIR}
 	${INSTALL_MAN} ${PROG}.1 ${DESTDIR}${MANDIR}/man1
+ifneq (${IP_LIBS},)
 	${INSTALL_LIB} ${IP_LIBS} ${DESTDIR}${PLUGINDIR}/ip
+endif
+ifneq (${OP_LIBS},)
 	${INSTALL_LIB} ${OP_LIBS} ${DESTDIR}${PLUGINDIR}/op
+endif
 
 lint: ${LOBJS} ${IP_LOBJS} ${OP_LOBJS}
 	${LINT} ${LINTFLAGS} $(filter -l%, ${LDFLAGS}) ${LOBJS} ${IP_LOBJS} \
