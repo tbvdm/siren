@@ -63,6 +63,23 @@ sndio=yes|no
 sun=yes|no
 	Whether to build the Sun output plug-in. The default is "yes".
 
+Running Siren without installing it first
+-----------------------------------------
+
+It is possible to run Siren without installing it first. This is useful, for
+example, if you wish to try out Siren. To do so, run the following commands.
+
+	./configure plugindir="$PWD"
+	make
+	./siren
+
+Should you wish to install Siren later, then ensure you reconfigure and rebuild
+it first so that the plugindir variable is set to a proper value. It is perhaps
+safest to start from a clean source directory and run the following command
+before reconfiguring.
+
+	make cleandir
+
 Uninstalling Siren
 ------------------
 
