@@ -73,10 +73,10 @@ example, if you wish to try out Siren. To do so, run the following commands.
 	make
 	./siren
 
-Should you wish to install Siren later, then ensure you reconfigure and rebuild
+Should you later wish to install Siren, then ensure you reconfigure and rebuild
 it first so that the plugindir variable is set to a proper value. It is perhaps
-safest to start from a clean source directory and run the following command
-before reconfiguring.
+safest to start from a clean source directory. Therefore, run the following
+command before reconfiguring.
 
 	make cleandir
 
