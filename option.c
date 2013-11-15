@@ -529,10 +529,10 @@ option_set_boolean(const char *name, int value)
 {
 	struct option_entry *o;
 
-	if (value != 0 && value != 1) {
-		LOG_DEBUG_ERRX("%d: invalid value", value);
-		value = 1;
-	}
+#ifdef DEBUG
+	if (value != 0 && value != 1)
+		LOG_FATALX("%s: %d: invalid value", name, value);
+#endif
 
 	XPTHREAD_MUTEX_LOCK(&option_tree_mtx);
 	o = option_find_type(name, OPTION_TYPE_BOOLEAN);
