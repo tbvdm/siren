@@ -47,9 +47,8 @@ INSTALL_BIN=	install -m 555
 INSTALL_LIB=	install -m 444
 INSTALL_MAN=	install -m 444
 
-CDIAGFLAGS+=	-Wall -W -Wbad-function-cast -Wcast-align -Wcast-qual \
+CFLAGS+=	-Wall -W -Wbad-function-cast -Wcast-align -Wcast-qual \
 		-Wformat=2 -Wpointer-arith -Wshadow -Wundef -Wwrite-strings
-CFLAGS+=	${CDIAGFLAGS}
 CPPFLAGS+=	-DVERSION=\"${VERSION}\"
 LDFLAGS+=	-lcurses -pthread -Wl,--export-dynamic
 LINTFLAGS?=	-hx
