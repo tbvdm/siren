@@ -246,6 +246,19 @@ enable_pulse=yes
 enable_sndio=yes
 enable_sun=yes
 
+rm -f $logfile $header $makefile
+
+uname -srvm >> $logfile
+
+printf "\narguments:\n" >> $logfile
+if [ $# -eq 0 ]; then
+	echo "(none)" >> $logfile
+else
+	for arg in "$@"; do
+		echo "$arg" >> $logfile
+	done
+fi
+
 while [ $# -gt 0 ]; do
 	case "$1" in
 	prefix=*)
@@ -306,8 +319,6 @@ while [ $# -gt 0 ]; do
 	shift
 done
 
-rm -f $logfile $header $makefile
-
 if [ -z "$CC" ]; then
 	CC=cc
 else
@@ -330,8 +341,6 @@ if [ "$enable_debug" = yes ]; then
 	header_define DEBUG
 	makefile_append CFLAGS -ggdb
 fi
-
-uname -srvm >> $logfile
 
 check_program "$CC"
 check_program pkg-config
