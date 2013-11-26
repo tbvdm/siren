@@ -64,15 +64,12 @@ RB_GENERATE(track_tree, track_entry, entries, track_cmp_entry)
 static int
 track_add_entry(struct track_entry *te)
 {
-	if (track_nentries == SIZE_MAX) {
-		track_free_entry(te);
+	if (track_nentries == SIZE_MAX)
 		return -1;
-	}
 
 	if (RB_INSERT(track_tree, &track_tree, te) != NULL) {
 		/* This should not happen. */
 		LOG_ERRX("%s: track already in tree", te->track.path);
-		track_free_entry(te);
 		return -1;
 	}
 
@@ -230,8 +227,10 @@ track_get(const char *path, const struct ip *ip)
 		return NULL;
 	}
 
-	if (track_add_entry(te) == -1)
+	if (track_add_entry(te) == -1) {
+		track_free_entry(te);
 		return NULL;
+	}
 
 	track_tree_modified = 1;
 	return &te->track;
@@ -275,7 +274,8 @@ track_read_cache(void)
 			track_free_entry(te);
 			break;
 		}
-		(void)track_add_entry(te);
+		if (track_add_entry(te) == -1)
+			track_free_entry(te);
 	}
 
 	cache_close();
