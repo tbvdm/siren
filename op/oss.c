@@ -131,7 +131,7 @@ op_oss_get_volume_support(void)
 static void
 op_oss_init(void)
 {
-	option_add_string("oss-device", OP_OSS_DEVICE, NULL);
+	option_add_string("oss-device", OP_OSS_DEVICE, player_reopen_op);
 }
 
 static int

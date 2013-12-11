@@ -75,9 +75,10 @@ op_ao_get_volume_support(void)
 static void
 op_ao_init(void)
 {
-	option_add_number("ao-buffer-size", OP_AO_BUFSIZE, 1, INT_MAX, NULL);
-	option_add_string("ao-driver", "", NULL);
-	option_add_string("ao-file", "", NULL);
+	option_add_number("ao-buffer-size", OP_AO_BUFSIZE, 1, INT_MAX,
+	    player_reopen_op);
+	option_add_string("ao-driver", "", player_reopen_op);
+	option_add_string("ao-file", "", player_reopen_op);
 }
 
 static int

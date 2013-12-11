@@ -111,7 +111,7 @@ op_sun_get_volume_support(void)
 static void
 op_sun_init(void)
 {
-	option_add_string("sun-device", OP_SUN_DEVICE, NULL);
+	option_add_string("sun-device", OP_SUN_DEVICE, player_reopen_op);
 }
 
 static int

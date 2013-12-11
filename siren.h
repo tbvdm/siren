@@ -516,6 +516,7 @@ void		 player_play_next(void);
 void		 player_play_prev(void);
 void		 player_play_track(struct track *) NONNULL();
 void		 player_print(void);
+void		 player_reopen_op(void);
 void		 player_seek(int, int);
 void		 player_set_volume(int, int);
 void		 player_stop(void);

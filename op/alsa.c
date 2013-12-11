@@ -138,9 +138,12 @@ op_alsa_handle_error(const char *file, int line, const char *func, int errnum,
 static void
 op_alsa_init(void)
 {
-	option_add_string("alsa-mixer-device", OP_ALSA_MIXER_DEVICE, NULL);
-	option_add_string("alsa-mixer-element", OP_ALSA_MIXER_ELEM, NULL);
-	option_add_string("alsa-pcm-device", OP_ALSA_PCM_DEVICE, NULL);
+	option_add_string("alsa-mixer-device", OP_ALSA_MIXER_DEVICE,
+	    player_reopen_op);
+	option_add_string("alsa-mixer-element", OP_ALSA_MIXER_ELEM,
+	    player_reopen_op);
+	option_add_string("alsa-pcm-device", OP_ALSA_PCM_DEVICE,
+	    player_reopen_op);
 
 	/*
 	 * The default ALSA error handler prints error messages to stderr,

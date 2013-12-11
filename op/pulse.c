@@ -71,7 +71,7 @@ static void
 op_pulse_init(void)
 {
 	option_add_number("pulse-buffer-size", OP_PULSE_BUFSIZE, 1, INT_MAX,
-	    NULL);
+	    player_reopen_op);
 }
 
 static int

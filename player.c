@@ -581,6 +581,21 @@ player_quit(void)
 }
 
 void
+player_reopen_op(void)
+{
+	player_stop();
+
+	XPTHREAD_MUTEX_LOCK(&player_op_mtx);
+	if (player_op_opened) {
+		LOG_INFO("reopening %s output plug-in", player_op->name);
+		player_op->close();
+		if (player_op->open() != 0)
+			player_op_opened = 0;
+	}
+	XPTHREAD_MUTEX_UNLOCK(&player_op_mtx);
+}
+
+void
 player_seek(int pos, int relative)
 {
 	unsigned int curpos;

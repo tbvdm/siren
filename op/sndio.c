@@ -89,7 +89,7 @@ op_sndio_get_volume_support(void)
 static void
 op_sndio_init(void)
 {
-	option_add_string("sndio-device", "", NULL);
+	option_add_string("sndio-device", "", player_reopen_op);
 }
 
 static int
