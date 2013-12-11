@@ -149,24 +149,13 @@ error:
 void
 player_change_op(void)
 {
-	const struct op	*op;
-	char		*name;
+	player_stop();
 
-	name = option_get_string("output-plugin");
-	if ((op = plugin_find_op(name)) == NULL)
-		msg_errx("Output plug-in not found: %s", name);
-	else {
-		player_stop();
-		XPTHREAD_MUTEX_LOCK(&player_op_mtx);
-		player_close_op();
-		LOG_INFO("opening %s output plug-in", op->name);
-		if (op->open() == 0) {
-			player_op = op;
-			player_op_opened = 1;
-		}
-		XPTHREAD_MUTEX_UNLOCK(&player_op_mtx);
-	}
-	free(name);
+	XPTHREAD_MUTEX_LOCK(&player_op_mtx);
+	player_close_op();
+	player_op = NULL;
+	(void)player_open_op();
+	XPTHREAD_MUTEX_UNLOCK(&player_op_mtx);
 
 	XPTHREAD_MUTEX_LOCK(&player_state_mtx);
 	player_print_status();
