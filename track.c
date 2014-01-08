@@ -57,7 +57,6 @@ static pthread_mutex_t	 track_metadata_mtx = PTHREAD_MUTEX_INITIALIZER;
 static struct track_tree track_tree = RB_INITIALIZER(track_tree);
 static size_t		 track_nentries;
 static int		 track_tree_modified;
-static char		*track_cache_file;
 
 RB_GENERATE(track_tree, track_entry, entries, track_cmp_entry)
 
@@ -152,8 +151,6 @@ track_end(void)
 
 	while ((te = RB_ROOT(&track_tree)) != NULL)
 		track_remove_entry(te);
-
-	free(track_cache_file);
 }
 
 static struct track_entry *
