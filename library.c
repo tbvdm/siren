@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "siren.h"
 
@@ -252,10 +253,12 @@ library_print(void)
 void
 library_read_file(void)
 {
-	struct track	*t;
-	FILE		*fp;
-	size_t		 len, lineno;
-	char		*buf, *file, *lbuf;
+	struct menu_entry	*e;
+	struct track		*et, *t;
+	FILE			*fp;
+	size_t			 len, lineno;
+	time_t			 lasttime;
+	char			*buf, *file, *lbuf;
 
 	file = conf_get_path(LIBRARY_FILE);
 	if ((fp = fopen(file, "r")) == NULL) {
@@ -267,6 +270,7 @@ library_read_file(void)
 		return;
 	}
 
+	lasttime = time(NULL);
 	lbuf = NULL;
 	for (lineno = 1; (buf = fgetln(fp, &len)) != NULL; lineno++) {
 		if (buf[len - 1] != '\n') {
@@ -280,8 +284,24 @@ library_read_file(void)
 			continue;
 		}
 
-		if ((t = track_get(buf, NULL)) != NULL)
-			library_add_track(t);
+		if ((t = track_get(buf, NULL)) == NULL)
+			continue;
+
+		MENU_FOR_EACH_ENTRY_REVERSE(library_menu, e) {
+			et = menu_get_entry_data(e);
+			if (track_cmp(t, et) > 0) {
+				menu_insert_after(library_menu, e, t);
+				break;
+			}
+		}
+		if (e == NULL)
+			menu_insert_tail(library_menu, t);
+		library_duration += t->duration;
+
+		if (time(NULL) > lasttime) {
+			library_print();
+			lasttime = time(NULL);
+		}
 	}
 	if (ferror(fp)) {
 		LOG_ERR("fgetln: %s", file);
@@ -291,6 +311,8 @@ library_read_file(void)
 	free(file);
 
 	(void)fclose(fp);
+
+	library_print();
 }
 
 void

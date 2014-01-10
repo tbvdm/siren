@@ -114,6 +114,11 @@
 	    (entry) != NULL;						\
 	    (entry) = menu_get_next_entry(entry))
 
+#define MENU_FOR_EACH_ENTRY_REVERSE(menu, entry)			\
+	for ((entry) = menu_get_last_entry(menu);			\
+	    (entry) != NULL;						\
+	    (entry) = menu_get_prev_entry(entry))
+
 /* Number of elements in an array. */
 #define NELEMENTS(x)		(sizeof (x) / sizeof (x)[0])
 
@@ -439,6 +444,8 @@ void		*menu_get_selected_entry_data(const struct menu *) NONNULL();
 struct menu	*menu_init(void (*)(void *),
 		    void (*)(const void *, char *, size_t),
 		    int (*)(const void *, const char *));
+void		 menu_insert_after(struct menu *, struct menu_entry *, void *)
+		    NONNULL();
 void		 menu_insert_before(struct menu *, struct menu_entry *,
 		    void *) NONNULL();
 void		 menu_insert_tail(struct menu *, void *) NONNULL();
