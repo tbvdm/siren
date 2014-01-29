@@ -286,6 +286,35 @@ track_remove_entry(struct track_entry *te)
 	track_nentries--;
 }
 
+struct track *
+track_require(const char *path)
+{
+	struct track_entry *te;
+
+	te = track_find_entry(path);
+	if (te != NULL) {
+		if (te->track.ip == NULL)
+			te->track.ip = plugin_find_ip(path);
+		return &te->track;
+	}
+
+	te = xmalloc(sizeof *te);
+	te->track.path = xstrdup(path);
+	te->track.ip = plugin_find_ip(path);
+	te->track.ipdata = NULL;
+	track_init_metadata(te);
+
+	if (te->track.ip != NULL)
+		te->track.ip->get_metadata(&te->track);
+
+	if (track_add_entry(te) == -1) {
+		track_free_entry(te);
+		return NULL;
+	}
+
+	return &te->track;
+}
+
 int
 track_search(const struct track *t, const char *search)
 {

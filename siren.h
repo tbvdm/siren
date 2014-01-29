@@ -608,6 +608,7 @@ void		 track_end(void);
 struct track	*track_get(const char *, const struct ip *) NONNULL(1);
 void		 track_init(void);
 void		 track_lock_metadata(void);
+struct track	*track_require(const char *);
 int		 track_search(const struct track *, const char *);
 void		 track_unlock_metadata(void);
 void		 track_update_metadata(void);

@@ -31,6 +31,7 @@ static pthread_mutex_t	 library_menu_mtx = PTHREAD_MUTEX_INITIALIZER;
 static struct format	*library_format;
 static struct menu	*library_menu;
 static unsigned int	 library_duration;
+static int		 library_modified;
 
 void
 library_activate_entry(void)
@@ -111,6 +112,7 @@ library_add_track(struct track *t)
 		menu_insert_tail(library_menu, t);
 
 	library_duration += t->duration;
+	library_modified = 1;
 	XPTHREAD_MUTEX_UNLOCK(&library_menu_mtx);
 	library_print();
 }
@@ -135,6 +137,7 @@ library_delete_all_entries(void)
 	XPTHREAD_MUTEX_LOCK(&library_menu_mtx);
 	menu_remove_all_entries(library_menu);
 	library_duration = 0;
+	library_modified = 1;
 	XPTHREAD_MUTEX_UNLOCK(&library_menu_mtx);
 	library_print();
 }
@@ -148,8 +151,9 @@ library_delete_entry(void)
 	XPTHREAD_MUTEX_LOCK(&library_menu_mtx);
 	if ((e = menu_get_selected_entry(library_menu)) != NULL) {
 		t = menu_get_entry_data(e);
-		library_duration -= t->duration;
 		menu_remove_selected_entry(library_menu);
+		library_duration -= t->duration;
+		library_modified = 1;
 	}
 	XPTHREAD_MUTEX_UNLOCK(&library_menu_mtx);
 	library_print();
@@ -158,7 +162,9 @@ library_delete_entry(void)
 void
 library_end(void)
 {
-	(void)library_write_file();
+	if (library_modified)
+		(void)library_write_file();
+
 	menu_free(library_menu);
 }
 
@@ -284,7 +290,7 @@ library_read_file(void)
 			continue;
 		}
 
-		if ((t = track_get(buf, NULL)) == NULL)
+		if ((t = track_require(buf)) == NULL)
 			continue;
 
 		MENU_FOR_EACH_ENTRY_REVERSE(library_menu, e) {
@@ -468,5 +474,6 @@ library_write_file(void)
 	}
 
 	free(file);
+	library_modified = 0;
 	return ret;
 }

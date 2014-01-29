@@ -108,6 +108,11 @@ player_begin_playback(struct player_sample_buffer *buf)
 	if (player_track == NULL)
 		goto error;
 
+	if (player_track->ip == NULL) {
+		msg_errx("%s: Unsupported file format", player_track->path);
+		goto error;
+	}
+
 	if (player_track->ip->open(player_track))
 		goto error;
 
@@ -502,7 +507,7 @@ player_print_status(void)
 	XPTHREAD_MUTEX_LOCK(&player_track_mtx);
 
 	/* Set the position variable. */
-	if (player_state == PLAYER_STATE_STOPPED ||
+	if (player_state == PLAYER_STATE_STOPPED || player_track->ip == NULL ||
 	    player_track->ip->get_position(player_track, &pos) == -1)
 		vars[PLAYER_FMT_POSITION].value.number = 0;
 	else
