@@ -14,6 +14,12 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#ifdef __OpenBSD__
+#include <sys/tree.h>
+#else
+#include "compat/tree.h"
+#endif
+
 #include <limits.h>
 #include <pthread.h>
 #include <stdlib.h>
@@ -21,12 +27,6 @@
 #include <strings.h>
 
 #include "siren.h"
-
-#ifdef HAVE_TREE_H
-#include <sys/tree.h>
-#else
-#include "compat/tree.h"
-#endif
 
 /*
  * Maximum size of any string created by option_attrib_to_string(). The longest

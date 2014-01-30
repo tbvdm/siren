@@ -14,16 +14,16 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <limits.h>
-#include <stdlib.h>
-
-#include "siren.h"
-
-#ifdef HAVE_QUEUE_H
+#ifdef __OpenBSD__
 #include <sys/queue.h>
 #else
 #include "compat/queue.h"
 #endif
+
+#include <limits.h>
+#include <stdlib.h>
+
+#include "siren.h"
 
 #define MENU_NENTRIES_MAX UINT_MAX
 

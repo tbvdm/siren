@@ -14,18 +14,18 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#ifdef __OpenBSD__
+#include <sys/tree.h>
+#else
+#include "compat/tree.h"
+#endif
+
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
 
 #include "siren.h"
-
-#ifdef HAVE_TREE_H
-#include <sys/tree.h>
-#else
-#include "compat/tree.h"
-#endif
 
 /*
  * The length of the longest key-name (including "\0"). Most key names are

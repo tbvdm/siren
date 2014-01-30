@@ -411,22 +411,6 @@ if check_function use_default_colors "use_default_colors()" curses.h "" \
 	header_define HAVE_USE_DEFAULT_COLORS
 fi
 
-print_check "whether <sys/queue.h> is usable"
-if [ "$(uname)" = OpenBSD ]; then
-	print_result yes
-	header_define HAVE_QUEUE_H
-else
-	print_result no
-fi
-
-print_check "whether <sys/tree.h> is usable"
-if [ "$(uname)" = OpenBSD ]; then
-	print_result yes
-	header_define HAVE_TREE_H
-else
-	print_result no
-fi
-
 print_check "whether getopt() supports optreset"
 if compile "" unistd.h "optreset = 1"; then
 	print_result yes

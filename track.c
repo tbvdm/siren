@@ -17,6 +17,12 @@
 /* Let glibc expose strcasestr(). */
 #define _GNU_SOURCE
 
+#ifdef __OpenBSD__
+#include <sys/tree.h>
+#else
+#include "compat/tree.h"
+#endif
+
 #include <limits.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -25,12 +31,6 @@
 #include <unistd.h>
 
 #include "siren.h"
-
-#ifdef HAVE_TREE_H
-#include <sys/tree.h>
-#else
-#include "compat/tree.h"
-#endif
 
 struct track_entry {
 	struct track		track;

@@ -14,16 +14,16 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdlib.h>
-#include <string.h>
-
-#include "siren.h"
-
-#ifdef HAVE_QUEUE_H
+#ifdef __OpenBSD__
 #include <sys/queue.h>
 #else
 #include "compat/queue.h"
 #endif
+
+#include <stdlib.h>
+#include <string.h>
+
+#include "siren.h"
 
 struct history_entry {
 	char			*line;

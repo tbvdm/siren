@@ -17,18 +17,18 @@
 /* Let glibc expose strcasestr(). */
 #define _GNU_SOURCE
 
+#ifdef __OpenBSD__
+#include <sys/queue.h>
+#else
+#include "compat/queue.h"
+#endif
+
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
 #include "siren.h"
-
-#ifdef HAVE_QUEUE_H
-#include <sys/queue.h>
-#else
-#include "compat/queue.h"
-#endif
 
 struct browser_entry {
 	char		*name;

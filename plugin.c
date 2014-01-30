@@ -14,6 +14,12 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#ifdef __OpenBSD__
+#include <sys/queue.h>
+#else
+#include "compat/queue.h"
+#endif
+
 #include <dlfcn.h>
 #include <errno.h>
 #include <stdlib.h>
@@ -21,12 +27,6 @@
 #include <strings.h>
 
 #include "siren.h"
-
-#ifdef HAVE_QUEUE_H
-#include <sys/queue.h>
-#else
-#include "compat/queue.h"
-#endif
 
 struct plugin_ip_entry {
 	void		*handle;
