@@ -49,7 +49,6 @@ INSTALL_MAN=	install -m 444
 
 CFLAGS+=	-Wall -W -Wbad-function-cast -Wcast-align -Wcast-qual \
 		-Wformat=2 -Wpointer-arith -Wshadow -Wundef -Wwrite-strings
-CPPFLAGS+=	-DVERSION=\"${VERSION}\"
 LDFLAGS+=	-lcurses -pthread -Wl,--export-dynamic
 LINTFLAGS?=	-hx
 MKDEPFLAGS?=	-a

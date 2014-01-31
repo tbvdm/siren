@@ -325,6 +325,8 @@ else
 	makefile_assign CC "$CC"
 fi
 
+header_define VERSION "\"$(cat version)\""
+
 makefile_assign CFLAGS "$CFLAGS"
 makefile_assign CPPFLAGS "$CPPFLAGS"
 makefile_assign LDFLAGS "$LDFLAGS"
