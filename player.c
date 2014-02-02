@@ -47,9 +47,10 @@
 #define PLAYER_FMT_POSITION	2
 #define PLAYER_FMT_REPEAT_ALL	3
 #define PLAYER_FMT_REPEAT_TRACK	4
-#define PLAYER_FMT_STATE	5
-#define PLAYER_FMT_VOLUME	6
-#define PLAYER_FMT_NVARS	7
+#define PLAYER_FMT_SOURCE	5
+#define PLAYER_FMT_STATE	6
+#define PLAYER_FMT_VOLUME	7
+#define PLAYER_FMT_NVARS	8
 
 enum player_command {
 	PLAYER_COMMAND_PAUSE,
@@ -86,6 +87,9 @@ static pthread_mutex_t		 player_state_mtx = PTHREAD_MUTEX_INITIALIZER;
 static enum player_command	 player_command = PLAYER_COMMAND_STOP;
 static pthread_cond_t		 player_command_cond =
 				    PTHREAD_COND_INITIALIZER;
+
+static pthread_mutex_t		 player_source_mtx = PTHREAD_MUTEX_INITIALIZER;
+static enum player_source	 player_source = PLAYER_SOURCE_LIBRARY;
 
 static const struct op		*player_op = NULL;
 static int			 player_op_opened;
@@ -226,9 +230,18 @@ player_get_track(void)
 	struct track *t;
 
 	if (!option_get_boolean("repeat-track")) {
-		if ((t = queue_get_next_track()) == NULL &&
-		    (t = library_get_next_track()) == NULL)
-			return -1;
+		if ((t = queue_get_next_track()) == NULL) {
+			XPTHREAD_MUTEX_LOCK(&player_source_mtx);
+			switch (player_source) {
+			case PLAYER_SOURCE_LIBRARY:
+				t = library_get_next_track();
+				break;
+			}
+			XPTHREAD_MUTEX_UNLOCK(&player_source_mtx);
+
+			if (t == NULL)
+				return -1;
+		}
 
 		XPTHREAD_MUTEX_LOCK(&player_track_mtx);
 		player_track = t;
@@ -308,7 +321,15 @@ player_play_next(void)
 {
 	struct track *t;
 
-	if ((t = library_get_next_track()) != NULL)
+	XPTHREAD_MUTEX_LOCK(&player_source_mtx);
+	switch (player_source) {
+	case PLAYER_SOURCE_LIBRARY:
+		t = library_get_next_track();
+		break;
+	}
+	XPTHREAD_MUTEX_UNLOCK(&player_source_mtx);
+
+	if (t != NULL)
 		player_play_track(t);
 }
 
@@ -317,7 +338,15 @@ player_play_prev(void)
 {
 	struct track *t;
 
-	if ((t = library_get_prev_track()) != NULL)
+	XPTHREAD_MUTEX_LOCK(&player_source_mtx);
+	switch (player_source) {
+	case PLAYER_SOURCE_LIBRARY:
+		t = library_get_prev_track();
+		break;
+	}
+	XPTHREAD_MUTEX_UNLOCK(&player_source_mtx);
+
+	if (t != NULL)
 		player_play_track(t);
 }
 
@@ -484,6 +513,9 @@ player_print_status(void)
 	vars[PLAYER_FMT_REPEAT_TRACK].lname = "repeat-track";
 	vars[PLAYER_FMT_REPEAT_TRACK].sname = 't';
 	vars[PLAYER_FMT_REPEAT_TRACK].type = FORMAT_VARIABLE_STRING;
+	vars[PLAYER_FMT_SOURCE].lname = "source";
+	vars[PLAYER_FMT_SOURCE].sname = 'u';
+	vars[PLAYER_FMT_SOURCE].type = FORMAT_VARIABLE_STRING;
 	vars[PLAYER_FMT_STATE].lname = "state";
 	vars[PLAYER_FMT_STATE].sname = 's';
 	vars[PLAYER_FMT_STATE].type = FORMAT_VARIABLE_STRING;
@@ -551,6 +583,15 @@ player_print_status(void)
 		vars[PLAYER_FMT_REPEAT_TRACK].value.string = "repeat-track";
 	else
 		vars[PLAYER_FMT_REPEAT_TRACK].value.string = "";
+
+	/* Set the player-source variable. */
+	XPTHREAD_MUTEX_LOCK(&player_source_mtx);
+	switch (player_source) {
+	case PLAYER_SOURCE_LIBRARY:
+		vars[PLAYER_FMT_SOURCE].value.string = "library";
+		break;
+	}
+	XPTHREAD_MUTEX_UNLOCK(&player_source_mtx);
 
 	/* Print the status. */
 	option_lock();
@@ -637,6 +678,14 @@ player_set_signal_mask(void)
 
 	(void)sigfillset(&ss);
 	(void)pthread_sigmask(SIG_BLOCK, &ss, NULL);
+}
+
+void
+player_set_source(enum player_source source)
+{
+	XPTHREAD_MUTEX_LOCK(&player_source_mtx);
+	player_source = source;
+	XPTHREAD_MUTEX_UNLOCK(&player_source_mtx);
 }
 
 void

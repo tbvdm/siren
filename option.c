@@ -429,7 +429,7 @@ option_init(void)
 	    library_print);
 	option_add_string("output-plugin", "default", player_change_op);
 	option_add_format("player-status-format",
-	    "%-7s  %5p / %5d  %3v%%%{?c,  continue,}%{?r,  repeat-all,}"
+	    "%-7s  %5p / %5d  %3v%%  %u%{?c,  continue,}%{?r,  repeat-all,}"
 	    "%{?t,  repeat-track,}", player_print);
 	option_add_format("player-track-format", "%a - %l (%y) - %n. %t",
 	    player_print);

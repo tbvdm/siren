@@ -228,6 +228,10 @@ enum option_type {
 	OPTION_TYPE_STRING
 };
 
+enum player_source {
+	PLAYER_SOURCE_LIBRARY
+};
+
 enum view_id {
 	VIEW_ID_BROWSER,
 	VIEW_ID_LIBRARY,
@@ -525,6 +529,7 @@ void		 player_play_track(struct track *) NONNULL();
 void		 player_print(void);
 void		 player_reopen_op(void);
 void		 player_seek(int, int);
+void		 player_set_source(enum player_source);
 void		 player_set_volume(int, int);
 void		 player_stop(void);
 

@@ -49,6 +49,7 @@ library_activate_entry(void)
 	XPTHREAD_MUTEX_UNLOCK(&library_menu_mtx);
 
 	if (t != NULL) {
+		player_set_source(PLAYER_SOURCE_LIBRARY);
 		player_play_track(t);
 		library_print();
 	}
