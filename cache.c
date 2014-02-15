@@ -122,14 +122,14 @@ cache_read_entry(struct track *t)
 	t->ipdata = NULL;
 
 	ret = 0;
-	ret += cache_read_string(&t->path);
-	ret += cache_read_string(&t->artist);
-	ret += cache_read_string(&t->album);
-	ret += cache_read_string(&t->date);
-	ret += cache_read_string(&t->tracknumber);
-	ret += cache_read_string(&t->title);
-	ret += cache_read_number(&t->duration);
-	ret += cache_read_string(&t->genre);
+	ret |= cache_read_string(&t->path);
+	ret |= cache_read_string(&t->artist);
+	ret |= cache_read_string(&t->album);
+	ret |= cache_read_string(&t->date);
+	ret |= cache_read_string(&t->tracknumber);
+	ret |= cache_read_string(&t->title);
+	ret |= cache_read_number(&t->duration);
+	ret |= cache_read_string(&t->genre);
 	return ret;
 }
 

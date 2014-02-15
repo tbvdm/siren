@@ -267,7 +267,7 @@ track_read_cache(void)
 
 	for (;;) {
 		te = xmalloc(sizeof *te);
-		if (cache_read_entry(&te->track) < 0) {
+		if (cache_read_entry(&te->track) == -1) {
 			track_free_entry(te);
 			break;
 		}
