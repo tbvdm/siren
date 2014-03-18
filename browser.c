@@ -24,6 +24,7 @@
 #endif
 
 #include <errno.h>
+#include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -42,27 +43,35 @@ static void		 browser_read_dir(void);
 static int		 browser_search_entry(const void *, const char *);
 static void		 browser_select_entry(const char *);
 
+static pthread_mutex_t	 browser_menu_mtx = PTHREAD_MUTEX_INITIALIZER;
 static struct menu	*browser_menu;
 static char		*browser_dir;
 
 void
 browser_activate_entry(void)
 {
-	struct browser_entry	*e;
+	struct menu_entry	*me;
+	struct browser_entry	*be;
 	struct track		*t;
 	char			*path;
 
-	if ((e = menu_get_selected_entry_data(browser_menu)) == NULL)
+	if ((me = menu_get_selected_entry(browser_menu)) == NULL)
 		return;
 
-	switch (e->type) {
+	be = menu_get_entry_data(me);
+	switch (be->type) {
 	case FILE_TYPE_DIRECTORY:
-		browser_change_dir(e->name);
+		browser_change_dir(be->name);
 		break;
 	case FILE_TYPE_REGULAR:
-		(void)xasprintf(&path, "%s/%s", browser_dir, e->name);
-		if ((t = track_get(path, e->ip)) != NULL)
+		(void)xasprintf(&path, "%s/%s", browser_dir, be->name);
+		if ((t = track_get(path, be->ip)) != NULL)
+			XPTHREAD_MUTEX_LOCK(&browser_menu_mtx);
+			menu_activate_entry(browser_menu, me);
+			XPTHREAD_MUTEX_UNLOCK(&browser_menu_mtx);
+			player_set_source(PLAYER_SOURCE_BROWSER);
 			player_play_track(t);
+			browser_print();
 		free(path);
 		break;
 	default:
@@ -101,9 +110,11 @@ browser_change_dir(const char *dir)
 			prevdir = xstrdup(tmp);
 	}
 
+	XPTHREAD_MUTEX_LOCK(&browser_menu_mtx);
 	free(browser_dir);
 	browser_dir = newdir;
 	browser_read_dir();
+	XPTHREAD_MUTEX_UNLOCK(&browser_menu_mtx);
 
 	/* Preselect the subdirectory we were in previously, if applicable. */
 	if (prevdir != NULL) {
@@ -172,6 +183,82 @@ browser_get_entry_text(const void *e, char *buf, size_t bufsize)
 		(void)strlcat(buf, "/", bufsize);
 }
 
+struct track *
+browser_get_next_track(void)
+{
+	struct menu_entry	*me;
+	struct browser_entry	*be;
+	struct track		*t;
+	char			*path;
+
+	XPTHREAD_MUTEX_LOCK(&browser_menu_mtx);
+	if ((me = menu_get_active_entry(browser_menu)) == NULL)
+		t = NULL;
+	else
+		for (;;) {
+			if ((me = menu_get_next_entry(me)) == NULL) {
+				if (!option_get_boolean("repeat-all")) {
+					t = NULL;
+					break;
+				}
+				me = menu_get_first_entry(browser_menu);
+			}
+
+			be = menu_get_entry_data(me);
+			if (be->ip != NULL) {
+				(void)xasprintf(&path, "%s/%s", browser_dir,
+				    be->name);
+				t = track_get(path, be->ip);
+				free(path);
+				if (t != NULL)
+					menu_activate_entry(browser_menu, me);
+				break;
+			}
+		}
+	XPTHREAD_MUTEX_UNLOCK(&browser_menu_mtx);
+
+	browser_print();
+	return t;
+}
+
+struct track *
+browser_get_prev_track(void)
+{
+	struct menu_entry	*me;
+	struct browser_entry	*be;
+	struct track		*t;
+	char			*path;
+
+	XPTHREAD_MUTEX_LOCK(&browser_menu_mtx);
+	if ((me = menu_get_active_entry(browser_menu)) == NULL)
+		t = NULL;
+	else
+		for (;;) {
+			if ((me = menu_get_prev_entry(me)) == NULL) {
+				if (!option_get_boolean("repeat-all")) {
+					t = NULL;
+					break;
+				}
+				me = menu_get_last_entry(browser_menu);
+			}
+
+			be = menu_get_entry_data(me);
+			if (be->ip != NULL) {
+				(void)xasprintf(&path, "%s/%s", browser_dir,
+				    be->name);
+				t = track_get(path, be->ip);
+				free(path);
+				if (t != NULL)
+					menu_activate_entry(browser_menu, me);
+				break;
+			}
+		}
+	XPTHREAD_MUTEX_UNLOCK(&browser_menu_mtx);
+
+	browser_print();
+	return t;
+}
+
 void
 browser_init(void)
 {
@@ -190,6 +277,9 @@ browser_print(void)
 	}
 }
 
+/*
+ * The browser_menu_mtx mutex must be locked before calling this function.
+ */
 static void
 browser_read_dir(void)
 {
@@ -277,7 +367,9 @@ browser_refresh_dir(void)
 	else
 		name = xstrdup(e->name);
 
+	XPTHREAD_MUTEX_LOCK(&browser_menu_mtx);
 	browser_read_dir();
+	XPTHREAD_MUTEX_UNLOCK(&browser_menu_mtx);
 
 	/* Preselect the entry that was selected previously. */
 	if (name != NULL) {

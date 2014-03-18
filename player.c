@@ -233,6 +233,9 @@ player_get_track(void)
 		if ((t = queue_get_next_track()) == NULL) {
 			XPTHREAD_MUTEX_LOCK(&player_source_mtx);
 			switch (player_source) {
+			case PLAYER_SOURCE_BROWSER:
+				t = browser_get_next_track();
+				break;
 			case PLAYER_SOURCE_LIBRARY:
 				t = library_get_next_track();
 				break;
@@ -323,6 +326,9 @@ player_play_next(void)
 
 	XPTHREAD_MUTEX_LOCK(&player_source_mtx);
 	switch (player_source) {
+	case PLAYER_SOURCE_BROWSER:
+		t = browser_get_next_track();
+		break;
 	case PLAYER_SOURCE_LIBRARY:
 		t = library_get_next_track();
 		break;
@@ -340,6 +346,9 @@ player_play_prev(void)
 
 	XPTHREAD_MUTEX_LOCK(&player_source_mtx);
 	switch (player_source) {
+	case PLAYER_SOURCE_BROWSER:
+		t = browser_get_prev_track();
+		break;
 	case PLAYER_SOURCE_LIBRARY:
 		t = library_get_prev_track();
 		break;
@@ -587,6 +596,9 @@ player_print_status(void)
 	/* Set the player-source variable. */
 	XPTHREAD_MUTEX_LOCK(&player_source_mtx);
 	switch (player_source) {
+	case PLAYER_SOURCE_BROWSER:
+		vars[PLAYER_FMT_SOURCE].value.string = "browser";
+		break;
 	case PLAYER_SOURCE_LIBRARY:
 		vars[PLAYER_FMT_SOURCE].value.string = "library";
 		break;
