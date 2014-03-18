@@ -68,7 +68,7 @@ input_init(void)
 	 * it so that ^Y becomes an ordinary character that can be bound to a
 	 * command.
 	 */
-	if ((vdisable = XFPATHCONF(STDIN_FILENO, _PC_VDISABLE)) == -1)
+	if ((vdisable = xfpathconf(STDIN_FILENO, _PC_VDISABLE)) == -1)
 		return;
 
 	if (tcgetattr(STDIN_FILENO, &tio) == -1) {

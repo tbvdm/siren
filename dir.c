@@ -125,7 +125,7 @@ dir_open(const char *dir)
 		goto error;
 	}
 
-	if ((namemax = XFPATHCONF(fd, _PC_NAME_MAX)) == -1) {
+	if ((namemax = xfpathconf(fd, _PC_NAME_MAX)) == -1) {
 		if (errno == 0)
 			/*
 			 * The value for _PC_NAME_MAX is indeterminate. While

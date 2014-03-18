@@ -36,7 +36,7 @@ path_get_cwd(void)
 #ifdef PATH_MAX
 	pathsize = PATH_MAX;
 #else
-	if ((pathsize = XPATHCONF("/", _PC_PATH_MAX)) == -1)
+	if ((pathsize = xpathconf("/", _PC_PATH_MAX)) == -1)
 		return xstrdup("/");
 
 	/*
@@ -75,7 +75,7 @@ path_get_home_dir(const char *user)
 			return xstrdup(home);
 	}
 
-	if ((bufsize = XSYSCONF(_SC_GETPW_R_SIZE_MAX)) == -1)
+	if ((bufsize = xsysconf(_SC_GETPW_R_SIZE_MAX)) == -1)
 		return NULL;
 
 	buf = xmalloc(bufsize);

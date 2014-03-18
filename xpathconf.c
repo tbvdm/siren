@@ -20,50 +20,51 @@
 #include "siren.h"
 
 long int
-xfpathconf(int fd, int name, const char *namestr)
+xfpathconf(int fd, int name)
 {
 	long int value;
 
 	errno = 0;
 	if ((value = fpathconf(fd, name)) == -1) {
 		if (errno)
-			LOG_ERR("fpathconf: %s", namestr);
+			LOG_ERR("fpathconf: variable %d", name);
 		else
-			LOG_ERRX("fpathconf: %s: indeterminate value",
-			    namestr);
+			LOG_ERRX("fpathconf: variable %d: indeterminate value",
+			    name);
 	}
 
 	return value;
 }
 
 long int
-xpathconf(const char *path, int name, const char *namestr)
+xpathconf(const char *path, int name)
 {
 	long int value;
 
 	errno = 0;
 	if ((value = pathconf(path, name)) == -1) {
 		if (errno)
-			LOG_ERR("pathconf: %s: %s", path, namestr);
+			LOG_ERR("pathconf: %s: variable %d", path, name);
 		else
-			LOG_ERRX("pathconf: %s: %s: indeterminate value", path,
-			    namestr);
+			LOG_ERRX("pathconf: %s: variable %d: indeterminate "
+			    "value", path, name);
 	}
 
 	return value;
 }
 
 long int
-xsysconf(int name, const char *namestr)
+xsysconf(int name)
 {
 	long int value;
 
 	errno = 0;
 	if ((value = sysconf(name)) == -1) {
 		if (errno)
-			LOG_ERR("sysconf: %s", namestr);
+			LOG_ERR("sysconf: variable %d", name);
 		else
-			LOG_ERRX("sysconf: %s: indeterminate value", namestr);
+			LOG_ERRX("sysconf: variable %d: indeterminate value",
+			    name);
 	}
 
 	return value;
