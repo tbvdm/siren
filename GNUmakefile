@@ -25,21 +25,17 @@ SRCS+=		argv.c bind.c browser.c cache.c command.c conf.c dir.c \
 		option.c path.c player.c plugin.c prompt.c queue.c screen.c \
 		siren.c track.c view.c xmalloc.c xpathconf.c
 OBJS=		${SRCS:.c=.o}
-LOBJS=		${SRCS:.c=.ln}
 
 IP_SRCS=	$(addprefix ip/, $(addsuffix .c, ${IP}))
 IP_LIBS=	${IP_SRCS:.c=.so}
 IP_OBJS=	${IP_SRCS:.c=.o}
-IP_LOBJS=	${IP_SRCS:.c=.ln}
 
 OP_SRCS=	$(addprefix op/, $(addsuffix .c, ${OP}))
 OP_LIBS=	${OP_SRCS:.c=.so}
 OP_OBJS=	${OP_SRCS:.c=.o}
-OP_LOBJS=	${OP_SRCS:.c=.ln}
 
 CC?=		cc
 CTAGS?=		ctags
-LINT?=		lint
 MKDEP?=		mkdep
 
 INSTALL_DIR=	install -dm 755
@@ -50,15 +46,9 @@ INSTALL_MAN=	install -m 444
 CFLAGS+=	-Wall -W -Wbad-function-cast -Wcast-align -Wcast-qual \
 		-Wformat=2 -Wpointer-arith -Wshadow -Wundef -Wwrite-strings
 LDFLAGS+=	-lcurses -pthread -Wl,--export-dynamic
-LINTFLAGS?=	-hx
 MKDEPFLAGS?=	-a
 
-# lint does not understand "-pthread", so use "-lpthread".
-ifeq (${MAKECMDGOALS}, lint)
-LDFLAGS+=	-lpthread
-endif
-
-.PHONY: all clean cleandir cleanlog cppcheck depend dist install lint
+.PHONY: all clean cleandir cleanlog cppcheck depend dist install
 
 ip/%.o: ip/%.c
 	${CC} ${CFLAGS} ${CPPFLAGS} ${CPPFLAGS_$(*F)} -fPIC -c -o $@ $<
@@ -71,9 +61,6 @@ op/%.o: op/%.c
 
 op/%.so: op/%.o
 	${CC} -fPIC -shared -o $@ $< ${LDFLAGS_$(*F)}
-
-%.ln: %.c
-	${LINT} ${LINTFLAGS} ${CPPFLAGS} ${CPPFLAGS_$(*F)} -i -o $@ $<
 
 %.o: %.c
 	${CC} ${CFLAGS} ${CPPFLAGS} -c -o $@ $<
@@ -89,9 +76,9 @@ ${PROG}: ${OBJS}
 	${MKDEP} ${MKDEPFLAGS} $(foreach p, ${OP}, ${CPPFLAGS_$p}) ${OP_SRCS}
 
 clean:
-	rm -f core *.core ${PROG} ${OBJS} ${LOBJS}
-	rm -f ${IP_LIBS} ${IP_OBJS} ${IP_LOBJS}
-	rm -f ${OP_LIBS} ${OP_OBJS} ${OP_LOBJS}
+	rm -f core *.core ${PROG} ${OBJS}
+	rm -f ${IP_LIBS} ${IP_OBJS}
+	rm -f ${OP_LIBS} ${OP_OBJS}
 
 cleandir: clean cleanlog
 	rm -f .depend tags config.h config.mk
@@ -126,10 +113,6 @@ endif
 ifneq (${OP_LIBS},)
 	${INSTALL_LIB} ${OP_LIBS} ${DESTDIR}${PLUGINDIR}/op
 endif
-
-lint: ${LOBJS} ${IP_LOBJS} ${OP_LOBJS}
-	${LINT} ${LINTFLAGS} $(filter -l%, ${LDFLAGS}) ${LOBJS} ${IP_LOBJS} \
-	    ${OP_LOBJS}
 
 tags: ${SRCS} ${IP_SRCS} ${OP_SRCS} ${PROG}.h
 	${CTAGS} -dtw ${SRCS} ${IP_SRCS} ${OP_SRCS}

@@ -414,7 +414,6 @@ player_play_track(struct track *t)
 	player_play();
 }
 
-/* ARGSUSED */
 static void *
 player_playback_handler(UNUSED void *p)
 {

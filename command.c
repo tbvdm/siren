@@ -408,7 +408,6 @@ static struct command command_list[] = {
 	}
 };
 
-/* ARGSUSED */
 static void
 command_activate_entry_exec(UNUSED void *datap)
 {
@@ -909,14 +908,12 @@ command_generic_parse(int argc, char **argv, void **datap, char **error)
 	return 0;
 }
 
-/* ARGSUSED */
 static void
 command_move_entry_down_exec(UNUSED void *datap)
 {
 	view_move_entry_down();
 }
 
-/* ARGSUSED */
 static void
 command_move_entry_up_exec(UNUSED void *datap)
 {
@@ -958,28 +955,24 @@ command_parse_string(const char *str, struct command **cmd,
 	return ret;
 }
 
-/* ARGSUSED */
 static void
 command_pause_exec(UNUSED void *datap)
 {
 	player_pause();
 }
 
-/* ARGSUSED */
 static void
 command_play_exec(UNUSED void *datap)
 {
 	player_play();
 }
 
-/* ARGSUSED */
 static void
 command_play_next_exec(UNUSED void *datap)
 {
 	player_play_next();
 }
 
-/* ARGSUSED */
 static void
 command_play_prev_exec(UNUSED void *datap)
 {
@@ -1002,28 +995,24 @@ command_process(const char *line, char **error)
 	return 0;
 }
 
-/* ARGSUSED */
 static void
 command_quit_exec(UNUSED void *datap)
 {
 	input_end();
 }
 
-/* ARGSUSED */
 static void
 command_refresh_directory_exec(UNUSED void *datap)
 {
 	browser_refresh_dir();
 }
 
-/* ARGSUSED */
 static void
 command_refresh_screen_exec(UNUSED void *datap)
 {
 	screen_refresh();
 }
 
-/* ARGSUSED */
 static void
 command_save_library_exec(UNUSED void *datap)
 {
@@ -1031,7 +1020,6 @@ command_save_library_exec(UNUSED void *datap)
 		msg_info("Library saved");
 }
 
-/* ARGSUSED */
 static void
 command_save_metadata_exec(UNUSED void *datap)
 {
@@ -1090,14 +1078,12 @@ command_scroll_up_exec(void *datap)
 	view_scroll_up(*scroll);
 }
 
-/* ARGSUSED */
 static void
 command_search_next_exec(UNUSED void *datap)
 {
 	view_search_next(NULL);
 }
 
-/* ARGSUSED */
 static void
 command_search_prev_exec(UNUSED void *datap)
 {
@@ -1272,35 +1258,30 @@ error:
 	return -1;
 }
 
-/* ARGSUSED */
 static void
 command_select_active_entry_exec(UNUSED void *datap)
 {
 	library_select_active_entry();
 }
 
-/* ARGSUSED */
 static void
 command_select_first_entry_exec(UNUSED void *datap)
 {
 	view_select_first_entry();
 }
 
-/* ARGSUSED */
 static void
 command_select_last_entry_exec(UNUSED void *datap)
 {
 	view_select_last_entry();
 }
 
-/* ARGSUSED */
 static void
 command_select_next_entry_exec(UNUSED void *datap)
 {
 	view_select_next_entry();
 }
 
-/* ARGSUSED */
 static void
 command_select_prev_entry_exec(UNUSED void *datap)
 {
@@ -1343,7 +1324,6 @@ command_select_view_parse(int argc, char **argv, void **datap, char **error)
 	return 0;
 }
 
-/* ARGSUSED */
 static void
 command_set_exec(void *datap)
 {
@@ -1628,7 +1608,6 @@ command_show_option_parse(int argc, char **argv, void **datap, char **error)
 	return 0;
 }
 
-/* ARGSUSED */
 static void
 command_stop_exec(UNUSED void *datap)
 {
@@ -1673,7 +1652,6 @@ command_unbind_key_parse(int argc, char **argv, void **datap, char **error)
 	return 0;
 }
 
-/* ARGSUSED */
 static void
 command_update_metadata_exec(UNUSED void *datap)
 {

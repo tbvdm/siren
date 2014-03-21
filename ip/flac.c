@@ -79,7 +79,6 @@ ip_flac_close(struct track *t)
 	free(ipd);
 }
 
-/* ARGSUSED */
 static void
 ip_flac_error_cb(UNUSED const FLAC__StreamDecoder *decoder,
     FLAC__StreamDecoderErrorStatus error, void *tp)
@@ -146,7 +145,6 @@ ip_flac_get_metadata(struct track *t)
 	return 0;
 }
 
-/* ARGSUSED2 */
 static int
 ip_flac_get_position(struct track *t, unsigned int *pos)
 {
@@ -317,7 +315,6 @@ ip_flac_seek(struct track *t, unsigned int sec)
 	}
 }
 
-/* ARGSUSED */
 static FLAC__StreamDecoderWriteStatus
 ip_flac_write_cb(UNUSED const FLAC__StreamDecoder *decoder,
     const FLAC__Frame *frame, const FLAC__int32 * const *buffer, void *tp)

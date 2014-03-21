@@ -1,6 +1,5 @@
 syntax: glob
 
-*.ln
 *.lo
 *.log
 *.o

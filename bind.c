@@ -298,7 +298,6 @@ bind_scope_to_string(enum bind_scope scope)
 			return bind_scope_names[i].name;
 
 	LOG_FATALX("unknown scope");
-	/* NOTREACHED */
 }
 
 void

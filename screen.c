@@ -319,7 +319,6 @@ screen_get_colour(const char *option, enum colour default_colour)
 			return screen_colours[i].curses_colour;
 
 	LOG_FATALX("unknown colour");
-	/* NOTREACHED */
 }
 
 int

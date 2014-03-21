@@ -230,7 +230,6 @@ option_boolean_to_string(int boolean)
 			return option_boolean_names[i].name;
 
 	LOG_FATALX("unknown boolean");
-	/* NOTREACHED */
 }
 
 static int
@@ -249,7 +248,6 @@ option_colour_to_string(enum colour colour)
 			return option_colour_names[i].name;
 
 	LOG_FATALX("unknown colour");
-	/* NOTREACHED */
 }
 
 void

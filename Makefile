@@ -25,21 +25,17 @@ SRCS+=		argv.c bind.c browser.c cache.c command.c conf.c dir.c \
 		option.c path.c player.c plugin.c prompt.c queue.c screen.c \
 		siren.c track.c view.c xmalloc.c xpathconf.c
 OBJS=		${SRCS:S,c$,o,}
-LOBJS=		${SRCS:S,c$,ln,}
 
 IP_SRCS=	${IP:S,^,ip/,:S,$,.c,}
 IP_LIBS=	${IP_SRCS:S,.c$,.so,}
 IP_OBJS=	${IP_SRCS:S,.c$,.lo,}
-IP_LOBJS=	${IP_SRCS:S,.c$,.ln,}
 
 OP_SRCS=	${OP:S,^,op/,:S,$,.c,}
 OP_LIBS=	${OP_SRCS:S,.c$,.so,}
 OP_OBJS=	${OP_SRCS:S,.c$,.lo,}
-OP_LOBJS=	${OP_SRCS:S,.c$,.ln,}
 
 CC?=		cc
 CTAGS?=		ctags
-LINT?=		lint
 MKDEP?=		mkdep
 
 INSTALL_DIR=	install -dm 755
@@ -50,20 +46,11 @@ INSTALL_MAN=	install -m 444
 CFLAGS+=	-Wall -W -Wbad-function-cast -Wcast-align -Wcast-qual \
 		-Wformat=2 -Wpointer-arith -Wshadow -Wundef -Wwrite-strings
 LDFLAGS+=	-lcurses -pthread -Wl,--export-dynamic
-LINTFLAGS?=	-hx
 MKDEPFLAGS?=	-a
 
-# lint does not understand "-pthread", so use "-lpthread".
-.if make(lint)
-LDFLAGS+=	-lpthread
-.endif
+.PHONY: all clean cleandir cleanlog cppcheck depend dist install
 
-.PHONY: all clean cleandir cleanlog cppcheck depend dist install lint
-
-.SUFFIXES: .c .ln .lo .o .so
-
-.c.ln:
-	${LINT} ${LINTFLAGS} ${CPPFLAGS} ${CPPFLAGS_${@:T:R}} -i -o $@ $<
+.SUFFIXES: .c .lo .o .so
 
 .c.lo:
 	${CC} ${CFLAGS} ${CPPFLAGS} ${CPPFLAGS_${@:T:R}} -fPIC -c -o $@ $<
@@ -86,9 +73,9 @@ ${PROG}: ${OBJS}
 .endfor
 
 clean:
-	rm -f core *.core ${PROG} ${OBJS} ${LOBJS}
-	rm -f ${IP_LIBS} ${IP_OBJS} ${IP_LOBJS}
-	rm -f ${OP_LIBS} ${OP_OBJS} ${OP_LOBJS}
+	rm -f core *.core ${PROG} ${OBJS}
+	rm -f ${IP_LIBS} ${IP_OBJS}
+	rm -f ${OP_LIBS} ${OP_OBJS}
 
 cleandir: clean cleanlog
 	rm -f .depend tags config.h config.mk
@@ -123,9 +110,6 @@ install:
 .if !empty(OP_LIBS)
 	${INSTALL_LIB} ${OP_LIBS} ${DESTDIR}${PLUGINDIR}/op
 .endif
-
-lint: ${LOBJS} ${IP_LOBJS} ${OP_LOBJS}
-	${LINT} ${LINTFLAGS} ${LDFLAGS:M-l*} ${LOBJS} ${IP_LOBJS} ${OP_LOBJS}
 
 tags: ${SRCS} ${IP_SRCS} ${OP_SRCS} ${PROG}.h
 	${CTAGS} -dtw ${SRCS} ${IP_SRCS} ${OP_SRCS}

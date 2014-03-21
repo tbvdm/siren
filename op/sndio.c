@@ -188,7 +188,6 @@ op_sndio_stop(void)
 	return 0;
 }
 
-/* ARGSUSED */
 static void
 op_sndio_volume_cb(UNUSED void *p, unsigned int volume)
 {
