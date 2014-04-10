@@ -263,7 +263,7 @@ library_read_file(void)
 	struct menu_entry	*e;
 	struct track		*et, *t;
 	FILE			*fp;
-	size_t			 len, lineno;
+	size_t			 len;
 	time_t			 lasttime;
 	char			*buf, *file, *lbuf;
 
@@ -279,7 +279,7 @@ library_read_file(void)
 
 	lasttime = time(NULL);
 	lbuf = NULL;
-	for (lineno = 1; (buf = fgetln(fp, &len)) != NULL; lineno++) {
+	while ((buf = fgetln(fp, &len)) != NULL) {
 		if (buf[len - 1] != '\n') {
 			lbuf = xmalloc(len + 1);
 			buf = memcpy(lbuf, buf, len++);
@@ -287,7 +287,7 @@ library_read_file(void)
 		buf[len - 1] = '\0';
 
 		if (buf[0] != '/') {
-			LOG_ERRX("%s:%zu: invalid entry", file, lineno);
+			LOG_ERRX("%s: %s: invalid entry", file, buf);
 			continue;
 		}
 
