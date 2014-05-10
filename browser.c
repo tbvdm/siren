@@ -65,13 +65,14 @@ browser_activate_entry(void)
 		break;
 	case FILE_TYPE_REGULAR:
 		(void)xasprintf(&path, "%s/%s", browser_dir, be->name);
-		if ((t = track_get(path, be->ip)) != NULL)
+		if ((t = track_get(path, be->ip)) != NULL) {
 			XPTHREAD_MUTEX_LOCK(&browser_menu_mtx);
 			menu_activate_entry(browser_menu, me);
 			XPTHREAD_MUTEX_UNLOCK(&browser_menu_mtx);
 			player_set_source(PLAYER_SOURCE_BROWSER);
 			player_play_track(t);
 			browser_print();
+		}
 		free(path);
 		break;
 	default:
