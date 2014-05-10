@@ -611,7 +611,7 @@ void		 track_lock_metadata(void);
 struct track	*track_require(const char *);
 int		 track_search(const struct track *, const char *);
 void		 track_unlock_metadata(void);
-void		 track_update_metadata(void);
+void		 track_update_metadata(int);
 int		 track_write_cache(void);
 
 void		 view_activate_entry(void);

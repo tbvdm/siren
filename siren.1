@@ -12,7 +12,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd January 10, 2014
+.Dd May 10, 2014
 .Dt SIREN 1
 .Os
 .Sh NAME
@@ -639,8 +639,14 @@ and
 arguments are analogous to those of the
 .Ic bind-key
 command.
-.It Ic update-metadata
+.It Ic update-metadata Op Fl d
 Update the metadata cache.
+The options are as follows.
+.Pp
+.Bl -tag -width Ds -compact
+.It Fl d
+Delete the metadata of tracks that cannot be found on the file system.
+.El
 .El
 .Sh OPTIONS
 The appearance and behaviour of

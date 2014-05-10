@@ -170,6 +170,7 @@ COMMAND_EXEC_PROTOTYPE(stop);
 COMMAND_EXEC_PROTOTYPE(unbind_key);
 COMMAND_PARSE_PROTOTYPE(unbind_key);
 COMMAND_EXEC_PROTOTYPE(update_metadata);
+COMMAND_PARSE_PROTOTYPE(update_metadata);
 
 static struct command command_list[] = {
 	{
@@ -402,9 +403,9 @@ static struct command command_list[] = {
 	},
 	{
 		"update-metadata",
-		command_generic_parse,
+		command_update_metadata_parse,
 		command_update_metadata_exec,
-		NULL
+		free
 	}
 };
 
@@ -1653,10 +1654,43 @@ command_unbind_key_parse(int argc, char **argv, void **datap, char **error)
 }
 
 static void
-command_update_metadata_exec(UNUSED void *datap)
+command_update_metadata_exec(void *datap)
 {
-	track_update_metadata();
+	int delete;
+
+	delete = *(int *)datap;
+	track_update_metadata(delete);
 	library_update();
 	queue_update();
 	screen_print();
+}
+
+static int
+command_update_metadata_parse(int argc, char **argv, void **datap,
+    char **error)
+{
+	int c, *delete;
+
+	delete = xmalloc(sizeof *delete);
+	*delete = 0;
+
+	while ((c = getopt(argc, argv, "d")) != -1)
+		switch (c) {
+		case 'd':
+			*delete = 1;
+			break;
+		default:
+			goto usage;
+		}
+
+	if (argc - optind != 0)
+		goto usage;
+
+	*datap = delete;
+	return 0;
+
+usage:
+	*error = xstrdup("Usage: update-metadata [-d]");
+	free(delete);
+	return -1;
 }

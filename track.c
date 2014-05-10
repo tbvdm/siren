@@ -34,6 +34,7 @@
 
 struct track_entry {
 	struct track		track;
+	int			delete;
 	RB_ENTRY(track_entry)	entries;
 };
 
@@ -214,6 +215,7 @@ track_get(const char *path, const struct ip *ip)
 	}
 
 	te = xmalloc(sizeof *te);
+	te->delete = 0;
 	te->track.path = xstrdup(path);
 	te->track.ip = ip;
 	te->track.ipdata = NULL;
@@ -267,6 +269,7 @@ track_read_cache(void)
 
 	for (;;) {
 		te = xmalloc(sizeof *te);
+		te->delete = 0;
 		if (cache_read_entry(&te->track) == -1) {
 			track_free_entry(te);
 			break;
@@ -299,6 +302,7 @@ track_require(const char *path)
 	}
 
 	te = xmalloc(sizeof *te);
+	te->delete = 0;
 	te->track.path = xstrdup(path);
 	te->track.ip = plugin_find_ip(path);
 	te->track.ipdata = NULL;
@@ -343,7 +347,7 @@ track_unlock_metadata(void)
 }
 
 void
-track_update_metadata(void)
+track_update_metadata(int delete)
 {
 	struct track_entry	*te;
 	size_t			 i;
@@ -354,8 +358,11 @@ track_update_metadata(void)
 		    track_nentries, 100 * i / track_nentries);
 		i++;
 
-		if (access(te->track.path, F_OK) == -1)
+		if (access(te->track.path, F_OK) == -1) {
+			if (delete)
+				te->delete = 1;
 			continue;
+		}
 
 		if (te->track.ip == NULL) {
 			te->track.ip = plugin_find_ip(te->track.path);
@@ -385,7 +392,8 @@ track_write_cache(void)
 		return -1;
 
 	RB_FOREACH(te, track_tree, &track_tree)
-		cache_write_entry(&te->track);
+		if (!te->delete)
+			cache_write_entry(&te->track);
 
 	cache_close();
 	track_tree_modified = 0;
