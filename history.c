@@ -20,6 +20,7 @@
 #include "compat/queue.h"
 #endif
 
+#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -43,25 +44,14 @@ static void history_remove(struct history *, struct history_entry *);
 void
 history_add(struct history *h, const char *line)
 {
-	struct history_entry	*e;
-	unsigned int		 maxentries;
-
-	maxentries = (unsigned int)option_get_number("max-history-entries");
-	if (maxentries == 0)
-		return;
+	struct history_entry *e;
 
 	/* Don't add the entry if it is identical to the most recent one. */
 	if ((e = TAILQ_FIRST(&h->list)) != NULL && !strcmp(e->line, line))
 		return;
 
-	/*
-	 * Remove the oldest entry if we have reached the maximum number of
-	 * entries.
-	 */
-	if (h->nentries == maxentries) {
-		e = TAILQ_LAST(&h->list, history_list);
-		history_remove(h, e);
-	}
+	if (h->nentries == UINT_MAX)
+		return;
 
 	e = xmalloc(sizeof *e);
 	e->line = xstrdup(line);
@@ -129,17 +119,6 @@ history_remove(struct history *h, struct history_entry *e)
 	free(e->line);
 	free(e);
 	h->nentries--;
-}
-
-void
-history_resize(struct history *h, unsigned int maxentries)
-{
-	struct history_entry *e;
-
-	while (h->nentries > maxentries) {
-		e = TAILQ_LAST(&h->list, history_list);
-		history_remove(h, e);
-	}
 }
 
 void

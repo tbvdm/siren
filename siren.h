@@ -384,7 +384,6 @@ void		 history_free(struct history *) NONNULL();
 const char	*history_get_next(struct history *) NONNULL();
 const char	*history_get_prev(struct history *) NONNULL();
 struct history	*history_init(void);
-void		 history_resize(struct history *, unsigned int) NONNULL();
 void		 history_rewind(struct history *) NONNULL();
 
 void		 input_end(void);
@@ -542,7 +541,6 @@ void		 prompt_get_search_query(const char *,
 void		 prompt_handle_key(int);
 void		 prompt_init(void);
 void		 prompt_print(void);
-void		 prompt_resize_histories(void);
 
 void		 queue_activate_entry(void);
 void		 queue_add_dir(const char *) NONNULL();

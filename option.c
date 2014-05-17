@@ -421,8 +421,6 @@ void
 option_init(void)
 {
 	option_add_boolean("continue", 1, player_print);
-	option_add_number("max-history-entries", 100, 0, INT_MAX,
-	    prompt_resize_histories);
 	option_add_format("library-format", "%-*a %-*l %4y %2n. %-*t %5d",
 	    library_print);
 	option_add_string("output-plugin", "default", player_change_op);

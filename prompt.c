@@ -349,13 +349,3 @@ prompt_print(void)
 	screen_prompt_printf(cursorpos, "%s%s", prompt_prompt,
 	    prompt_line + prompt_scroll_offset);
 }
-
-void
-prompt_resize_histories(void)
-{
-	unsigned int maxentries;
-
-	maxentries = (unsigned int)option_get_number("max-history-entries");
-	history_resize(prompt_command_history, maxentries);
-	history_resize(prompt_search_history, maxentries);
-}
