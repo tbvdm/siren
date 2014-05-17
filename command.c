@@ -24,10 +24,6 @@
 
 #include "siren.h"
 
-#define COMMAND_CLEAR_HISTORY_ALL	~0
-#define COMMAND_CLEAR_HISTORY_COMMAND	1
-#define COMMAND_CLEAR_HISTORY_SEARCH	2
-
 struct command {
 	const char	*name;
 	int		 (*parse)(int, char **, void **, char **);
@@ -118,8 +114,6 @@ COMMAND_FREE_PROTOTYPE(bind_key);
 COMMAND_PARSE_PROTOTYPE(bind_key);
 COMMAND_EXEC_PROTOTYPE(cd);
 COMMAND_PARSE_PROTOTYPE(cd);
-COMMAND_EXEC_PROTOTYPE(clear_history);
-COMMAND_PARSE_PROTOTYPE(clear_history);
 COMMAND_EXEC_PROTOTYPE(command_prompt);
 COMMAND_FREE_PROTOTYPE(command_prompt);
 COMMAND_PARSE_PROTOTYPE(command_prompt);
@@ -201,12 +195,6 @@ static struct command command_list[] = {
 		"cd",
 		command_cd_parse,
 		command_cd_exec,
-		free
-	},
-	{
-		"clear-history",
-		command_clear_history_parse,
-		command_clear_history_exec,
 		free
 	},
 	{
@@ -631,54 +619,6 @@ command_cd_parse(int argc, char **argv, void **datap, char **error)
 		}
 
 	return 0;
-}
-
-static void
-command_clear_history_exec(void *datap)
-{
-	int histories;
-
-	histories = *(int *)datap;
-	if (histories & COMMAND_CLEAR_HISTORY_COMMAND)
-		prompt_clear_command_history();
-	if (histories & COMMAND_CLEAR_HISTORY_SEARCH)
-		prompt_clear_search_history();
-}
-
-static int
-command_clear_history_parse(int argc, char **argv, void **datap, char **error)
-{
-	int c, *histories;
-
-	histories = xmalloc(sizeof *histories);
-	*histories = 0;
-
-	while ((c = getopt(argc, argv, "cs")) != -1)
-		switch (c) {
-		case 'c':
-			*histories |= COMMAND_CLEAR_HISTORY_COMMAND;
-			break;
-		case 's':
-			*histories |= COMMAND_CLEAR_HISTORY_SEARCH;
-			break;
-		default:
-			goto usage;
-		}
-
-	if (argc - optind != 0)
-		goto usage;
-
-	/* If no history is specified, then clear all histories. */
-	if (*histories == 0)
-		*histories = COMMAND_CLEAR_HISTORY_ALL;
-
-	*datap = histories;
-	return 0;
-
-usage:
-	*error = xstrdup("Usage: clear-history [-cs]");
-	free(histories);
-	return -1;
 }
 
 static void

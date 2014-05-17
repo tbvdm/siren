@@ -380,7 +380,6 @@ void		 format_track_snprintf(char *, size_t, const struct format *,
 		    const struct track *) NONNULL();
 
 void		 history_add(struct history *, const char *) NONNULL();
-void		 history_clear(struct history *) NONNULL();
 void		 history_free(struct history *) NONNULL();
 const char	*history_get_next(struct history *) NONNULL();
 const char	*history_get_prev(struct history *) NONNULL();
@@ -533,8 +532,6 @@ void		 plugin_init(void);
 const struct ip	*plugin_find_ip(const char *) NONNULL();
 const struct op	*plugin_find_op(const char *) NONNULL();
 
-void		 prompt_clear_command_history(void);
-void		 prompt_clear_search_history(void);
 void		 prompt_end(void);
 void		 prompt_get_answer(const char *, void (*)(char *, void *),
 		    void *) NONNULL(1, 2);

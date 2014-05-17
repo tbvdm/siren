@@ -70,18 +70,12 @@ history_add(struct history *h, const char *line)
 }
 
 void
-history_clear(struct history *h)
+history_free(struct history *h)
 {
 	struct history_entry *e;
 
 	while ((e = TAILQ_FIRST(&h->list)) != NULL)
 		history_remove(h, e);
-}
-
-void
-history_free(struct history *h)
-{
-	history_clear(h);
 	free(h);
 }
 

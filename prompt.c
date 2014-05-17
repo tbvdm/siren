@@ -86,18 +86,6 @@ prompt_adjust_scroll_offset(void)
 }
 
 void
-prompt_clear_command_history(void)
-{
-	history_clear(prompt_command_history);
-}
-
-void
-prompt_clear_search_history(void)
-{
-	history_clear(prompt_search_history);
-}
-
-void
 prompt_end(void)
 {
 	history_free(prompt_command_history);
