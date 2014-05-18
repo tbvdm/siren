@@ -329,14 +329,7 @@ browser_read_dir(void)
 
 		MENU_FOR_EACH_ENTRY(browser_menu, me) {
 			mbe = menu_get_entry_data(me);
-			if (option_get_boolean("show-dirs-before-files") &&
-			    be->type != mbe->type) {
-				if (be->type == FILE_TYPE_DIRECTORY) {
-					menu_insert_before(browser_menu, me,
-					    be);
-					break;
-				}
-			} else if (strcmp(be->name, mbe->name) < 0) {
+			if (strcmp(be->name, mbe->name) < 0) {
 				menu_insert_before(browser_menu, me, be);
 				break;
 			}

@@ -434,7 +434,6 @@ option_init(void)
 	option_add_boolean("repeat-track", 0, player_print);
 	option_add_boolean("show-all-files", 0, browser_refresh_dir);
 	option_add_boolean("show-cursor", 0, screen_configure_cursor);
-	option_add_boolean("show-dirs-before-files", 0, browser_refresh_dir);
 	option_add_boolean("show-hidden-files", 0, browser_refresh_dir);
 
 	option_add_attrib("active-attr", ATTRIB_NORMAL,
