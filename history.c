@@ -20,7 +20,6 @@
 #include "compat/queue.h"
 #endif
 
-#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -36,10 +35,7 @@ TAILQ_HEAD(history_list, history_entry);
 struct history {
 	struct history_list	 list;
 	struct history_entry	*current_entry;
-	unsigned int		 nentries;
 };
-
-static void history_remove(struct history *, struct history_entry *);
 
 void
 history_add(struct history *h, const char *line)
@@ -50,13 +46,9 @@ history_add(struct history *h, const char *line)
 	if ((e = TAILQ_FIRST(&h->list)) != NULL && !strcmp(e->line, line))
 		return;
 
-	if (h->nentries == UINT_MAX)
-		return;
-
 	e = xmalloc(sizeof *e);
 	e->line = xstrdup(line);
 	TAILQ_INSERT_HEAD(&h->list, e, entries);
-	h->nentries++;
 }
 
 void
@@ -64,8 +56,11 @@ history_free(struct history *h)
 {
 	struct history_entry *e;
 
-	while ((e = TAILQ_FIRST(&h->list)) != NULL)
-		history_remove(h, e);
+	while ((e = TAILQ_FIRST(&h->list)) != NULL) {
+		TAILQ_REMOVE(&h->list, e, entries);
+		free(e->line);
+		free(e);
+	}
 	free(h);
 }
 
@@ -107,18 +102,8 @@ history_init(void)
 	h = xmalloc(sizeof *h);
 	TAILQ_INIT(&h->list);
 	h->current_entry = NULL;
-	h->nentries = 0;
 
 	return h;
-}
-
-static void
-history_remove(struct history *h, struct history_entry *e)
-{
-	TAILQ_REMOVE(&h->list, e, entries);
-	free(e->line);
-	free(e);
-	h->nentries--;
 }
 
 void
