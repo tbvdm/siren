@@ -55,6 +55,10 @@ extern char	*xoptarg;
 int		 xgetopt(int, char * const *, const char *);
 #endif
 
+#ifndef HAVE_REALLOCARRAY
+void		*reallocarray(void *, size_t, size_t);
+#endif
+
 #ifndef HAVE_STRCASESTR
 char		*strcasestr(const char *, const char *);
 #endif

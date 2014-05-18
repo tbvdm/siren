@@ -239,7 +239,7 @@ ip_wavpack_open(struct track *t)
 	ipd->bufidx = 0;
 	ipd->buflen = 0;
 	ipd->bufsize = IP_WAVPACK_BUFSIZE;
-	ipd->buf = xcalloc(ipd->bufsize * t->format.nchannels,
+	ipd->buf = xreallocarray(NULL, ipd->bufsize * t->format.nchannels,
 	    sizeof *ipd->buf);
 
 	t->ipdata = ipd;

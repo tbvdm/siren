@@ -142,7 +142,8 @@ player_begin_playback(struct player_sample_buffer *buf)
 		goto error;
 	}
 
-	buf->samples = xcalloc(buf->maxsamples, sizeof *buf->samples);
+	buf->samples = xreallocarray(NULL, buf->maxsamples,
+	    sizeof *buf->samples);
 	buf->swap = player_track->format.byte_order != player_byte_order;
 
 	XPTHREAD_MUTEX_UNLOCK(&player_op_mtx);

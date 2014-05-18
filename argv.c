@@ -36,7 +36,7 @@ argv_add_args(char ***argv, int *argc, char **args, size_t nargs)
 {
 	size_t i;
 
-	*argv = xrecalloc(*argv, (size_t)*argc + nargs, sizeof **argv);
+	*argv = xreallocarray(*argv, (size_t)*argc + nargs, sizeof **argv);
 
 	for (i = 0; i < nargs; i++)
 		(*argv)[(*argc)++] = xstrdup(args[i]);

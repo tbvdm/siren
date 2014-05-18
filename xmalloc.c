@@ -39,16 +39,6 @@ xasprintf(char **buf, const char *fmt, ...)
 }
 
 void *
-xcalloc(size_t nmemb, size_t size)
-{
-	void *p;
-
-	if ((p = calloc(nmemb, size)) == NULL)
-		LOG_FATAL("calloc");
-	return p;
-}
-
-void *
 xmalloc(size_t size)
 {
 	void *p;
@@ -69,14 +59,13 @@ xrealloc(void *p, size_t size)
 }
 
 void *
-xrecalloc(void *p, size_t nmemb, size_t size)
+xreallocarray(void *p, size_t nmemb, size_t size)
 {
-	if (nmemb == 0 || size == 0)
-		LOG_FATALX("requested memory size is 0");
-	if (nmemb > SIZE_MAX / size)
-		LOG_FATALX("requested memory size too large");
+	void *newp;
 
-	return xrealloc(p, nmemb * size);
+	if ((newp = reallocarray(p, nmemb, size)) == NULL)
+		LOG_FATAL("reallocarray");
+	return newp;
 }
 
 int

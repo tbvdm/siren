@@ -518,7 +518,7 @@ command_add_path_parse(int argc, char **argv, void **datap, char **error)
 	if (argc == 0)
 		goto usage;
 
-	data->paths = xcalloc(argc + 1, sizeof *data->paths);
+	data->paths = xreallocarray(NULL, argc + 1, sizeof *data->paths);
 	for (i = 0; i < argc; i++)
 		data->paths[i] = path_normalise(argv[i]);
 	data->paths[i] = NULL;

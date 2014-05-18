@@ -365,6 +365,12 @@ else
 	makefile_append SRCS compat/fgetln.c
 fi
 
+if check_function reallocarray "reallocarray(NULL, 0, 0)" stdlib.h; then
+	header_define HAVE_REALLOCARRAY
+else
+	makefile_append SRCS compat/reallocarray.c
+fi
+
 if check_function resizeterm "resizeterm(0, 0)" curses.h "" -lcurses; then
 	header_define HAVE_RESIZETERM
 fi

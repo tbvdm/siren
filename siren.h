@@ -632,10 +632,9 @@ void		 view_select_view(enum view_id);
 
 int		 xasprintf(char **, const char *, ...) NONNULL()
 		    PRINTFLIKE(2, 3);
-void		*xcalloc(size_t, size_t);
 void		*xmalloc(size_t);
 void		*xrealloc(void *, size_t);
-void		*xrecalloc(void *, size_t, size_t);
+void		*xreallocarray(void *, size_t, size_t);
 int		 xsnprintf(char *, size_t, const char *, ...) PRINTFLIKE(3, 4);
 char		*xstrdup(const char *) NONNULL();
 char		*xstrndup(const char *, size_t) NONNULL();

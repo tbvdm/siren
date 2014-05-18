@@ -195,7 +195,7 @@ ip_sndfile_open(struct track *t)
 	t->format.nchannels = ipd->sfinfo.channels;
 	t->format.rate = ipd->sfinfo.samplerate;
 
-	ipd->buf = xcalloc(IP_SNDFILE_BUFSIZE, sizeof *ipd->buf);
+	ipd->buf = xreallocarray(NULL, IP_SNDFILE_BUFSIZE, sizeof *ipd->buf);
 	ipd->bufidx = 0;
 	ipd->buflen = 0;
 	ipd->position = 0;
