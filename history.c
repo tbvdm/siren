@@ -42,13 +42,12 @@ history_add(struct history *h, const char *line)
 {
 	struct history_entry *e;
 
-	/* Don't add the entry if it is identical to the most recent one. */
-	if ((e = TAILQ_FIRST(&h->list)) != NULL && !strcmp(e->line, line))
-		return;
-
-	e = xmalloc(sizeof *e);
-	e->line = xstrdup(line);
-	TAILQ_INSERT_HEAD(&h->list, e, entries);
+	/* Only add the entry if it is different from the last one. */
+	if ((e = TAILQ_FIRST(&h->list)) == NULL || strcmp(e->line, line)) {
+		e = xmalloc(sizeof *e);
+		e->line = xstrdup(line);
+		TAILQ_INSERT_HEAD(&h->list, e, entries);
+	}
 }
 
 void
