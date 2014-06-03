@@ -18,21 +18,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../siren.h"
-
-int
-asprintf(char **buf, const char *fmt, ...)
-{
-	va_list	ap;
-	int	ret;
-
-	va_start(ap, fmt);
-	ret = vasprintf(buf, fmt, ap);
-	va_end(ap);
-
-	return ret;
-}
-
 int
 vasprintf(char **buf, const char *fmt, va_list ap)
 {
@@ -59,4 +44,17 @@ vasprintf(char **buf, const char *fmt, va_list ap)
 	}
 
 	return len;
+}
+
+int
+asprintf(char **buf, const char *fmt, ...)
+{
+	va_list	ap;
+	int	ret;
+
+	va_start(ap, fmt);
+	ret = vasprintf(buf, fmt, ap);
+	va_end(ap);
+
+	return ret;
 }
