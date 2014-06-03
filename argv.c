@@ -29,7 +29,7 @@
 #define ARGV_QUOTED_SINGLE	1
 #define ARGV_QUOTED_DOUBLE	2
 
-static void argv_unescape(char **);
+static void argv_unescape(char *);
 
 static void
 argv_add_args(char ***argv, int *argc, char **args, size_t nargs)
@@ -304,7 +304,7 @@ argv_parse(const char *line, int *argc, char ***argv)
 			argv_expand_tilde(&arg);
 
 		if (glob(arg, 0, NULL, &gl)) {
-			argv_unescape(&arg);
+			argv_unescape(arg);
 			argv_add_args(argv, argc, &arg, 1);
 		} else {
 			argv_add_args(argv, argc, gl.gl_pathv, gl.gl_pathc);
@@ -321,14 +321,14 @@ argv_parse(const char *line, int *argc, char ***argv)
 }
 
 static void
-argv_unescape(char **arg)
+argv_unescape(char *arg)
 {
 	size_t i, len;
 
-	len = strlen(*arg);
+	len = strlen(arg);
 	for (i = 0; i < len; i++)
-		if ((*arg)[i] == '\\') {
-			(void)memmove(*arg + i, *arg + i + 1, len - i);
+		if (arg[i] == '\\') {
+			(void)memmove(arg + i, arg + i + 1, len - i);
 			len--;
 		}
 }
