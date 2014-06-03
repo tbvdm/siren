@@ -14,6 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <limits.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,17 +29,13 @@ vasprintf(char **buf, const char *fmt, va_list ap)
 	len = vsnprintf(NULL, 0, fmt, ap2);
 	va_end(ap2);
 
-	if (len < 0)
+	if (len < 0 || len == INT_MAX)
 		return -1;
 
-	/*
-	 * We cannot call xmalloc() here, because xmalloc() might want to call
-	 * us again.
-	 */
-	if ((*buf = malloc((size_t)len + 1)) == NULL)
+	if ((*buf = malloc(len + 1)) == NULL)
 		return -1;
 
-	if (vsnprintf(*buf, (size_t)len + 1, fmt, ap) < 0) {
+	if (vsnprintf(*buf, len + 1, fmt, ap) < 0) {
 		free(*buf);
 		return -1;
 	}
@@ -50,11 +47,10 @@ int
 asprintf(char **buf, const char *fmt, ...)
 {
 	va_list	ap;
-	int	ret;
+	int	len;
 
 	va_start(ap, fmt);
-	ret = vasprintf(buf, fmt, ap);
+	len = vasprintf(buf, fmt, ap);
 	va_end(ap);
-
-	return ret;
+	return len;
 }
