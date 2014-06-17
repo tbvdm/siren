@@ -30,6 +30,7 @@ struct view_entry {
 	void		 (*move_entry_up)(void);
 	void		 (*search_next)(const char *);
 	void		 (*search_prev)(const char *);
+	void		 (*select_active_entry)(void);
 	void		 (*select_prev_entry)(void);
 	void		 (*select_next_entry)(void);
 	void		 (*select_first_entry)(void);
@@ -51,6 +52,7 @@ struct view_entry	view_list[] = {
 		NULL,
 		library_search_next,
 		library_search_prev,
+		library_select_active_entry,
 		library_select_prev_entry,
 		library_select_next_entry,
 		library_select_first_entry,
@@ -70,6 +72,7 @@ struct view_entry	view_list[] = {
 		queue_move_entry_up,
 		queue_search_next,
 		queue_search_prev,
+		NULL,
 		queue_select_prev_entry,
 		queue_select_next_entry,
 		queue_select_first_entry,
@@ -89,6 +92,7 @@ struct view_entry	view_list[] = {
 		NULL,
 		browser_search_next,
 		browser_search_prev,
+		browser_select_active_entry,
 		browser_select_prev_entry,
 		browser_select_next_entry,
 		browser_select_first_entry,
@@ -244,6 +248,13 @@ view_search_prev(const char *search)
 	}
 
 	view_list[view_sel].search_prev(view_search);
+}
+
+void
+view_select_active_entry(void)
+{
+	if (view_list[view_sel].select_active_entry != NULL)
+		view_list[view_sel].select_active_entry();
 }
 
 void

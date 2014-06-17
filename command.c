@@ -1202,7 +1202,7 @@ error:
 static void
 command_select_active_entry_exec(UNUSED void *datap)
 {
-	library_select_active_entry();
+	view_select_active_entry();
 }
 
 static void

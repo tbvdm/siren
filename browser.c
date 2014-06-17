@@ -410,6 +410,13 @@ browser_scroll_up(enum menu_scroll scroll)
 	browser_print();
 }
 
+void
+browser_select_active_entry(void)
+{
+	menu_select_active_entry(browser_menu);
+	browser_print();
+}
+
 static void
 browser_select_entry(const char *name)
 {
