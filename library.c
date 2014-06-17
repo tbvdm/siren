@@ -24,7 +24,6 @@
 
 #include "siren.h"
 
-static void		 library_get_entry_text(const void *, char *, size_t);
 static int		 library_search_entry(const void *, const char *);
 
 static pthread_mutex_t	 library_menu_mtx = PTHREAD_MUTEX_INITIALIZER;
@@ -340,6 +339,15 @@ library_scroll_up(enum menu_scroll scroll)
 	library_print();
 }
 
+static int
+library_search_entry(const void *e, const char *search)
+{
+	const struct track *t;
+
+	t = e;
+	return track_search(t, search);
+}
+
 void
 library_search_next(const char *search)
 {
@@ -356,15 +364,6 @@ library_search_prev(const char *search)
 	menu_search_prev(library_menu, search);
 	XPTHREAD_MUTEX_UNLOCK(&library_menu_mtx);
 	library_print();
-}
-
-static int
-library_search_entry(const void *e, const char *search)
-{
-	const struct track *t;
-
-	t = e;
-	return track_search(t, search);
 }
 
 void

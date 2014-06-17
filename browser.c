@@ -38,7 +38,6 @@ struct browser_entry {
 };
 
 static void		 browser_free_entry(void *);
-static void		 browser_get_entry_text(const void *, char *, size_t);
 static void		 browser_read_dir(void);
 static int		 browser_search_entry(const void *, const char *);
 static void		 browser_select_entry(const char *);

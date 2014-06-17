@@ -20,7 +20,6 @@
 
 #include "siren.h"
 
-static void		 queue_get_entry_text(const void *, char *, size_t);
 static int		 queue_search_entry(const void *, const char *);
 
 static pthread_mutex_t	 queue_menu_mtx = PTHREAD_MUTEX_INITIALIZER;
@@ -238,6 +237,15 @@ queue_scroll_up(enum menu_scroll scroll)
 	queue_print();
 }
 
+static int
+queue_search_entry(const void *e, const char *search)
+{
+	const struct track *t;
+
+	t = e;
+	return track_search(t, search);
+}
+
 void
 queue_search_next(const char *search)
 {
@@ -254,15 +262,6 @@ queue_search_prev(const char *search)
 	menu_search_prev(queue_menu, search);
 	XPTHREAD_MUTEX_UNLOCK(&queue_menu_mtx);
 	queue_print();
-}
-
-static int
-queue_search_entry(const void *e, const char *search)
-{
-	const struct track *t;
-
-	t = e;
-	return track_search(t, search);
 }
 
 void
