@@ -429,6 +429,7 @@ option_init(void)
 	    "%{?t,  repeat-track,}", player_print);
 	option_add_format("player-track-format", "%a - %l (%y) - %n. %t",
 	    player_print);
+	option_add_format("playlist-format", "%-*a %-*t %5d", playlist_print);
 	option_add_format("queue-format", "%-*a %-*t %5d", queue_print);
 	option_add_boolean("repeat-all", 1, player_print);
 	option_add_boolean("repeat-track", 0, player_print);

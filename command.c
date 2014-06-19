@@ -123,6 +123,8 @@ COMMAND_PARSE_PROTOTYPE(confirm);
 COMMAND_EXEC_PROTOTYPE(delete_entry);
 COMMAND_PARSE_PROTOTYPE(delete_entry);
 COMMAND_PARSE_PROTOTYPE(generic);
+COMMAND_EXEC_PROTOTYPE(load_playlist);
+COMMAND_PARSE_PROTOTYPE(load_playlist);
 COMMAND_EXEC_PROTOTYPE(move_entry_down);
 COMMAND_EXEC_PROTOTYPE(move_entry_up);
 COMMAND_EXEC_PROTOTYPE(pause);
@@ -213,6 +215,12 @@ static struct command command_list[] = {
 		"delete-entry",
 		command_delete_entry_parse,
 		command_delete_entry_exec,
+		free
+	},
+	{
+		"load-playlist",
+		command_load_playlist_parse,
+		command_load_playlist_exec,
 		free
 	},
 	{
@@ -850,6 +858,27 @@ command_generic_parse(int argc, char **argv, void **datap, char **error)
 }
 
 static void
+command_load_playlist_exec(void *datap)
+{
+	char *file;
+
+	file = datap;
+	playlist_load(file);
+}
+
+static int
+command_load_playlist_parse(int argc, char **argv, void **datap, char **error)
+{
+	if (argc != 2) {
+		*error = xstrdup("Usage: load-playlist file");
+		return -1;
+	}
+
+	*datap = xstrdup(argv[1]);
+	return 0;
+}
+
+static void
 command_move_entry_down_exec(UNUSED void *datap)
 {
 	view_move_entry_down();
@@ -1253,6 +1282,8 @@ command_select_view_parse(int argc, char **argv, void **datap, char **error)
 		*data = VIEW_ID_BROWSER;
 	else if (!strcmp(argv[1], "library"))
 		*data = VIEW_ID_LIBRARY;
+	else if (!strcmp(argv[1], "playlist"))
+		*data = VIEW_ID_PLAYLIST;
 	else if (!strcmp(argv[1], "queue"))
 		*data = VIEW_ID_QUEUE;
 	else {

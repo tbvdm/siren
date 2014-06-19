@@ -12,7 +12,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd June 17, 2014
+.Dd June 19, 2014
 .Dt SIREN 1
 .Os
 .Sh NAME
@@ -71,12 +71,19 @@ The library view shows all tracks that have been added to the library.
 It can be displayed by pressing the
 .Ic 1
 key.
+.It Sy Playlist view
+The playlist view shows the playlist loaded with the
+.Ic load-playlist
+command.
+It can be displayed by pressing the
+.Ic 2
+key.
 .It Sy Queue view
 The queue view shows all tracks that have been added to the queue.
 Tracks in the queue will be played back before those in the library.
 A track will be removed from the queue as soon as it is being played back.
 The queue view can be displayed by pressing the
-.Ic 2
+.Ic 3
 key.
 .It Sy Browser view
 The browser view shows the contents of a directory.
@@ -84,7 +91,7 @@ By default only directories and supported audio files are shown.
 The browser view can be used to browse through the file system and play back
 audio files or add them to the library or queue.
 The browser view can be displayed by pressing the
-.Ic 3
+.Ic 4
 key.
 .El
 .Sh KEY BINDINGS
@@ -193,6 +200,11 @@ Delete the selected entry.
 .It l
 Delete all entries.
 .El
+.It Sy Playlist view key bindings
+.Bl -tag -width "^F, page-down" -compact
+.It a
+Add the selected entry to the queue.
+.El
 .It Sy Queue view key bindings
 .Bl -tag -width "^F, page-down" -compact
 .It J
@@ -292,7 +304,7 @@ The following commands are available.
 .Bl -tag -width Ds
 .It Ic activate-entry
 Activate the selected entry in the current view.
-In the library view, an activated entry is played back.
+In the library and playlist views, an activated entry is played back.
 In the queue view, an activated entry is played back and removed from the
 queue.
 In the browser view, if the activated entry is a directory, it is entered.
@@ -342,6 +354,7 @@ argument specifies the scope of the key binding.
 It should be one of
 .Ar browser ,
 .Ar library ,
+.Ar playlist ,
 .Ar queue
 or
 .Ar common .
@@ -447,6 +460,16 @@ The options are as follows.
 .It Fl a
 Delete all entries in the current view.
 .El
+.It Ic load-playlist Ar file
+Load the playlist
+.Ar file
+into the playlist view.
+Each line of
+.Ar file
+should contain the absolute path to a track.
+Lines starting with the
+.Sq #
+character are ignored.
 .It Ic move-entry-down
 Move the selected entry after its succeeding entry.
 This command is supported in the queue view only.
@@ -564,6 +587,7 @@ The
 .Ar name
 argument must be one of
 .Em library ,
+.Em playlist ,
 .Em queue
 or
 .Em browser .
@@ -885,6 +909,11 @@ depending on the playback state
 .El
 .It Cm player-track-format Pq format
 The format used to display the currently playing track.
+See the
+.Cm library-format
+option for a list of available variables.
+.It Cm playlist-format Pq format
+The format used to display tracks in the playlist view.
 See the
 .Cm library-format
 option for a list of available variables.

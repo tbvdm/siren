@@ -214,8 +214,9 @@ bind_init(void)
 	bind_add(BIND_SCOPE_COMMON, '>', "seek -f 5:00");
 	bind_add(BIND_SCOPE_COMMON, '?', "search-prompt -b");
 	bind_add(BIND_SCOPE_COMMON, '1', "select-view library");
-	bind_add(BIND_SCOPE_COMMON, '2', "select-view queue");
-	bind_add(BIND_SCOPE_COMMON, '3', "select-view browser");
+	bind_add(BIND_SCOPE_COMMON, '2', "select-view playlist");
+	bind_add(BIND_SCOPE_COMMON, '3', "select-view queue");
+	bind_add(BIND_SCOPE_COMMON, '4', "select-view browser");
 	bind_add(BIND_SCOPE_COMMON, ':', "command-prompt");
 	bind_add(BIND_SCOPE_COMMON, '=', "set-volume -i 5");
 	bind_add(BIND_SCOPE_COMMON, 'C', "set continue");
@@ -243,6 +244,8 @@ bind_init(void)
 	bind_add(BIND_SCOPE_LIBRARY, 'a', "add-entry -q");
 	bind_add(BIND_SCOPE_LIBRARY, 'l',
 	    "confirm -p \"Delete all entries\" \"delete-entry -a\"");
+
+	bind_add(BIND_SCOPE_PLAYLIST, 'a', "add-entry -q");
 
 	bind_add(BIND_SCOPE_QUEUE, K_DELETE,
 	    "confirm -p \"Delete entry\" delete-entry");

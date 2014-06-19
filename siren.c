@@ -79,6 +79,7 @@ main(int argc, char **argv)
 	plugin_init();
 	track_init();
 	library_init();
+	playlist_init();
 	queue_init();
 	browser_init();
 	player_init();
@@ -93,6 +94,7 @@ main(int argc, char **argv)
 	player_end();
 	browser_end();
 	queue_end();
+	playlist_end();
 	library_end();
 	track_end();
 	plugin_end();

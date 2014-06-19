@@ -61,6 +61,26 @@ struct view_entry	view_list[] = {
 		library_scroll_up
 	},
 	{
+		VIEW_ID_PLAYLIST,
+		BIND_SCOPE_PLAYLIST,
+		playlist_print,
+		playlist_activate_entry,
+		playlist_copy_entry,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		playlist_search_next,
+		playlist_search_prev,
+		playlist_select_active_entry,
+		playlist_select_prev_entry,
+		playlist_select_next_entry,
+		playlist_select_first_entry,
+		playlist_select_last_entry,
+		playlist_scroll_down,
+		playlist_scroll_up
+	},
+	{
 		VIEW_ID_QUEUE,
 		BIND_SCOPE_QUEUE,
 		queue_print,

@@ -240,6 +240,9 @@ player_get_track(void)
 			case PLAYER_SOURCE_LIBRARY:
 				t = library_get_next_track();
 				break;
+			case PLAYER_SOURCE_PLAYLIST:
+				t = playlist_get_next_track();
+				break;
 			}
 			XPTHREAD_MUTEX_UNLOCK(&player_source_mtx);
 
@@ -333,6 +336,9 @@ player_play_next(void)
 	case PLAYER_SOURCE_LIBRARY:
 		t = library_get_next_track();
 		break;
+	case PLAYER_SOURCE_PLAYLIST:
+		t = playlist_get_next_track();
+		break;
 	}
 	XPTHREAD_MUTEX_UNLOCK(&player_source_mtx);
 
@@ -352,6 +358,9 @@ player_play_prev(void)
 		break;
 	case PLAYER_SOURCE_LIBRARY:
 		t = library_get_prev_track();
+		break;
+	case PLAYER_SOURCE_PLAYLIST:
+		t = playlist_get_prev_track();
 		break;
 	}
 	XPTHREAD_MUTEX_UNLOCK(&player_source_mtx);
@@ -601,6 +610,9 @@ player_print_status(void)
 		break;
 	case PLAYER_SOURCE_LIBRARY:
 		vars[PLAYER_FMT_SOURCE].value.string = "library";
+		break;
+	case PLAYER_SOURCE_PLAYLIST:
+		vars[PLAYER_FMT_SOURCE].value.string = "playlist";
 		break;
 	}
 	XPTHREAD_MUTEX_UNLOCK(&player_source_mtx);

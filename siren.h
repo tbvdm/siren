@@ -168,6 +168,7 @@ enum bind_scope {
 	BIND_SCOPE_BROWSER,
 	BIND_SCOPE_LIBRARY,
 	BIND_SCOPE_MENU,
+	BIND_SCOPE_PLAYLIST,
 	BIND_SCOPE_PROMPT,
 	BIND_SCOPE_QUEUE
 };
@@ -222,12 +223,14 @@ enum option_type {
 
 enum player_source {
 	PLAYER_SOURCE_BROWSER,
-	PLAYER_SOURCE_LIBRARY
+	PLAYER_SOURCE_LIBRARY,
+	PLAYER_SOURCE_PLAYLIST
 };
 
 enum view_id {
 	VIEW_ID_BROWSER,
 	VIEW_ID_LIBRARY,
+	VIEW_ID_PLAYLIST,
 	VIEW_ID_QUEUE
 };
 
@@ -526,6 +529,24 @@ void		 player_seek(int, int);
 void		 player_set_source(enum player_source);
 void		 player_set_volume(int, int);
 void		 player_stop(void);
+
+void		 playlist_activate_entry(void);
+void		 playlist_copy_entry(enum view_id);
+void		 playlist_end(void);
+struct track	*playlist_get_next_track(void);
+struct track	*playlist_get_prev_track(void);
+void		 playlist_init(void);
+void		 playlist_load(const char *) NONNULL();
+void		 playlist_print(void);
+void		 playlist_scroll_down(enum menu_scroll);
+void		 playlist_scroll_up(enum menu_scroll);
+void		 playlist_search_next(const char *);
+void		 playlist_search_prev(const char *);
+void		 playlist_select_active_entry(void);
+void		 playlist_select_first_entry(void);
+void		 playlist_select_last_entry(void);
+void		 playlist_select_next_entry(void);
+void		 playlist_select_prev_entry(void);
 
 void		 plugin_end(void);
 void		 plugin_init(void);
