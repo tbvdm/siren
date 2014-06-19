@@ -19,6 +19,7 @@
 #endif
 
 #include <curses.h>
+#include <errno.h>
 #include <pthread.h>
 #include <stdarg.h>
 #include <stdlib.h>
