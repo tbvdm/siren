@@ -58,11 +58,6 @@ queue_add_dir(const char *path)
 	}
 
 	while ((de = dir_get_entry(d)) != NULL) {
-		if (errno) {
-			msg_err("%s", de->path);
-			continue;
-		}
-
 		switch (de->type) {
 		case FILE_TYPE_DIRECTORY:
 			if (strcmp(de->name, ".") && strcmp(de->name, ".."))
@@ -77,9 +72,6 @@ queue_add_dir(const char *path)
 			break;
 		}
 	}
-
-	if (errno)
-		msg_err("%s", path);
 
 	dir_close(d);
 }

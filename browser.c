@@ -23,7 +23,6 @@
 #include "compat/queue.h"
 #endif
 
-#include <errno.h>
 #include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
@@ -297,11 +296,6 @@ browser_read_dir(void)
 	}
 
 	while ((de = dir_get_entry(d)) != NULL) {
-		if (errno) {
-			msg_err("%s", de->name);
-			continue;
-		}
-
 		if (de->type == FILE_TYPE_OTHER &&
 		    !option_get_boolean("show-all-files"))
 			continue;
@@ -341,9 +335,6 @@ browser_read_dir(void)
 			 */
 			menu_insert_tail(browser_menu, be);
 	}
-
-	if (errno)
-		msg_err("Cannot read directory");
 
 	dir_close(d);
 }

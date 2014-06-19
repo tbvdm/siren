@@ -44,21 +44,18 @@ dir_close(struct dir *d)
 	free(d);
 }
 
-/*
- * Return a directory entry. NULL is returned if the end of the directory
- * stream has been reached. On success, errno is set to 0; otherwise, errno is
- * set to indicate the error.
- */
 struct dir_entry *
 dir_get_entry(struct dir *d)
 {
 	struct dirent	*result;
 	struct stat	 sb;
+	int		 ret;
 
-	if ((errno = readdir_r(d->dirp, d->dp, &result)) || result == NULL) {
-		/* Error or end of directory stream. */
-		if (errno)
+	if ((ret = readdir_r(d->dirp, d->dp, &result)) || result == NULL) {
+		if (ret) {
+			errno = ret;
 			LOG_ERR("readdir_r: %s", d->dir);
+		}
 		return NULL;
 	}
 
@@ -68,22 +65,19 @@ dir_get_entry(struct dir *d)
 
 	if (stat(d->entry.path, &sb) == -1) {
 		LOG_ERR("stat: %s", d->entry.path);
-		d->entry.type = FILE_TYPE_OTHER;
-	} else {
-		switch (sb.st_mode & S_IFMT) {
-		case S_IFDIR:
-			d->entry.type = FILE_TYPE_DIRECTORY;
-			break;
-		case S_IFREG:
-			d->entry.type = FILE_TYPE_REGULAR;
-			break;
-		default:
-			d->entry.type = FILE_TYPE_OTHER;
-			break;
-		}
+		return NULL;
+	}
 
-		/* Set errno to indicate success. */
-		errno = 0;
+	switch (sb.st_mode & S_IFMT) {
+	case S_IFDIR:
+		d->entry.type = FILE_TYPE_DIRECTORY;
+		break;
+	case S_IFREG:
+		d->entry.type = FILE_TYPE_REGULAR;
+		break;
+	default:
+		d->entry.type = FILE_TYPE_OTHER;
+		break;
 	}
 
 	return &d->entry;
@@ -108,7 +102,7 @@ dir_open(const char *dir)
 
 	/*
 	 * In order to allocate space for struct dirent, we need to know the
-	 * maximum length of a file name in the specified directory. If
+	 * maximum length of the file names in the specified directory. If
 	 * NAME_MAX is defined, we use that. Otherwise, we obtain the value
 	 * from fpathconf().
 	 *

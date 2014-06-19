@@ -21,7 +21,6 @@
 #endif
 
 #include <dlfcn.h>
-#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
@@ -172,11 +171,6 @@ plugin_load_dir(const char *dir, const char *symbol,
 	}
 
 	while ((de = dir_get_entry(d)) != NULL) {
-		if (errno) {
-			msg_err("%s", de->path);
-			continue;
-		}
-
 		if (de->type != FILE_TYPE_REGULAR)
 			continue;
 
@@ -198,9 +192,6 @@ plugin_load_dir(const char *dir, const char *symbol,
 
 		add(handle, plugin);
 	}
-
-	if (errno)
-		msg_err("%s", dir);
 
 	dir_close(d);
 }
