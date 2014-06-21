@@ -874,7 +874,7 @@ command_load_playlist_parse(int argc, char **argv, void **datap, char **error)
 		return -1;
 	}
 
-	*datap = xstrdup(argv[1]);
+	*datap = path_normalise(argv[1]);
 	return 0;
 }
 
