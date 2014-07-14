@@ -46,6 +46,8 @@ INSTALL_MAN=	install -m 444
 CFLAGS+=	-Wall -W -Wbad-function-cast -Wcast-align -Wcast-qual \
 		-Wformat=2 -Wpointer-arith -Wshadow -Wundef -Wwrite-strings
 LDFLAGS+=	-lcurses -pthread -Wl,--export-dynamic
+CPPCHECKFLAGS?=	-I /usr/include -I /usr/local/include --enable=all --force \
+		--quiet
 MKDEPFLAGS?=	-a
 
 .PHONY: all clean cleandir cleanlog cppcheck depend dist install
@@ -87,7 +89,7 @@ cleanlog:
 	rm -f *.log
 
 cppcheck:
-	cppcheck --enable=all --quiet ${SRCS} ${IP_SRCS} ${OP_SRCS}
+	cppcheck ${CPPCHECKFLAGS} *.c */*.c
 
 depend: .depend
 
