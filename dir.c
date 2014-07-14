@@ -65,19 +65,19 @@ dir_get_entry(struct dir *d)
 
 	if (stat(d->entry.path, &sb) == -1) {
 		LOG_ERR("stat: %s", d->entry.path);
-		return NULL;
-	}
-
-	switch (sb.st_mode & S_IFMT) {
-	case S_IFDIR:
-		d->entry.type = FILE_TYPE_DIRECTORY;
-		break;
-	case S_IFREG:
-		d->entry.type = FILE_TYPE_REGULAR;
-		break;
-	default:
 		d->entry.type = FILE_TYPE_OTHER;
-		break;
+	} else {
+		switch (sb.st_mode & S_IFMT) {
+		case S_IFDIR:
+			d->entry.type = FILE_TYPE_DIRECTORY;
+			break;
+		case S_IFREG:
+			d->entry.type = FILE_TYPE_REGULAR;
+			break;
+		default:
+			d->entry.type = FILE_TYPE_OTHER;
+			break;
+		}
 	}
 
 	return &d->entry;
