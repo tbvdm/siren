@@ -49,7 +49,7 @@ input_init(void)
 
 	sa.sa_handler = input_handle_signal;
 	sa.sa_flags = 0;
-	sigemptyset(&sa.sa_mask);
+	(void)sigemptyset(&sa.sa_mask);
 
 	if (sigaction(SIGINT, &sa, NULL) == -1)
 		LOG_ERR("sigaction");
