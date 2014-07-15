@@ -36,12 +36,8 @@ The default is
 .Pa ~/.siren .
 .It Fl l
 Log error and informational messages to a file.
-If
-.Nm
-is compiled with debugging support, then debugging messages are saved to this
-file, too.
 The file is created in the current directory and named
-.Pa siren-%d.log ,
+.Pa siren-%d.log
 where
 .Pa %d
 is replaced with
@@ -53,10 +49,14 @@ Print version information and exit.
 .Sh USER INTERFACE
 .Nm Ap s
 user interface consists of three areas.
-The bottom line is the status line, which is used to display error and
-informational messages and to enter commands and search queries.
+.Pp
+The bottom line is the status line.
+It is used to display error and informational messages and to enter commands
+and search queries.
+.Pp
 The two lines above the status line show playback-related information, such as
-the metadata of the currently playing track and the sound volume.
+the currently playing track and the volume level.
+.Pp
 The remainder of the screen is used to display a view.
 A view displays a specific type of information.
 Only one view can be displayed at a time, but each view can be selected by
@@ -67,8 +67,17 @@ command or the default key bindings.
 The available views are as follows.
 .Bl -tag -width Ds
 .It Sy Library view
-The library view shows all tracks that have been added to the library.
-It can be displayed by pressing the
+The library view shows all tracks in the library.
+The
+.Ic add-path
+command
+.Po
+see
+.Sx COMMANDS
+below
+.Pc
+may be used to add tracks.
+The library view can be displayed by pressing the
 .Ic 1
 key.
 .It Sy Playlist view
@@ -160,9 +169,9 @@ Select the library view.
 .It 2
 Select the playlist view.
 .It 3
-Select the file browser view.
+Select the browser view.
 .It 4
-Select the play queue view.
+Select the queue view.
 .It enter
 Activate the selected entry.
 .It k, up
@@ -365,14 +374,11 @@ It should be one of
 .Ar queue
 or
 .Ar common .
+.Pp
 A key binding is first looked up in the scope of the current view.
 If no key binding is found in that scope, then it is looked up in the
 .Ar common
 scope.
-If a key is bound in both the
-.Ar common
-scope and the scope of the current view, then the scope of the current view
-takes precedence.
 .Pp
 The
 .Ar key
@@ -386,7 +392,7 @@ They are represented by themselves.
 .It
 The ASCII control characters: these are the ASCII character codes between 0 and
 31 decimal.
-They are represented in case-insensitive caret notation.
+They are specified in case-insensitive caret notation.
 For example,
 .Ar ^A
 and
@@ -484,7 +490,7 @@ This command is supported in the queue view only.
 Move the entry before its preceding entry.
 This command is supported in the queue view only.
 .It Ic pause
-Pause or, if already paused, resume playback.
+Pause or resume playback.
 .It Ic play
 Start, restart or resume playback.
 .It Ic play-next
@@ -610,14 +616,13 @@ is a Boolean value and
 is not specified, it is toggled.
 See
 .Sx OPTIONS
-for a list of available options.
+below for a list of available options.
 .It Xo
 .Ic set-volume
 .Op Fl d | i
 .Ar level
 .Xc
-Set the volume level to
-.Ar level .
+Set the volume level.
 The
 .Ar level
 argument should be an integer value between 0 and 100.
@@ -625,14 +630,14 @@ The options are as follows.
 .Pp
 .Bl -tag -width Ds -compact
 .It Fl d
-Decrease the current volume level by subtracting
+Decrease the volume level by subtracting
 .Ar level .
 .It Fl i
-Increase the current volume level by adding
+Increase the volume level by adding
 .Ar level .
 .El
 .Pp
-Not all output plug-ins support setting the volume.
+Not all output plug-ins have volume support.
 .It Ic show-binding Ar scope key
 Show the command bound to
 .Ar key .
@@ -718,8 +723,7 @@ when used as a background colour and to
 .Em white
 when used as a foreground colour.
 .It Sy Boolean options
-Boolean options are used to enable or disable certain behaviour.
-Valid values are
+Valid values of Boolean options are
 .Em true
 and
 .Em false .
@@ -733,15 +737,14 @@ and
 .Em 0
 are accepted as well.
 .It Sy Number options
-Number options have numeric values.
-Their allowed range is option-specific.
+Valid values of number options are non-negative integers.
+The maximum value is option-specific.
 .It Sy String options
-String options have textual values.
-Their allowed values are option-specific.
+Valid values of string options are option-specific.
 .It Sy Format options
 Format options are strings that control the formatting of information displayed
 on the screen.
-Their syntax is reminiscent of that of the
+The syntax is reminiscent of that of the
 .Xr printf 3
 family of functions.
 .Pp
@@ -767,8 +770,7 @@ This flag is ignored if the variable is to be left-aligned.
 An optional sequence of numeric characters to specify the field width.
 If the
 .Sq *
-character is specified, the width is variable and will be as large as the
-available space allows.
+character is specified, the width is variable and will be so long as possible.
 If there are two or more fields with a variable width, the available space will
 be divided equally between them.
 .It
@@ -781,7 +783,7 @@ and
 characters
 .Pc .
 Some variables also have a one-character alias.
-If this alias is specified, the braces can be omitted.
+If this alias is specified, the braces may be omitted.
 Which variables are available is dependent on the option.
 .Pp
 Conditional fields are also supported.
@@ -858,17 +860,17 @@ They are listed in descending order of priority.
 .It sndio
 OpenBSD
 .Xr sndio 7
-output plug-in.
+output plug-in
 .It pulse
-PulseAudio output plug-in.
+PulseAudio output plug-in
 .It sun
-Sun output plug-in.
+Sun output plug-in
 .It alsa
-ALSA output plug-in.
+ALSA output plug-in
 .It oss
-OSS output plug-in.
+OSS output plug-in
 .It ao
-libao output plug-in.
+libao output plug-in
 .El
 .It Cm player-attr Pq attribute
 Character attributes for the player area.
@@ -951,14 +953,14 @@ Background colour for the selection indicator.
 .It Cm selection-fg Pq colour
 Foreground colour for the selection indicator.
 .It Cm show-all-files Pq Boolean
-Whether to show all files in the file browser.
+Whether to show all files in the browser view.
 If set to
 .Em false ,
 only directories and supported audio files are shown.
 .It Cm show-cursor Pq Boolean
-Whether to always show the cursor.
+Whether always to show the cursor.
 .It Cm show-hidden-files Pq Boolean
-Whether to show hidden files and directories in the file browser.
+Whether to show hidden files and directories in the browser view.
 .It Cm status-attr Pq attribute
 Character attributes for the status line.
 .It Cm status-bg Pq colour
