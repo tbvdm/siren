@@ -12,7 +12,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd July 14, 2014
+.Dd July 15, 2014
 .Dt SIREN 1
 .Os
 .Sh NAME
@@ -88,12 +88,17 @@ The browser view can be displayed by pressing the
 key.
 .It Sy Queue view
 The queue view shows all tracks that have been added to the queue.
-Tracks in the queue will be played back before those in the library.
+Tracks in the queue will be played back before those in other views.
 A track will be removed from the queue as soon as it is being played back.
 The queue view can be displayed by pressing the
 .Ic 4
 key.
 .El
+.Pp
+The playback source is the view that provides the tracks for playback.
+The library, playlist and browser views each can act as a playback source.
+A view implicitly becomes the playback source whenever a track from that view
+is selected for playback.
 .Sh KEY BINDINGS
 .Nm
 supports configurable key bindings.
@@ -121,9 +126,9 @@ Pause.
 .It v
 Stop.
 .It z
-Play the previous track in the library.
+Play the previous track.
 .It b
-Play the next track in the library.
+Play the next track.
 .It left
 Skip backward 5 seconds.
 .It ,
@@ -147,7 +152,7 @@ Increase the sound volume by 10%.
 .It C
 Toggle playback continuation.
 .It R
-Toggle the repeated playback of the library.
+Toggle the repeated playback of all tracks.
 .It r
 Toggle the repeated playback of the current track.
 .It 1
@@ -483,9 +488,9 @@ Pause or, if already paused, resume playback.
 .It Ic play
 Start, restart or resume playback.
 .It Ic play-next
-Play the next track in the library.
+Play the next track in the playback source.
 .It Ic play-prev
-Play the previous track in the library.
+Play the previous track in the playback source.
 .It Ic quit
 Quit
 .Nm .
@@ -900,6 +905,8 @@ Expands to
 or the empty string, depending on the value of the
 .Cm repeat-track
 option
+.It source Ta u Ta
+Playback source
 .It state Ta s Ta
 Expands to
 .Sq Playing ,
@@ -931,7 +938,7 @@ See the
 .Cm library-format
 option for a list of available variables.
 .It Cm repeat-all Pq Boolean
-Whether to repeat playback of the library.
+Whether to repeat playback of all tracks in the player source.
 .It Cm repeat-track Pq Boolean
 Whether to repeat playback of the current track.
 This option takes precedence over the
