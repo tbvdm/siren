@@ -165,7 +165,7 @@ playlist_load(const char *file)
 		}
 		buf[len - 1] = '\0';
 
-		if (buf[0] == '#')
+		if (buf[0] == '#' || buf[0] == '\0')
 			continue;
 
 		if (buf[0] != '/') {
