@@ -4,7 +4,7 @@ for a list of all changes.
 Siren 0.4 (2014-07-16):
 
 - Add the playlist view.
-- Add the load-playlist command to load a playlist into the playlist view.
+- Add the load-playlist.
 - Allow continued playback of all audio files in the browser view.
 - Add the -d flag to the update-metadata command to delete the metadata of
   non-existent tracks.
@@ -12,8 +12,9 @@ Siren 0.4 (2014-07-16):
   show-dirs-before-files options as they were not very useful.
 - Significantly reduce the time needed to load the library on start-up.
 - Do not silently remove unsupported and non-existent tracks from the library.
-- Let changes to output plug-ins take effect immediately.
-- Change the default key bindings to display views.
+- Let changes to output plug-in options take effect immediately.
+- Change the default key bindings that display views.
+- Fix various minor bugs.
 
 Siren 0.3.1 (2013-07-08):
 
