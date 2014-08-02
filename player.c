@@ -339,6 +339,9 @@ player_play_next(void)
 	case PLAYER_SOURCE_PLAYLIST:
 		t = playlist_get_next_track();
 		break;
+	default:
+		t = NULL;
+		break;
 	}
 	XPTHREAD_MUTEX_UNLOCK(&player_source_mtx);
 
@@ -361,6 +364,9 @@ player_play_prev(void)
 		break;
 	case PLAYER_SOURCE_PLAYLIST:
 		t = playlist_get_prev_track();
+		break;
+	default:
+		t = NULL;
 		break;
 	}
 	XPTHREAD_MUTEX_UNLOCK(&player_source_mtx);
