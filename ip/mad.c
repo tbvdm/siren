@@ -49,7 +49,7 @@ struct ip_mad_ipdata {
 };
 
 static void		 ip_mad_close(struct track *);
-static int		 ip_mad_decode_frame_header(FILE *fp,
+static int		 ip_mad_decode_frame_header(FILE *,
 			    struct mad_stream *, struct mad_header *,
 			    unsigned char *, size_t);
 static int		 ip_mad_fill_stream(FILE *, struct mad_stream *,

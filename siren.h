@@ -450,11 +450,11 @@ void		 menu_insert_after(struct menu *, struct menu_entry *, void *)
 void		 menu_insert_before(struct menu *, struct menu_entry *,
 		    void *) NONNULL();
 void		 menu_insert_tail(struct menu *, void *) NONNULL();
-void		 menu_move_entry_before(struct menu *m, struct menu_entry *,
+void		 menu_move_entry_before(struct menu *, struct menu_entry *,
 		    struct menu_entry *) NONNULL();
 void		 menu_move_entry_down(struct menu *, struct menu_entry *)
 		    NONNULL();
-void		 menu_move_entry_up(struct menu *m, struct menu_entry *)
+void		 menu_move_entry_up(struct menu *, struct menu_entry *)
 		    NONNULL();
 void		 menu_print(struct menu *) NONNULL();
 void		 menu_remove_all_entries(struct menu *) NONNULL();
@@ -614,7 +614,7 @@ void		 screen_view_print(const char *) NONNULL();
 void		 screen_view_print_active(const char *) NONNULL();
 void		 screen_view_print_begin(void);
 void		 screen_view_print_end(void);
-void		 screen_view_print_selected(const char *s) NONNULL();
+void		 screen_view_print_selected(const char *) NONNULL();
 void		 screen_view_title_printf(const char *, ...) PRINTFLIKE(1, 2);
 void		 screen_view_title_printf_right(const char *, ...)
 		    PRINTFLIKE(1, 2);
