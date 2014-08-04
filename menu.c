@@ -221,6 +221,33 @@ menu_insert_before(struct menu *m, struct menu_entry *le, void *data)
 }
 
 void
+menu_insert_head(struct menu *m, void *data)
+{
+	struct menu_entry *e;
+
+	if (m->nentries == MENU_NENTRIES_MAX)
+		return;
+
+	e = xmalloc(sizeof *e);
+	e->data = data;
+	e->index = 0;
+
+	TAILQ_INSERT_HEAD(&m->list, e, entries);
+	m->nentries++;
+
+	if (m->nentries == 1)
+		/*
+		 * This is the first entry in the menu: make it the top entry
+		 * and the selected entry.
+		 */
+		m->top = m->selected = e;
+
+	/* Increment the index of the entries after the inserted entry. */
+	while ((e = TAILQ_NEXT(e, entries)) != NULL)
+		e->index++;
+}
+
+void
 menu_insert_tail(struct menu *m, void *data)
 {
 	struct menu_entry *e;

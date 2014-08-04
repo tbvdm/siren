@@ -449,6 +449,7 @@ void		 menu_insert_after(struct menu *, struct menu_entry *, void *)
 		    NONNULL();
 void		 menu_insert_before(struct menu *, struct menu_entry *,
 		    void *) NONNULL();
+void		 menu_insert_head(struct menu *, void *) NONNULL();
 void		 menu_insert_tail(struct menu *, void *) NONNULL();
 void		 menu_move_entry_before(struct menu *, struct menu_entry *,
 		    struct menu_entry *) NONNULL();

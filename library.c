@@ -293,7 +293,7 @@ library_read_file(void)
 			}
 		}
 		if (e == NULL)
-			menu_insert_tail(library_menu, t);
+			menu_insert_head(library_menu, t);
 		library_duration += t->duration;
 
 		if (time(NULL) > lasttime) {
