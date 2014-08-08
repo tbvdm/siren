@@ -1,0 +1,35 @@
+Siren is a text-based audio player for UNIX-like operating systems. Various
+aspects of Siren have been inspired by cmus. Siren is distributed under the ISC
+licence.
+
+Siren supports Ogg Vorbis, MP3, FLAC, WavPack, WAVE, AIFF and a few other file
+formats. Playback is possible through sndio, PulseAudio, ALSA, OSS, Sun audio
+and libao. Siren has been tested on OpenBSD, NetBSD, FreeBSD and Linux.
+
+Please see the website for more information:
+
+	http://www.kariliq.nl/siren/
+
+Building and installing
+-----------------------
+
+Please see the INSTALL file.
+
+Documentation
+-------------
+
+Please see the siren(1) manual page. The manual page may be viewed from the
+source tree using mandoc(1) or nroff(1):
+
+	$ mandoc siren.1 | less
+	$ nroff -c -mdoc siren.1 | less
+
+An online version is also available:
+
+	http://www.kariliq.nl/siren/manual.html
+
+Contact
+-------
+
+Please send questions, bug reports and patches to Tim van der Molen <tbvdm at
+xs4all dot nl>.
