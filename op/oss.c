@@ -236,10 +236,11 @@ op_oss_start(struct sample_format *sf)
 	}
 
 	/* Set byte order of sample format. */
-	if (AFMT_S16_NE == AFMT_S16_BE)
-		sf->byte_order = BYTE_ORDER_BIG;
-	else
-		sf->byte_order = BYTE_ORDER_LITTLE;
+#if AFMT_S16_NE == AFMT_S16_BE
+	sf->byte_order = BYTE_ORDER_BIG;
+#else
+	sf->byte_order = BYTE_ORDER_LITTLE;
+#endif
 
 	/*
 	 * Determine the optimal buffer size. This is not relevant on OSS 4,
