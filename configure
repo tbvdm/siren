@@ -254,69 +254,68 @@ printf "\narguments:\n" >> $logfile
 if [ $# -eq 0 ]; then
 	echo "(none)" >> $logfile
 else
-	for arg in "$@"; do
+	for arg; do
 		echo "$arg" >> $logfile
 	done
 fi
 
-while [ $# -gt 0 ]; do
-	case "$1" in
+for arg; do
+	case "$arg" in
 	prefix=*)
-		prefix="${1#*=}"
+		prefix="${arg#*=}"
 		;;
 	bindir=*)
-		bindir="${1#*=}"
+		bindir="${arg#*=}"
 		;;
 	mandir=*)
-		mandir="${1#*=}"
+		mandir="${arg#*=}"
 		;;
 	plugindir=*)
-		plugindir="${1#*=}"
+		plugindir="${arg#*=}"
 		;;
 	debug=*)
-		get_option_value enable_debug "$1"
+		get_option_value enable_debug "$arg"
 		;;
 	flac=*)
-		get_option_value enable_flac "$1"
+		get_option_value enable_flac "$arg"
 		;;
 	mad=*)
-		get_option_value enable_mad "$1"
+		get_option_value enable_mad "$arg"
 		;;
 	sndfile=*)
-		get_option_value enable_sndfile "$1"
+		get_option_value enable_sndfile "$arg"
 		;;
 	vorbis=*)
-		get_option_value enable_vorbis "$1"
+		get_option_value enable_vorbis "$arg"
 		;;
 	wavpack=*)
-		get_option_value enable_wavpack "$1"
+		get_option_value enable_wavpack "$arg"
 		;;
 	alsa=*)
-		get_option_value enable_alsa "$1"
+		get_option_value enable_alsa "$arg"
 		;;
 	ao=*)
-		get_option_value enable_ao "$1"
+		get_option_value enable_ao "$arg"
 		;;
 	oss=*)
-		get_option_value enable_oss "$1"
+		get_option_value enable_oss "$arg"
 		;;
 	pulse=*)
-		get_option_value enable_pulse "$1"
+		get_option_value enable_pulse "$arg"
 		;;
 	sndio=*)
-		get_option_value enable_sndio "$1"
+		get_option_value enable_sndio "$arg"
 		;;
 	sun=*)
-		get_option_value enable_sun "$1"
+		get_option_value enable_sun "$arg"
 		;;
 	help|-h|--help)
 		error "see the INSTALL file for more information"
 		;;
 	*)
-		error "${1%%=*}: invalid option"
+		error "${arg%%=*}: invalid option"
 		;;
 	esac
-	shift
 done
 
 if [ -z "$CC" ]; then
