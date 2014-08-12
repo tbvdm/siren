@@ -432,6 +432,14 @@ if check_function use_default_colors "use_default_colors()" curses.h "" \
 	header_define HAVE_USE_DEFAULT_COLORS
 fi
 
+print_check "for __progname"
+if compile "" stddef.h "extern char *__progname; __progname = NULL"; then
+	print_result yes
+	header_define HAVE___PROGNAME
+else
+	print_result no
+fi
+
 print_check "for optreset"
 if compile "" unistd.h "optreset = 0"; then
 	print_result yes

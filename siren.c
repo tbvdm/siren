@@ -20,11 +20,15 @@
 
 #include "siren.h"
 
+#ifdef HAVE___PROGNAME
+extern char	*__progname;
+#else
+char		*__progname;
+#endif
+
 NORETURN static void
 usage(void)
 {
-	extern char *__progname;
-
 	(void)fprintf(stderr, "usage: %s [-lv] [-c directory]\n", __progname);
 	exit(1);
 }
@@ -45,6 +49,10 @@ main(int argc, char **argv)
 	extern const char	*malloc_options;
 
 	malloc_options = "AFGJPRS";
+#endif
+
+#ifndef HAVE___PROGNAME
+	__progname = argv[0];
 #endif
 
 	confdir = NULL;
