@@ -21,7 +21,11 @@
 # $5: compiler options
 check_function()
 {
-	print_check "for $1()"
+	if [ "${1#* }" = "$1" ]; then
+		print_check "for $1()"
+	else
+		print_check "for $1"
+	fi
 
 	if compile "$4" "$3" "$2" "$5"; then
 		print_result yes
@@ -352,6 +356,15 @@ else
 	makefile_append SRCS compat/asprintf.c
 fi
 
+if ! check_function dlopen "dlopen(NULL, 0)" "dlfcn.h stddef.h"; then
+	if check_function "dlopen() in libdl" "dlopen(NULL, 0)" \
+	    "dlfcn.h stddef.h" "" -ldl; then
+		makefile_append LDFLAGS -ldl
+	else
+		error "cannot determine how to use dlopen()"
+	fi
+fi
+
 if check_function err 'err(0, "")' err.h; then
 	header_define HAVE_ERR
 else
@@ -406,10 +419,11 @@ fi
 
 if check_function swap16 "swap16(0)" sys/types.h; then
 	header_define HAVE_OPENBSD_SWAP16
-elif check_function "a NetBSD-like bswap16" "bswap16(0)" \
+elif check_function "bswap16() in <machine/bswap.h>" "bswap16(0)" \
     "sys/types.h machine/bswap.h"; then
 	header_define HAVE_NETBSD_BSWAP16
-elif check_function "a FreeBSD-like bswap16" "bswap16(0)" sys/endian.h; then
+elif check_function "bswap16() in <sys/endian.h>" "bswap16(0)" \
+    sys/endian.h; then
 	header_define HAVE_FREEBSD_BSWAP16
 fi
 
@@ -418,24 +432,13 @@ if check_function use_default_colors "use_default_colors()" curses.h "" \
 	header_define HAVE_USE_DEFAULT_COLORS
 fi
 
-print_check "whether getopt() supports optreset"
-if compile "" unistd.h "optreset = 1"; then
+print_check "for optreset"
+if compile "" unistd.h "optreset = 0"; then
 	print_result yes
 	header_define HAVE_OPTRESET
 else
 	print_result no
 	makefile_append SRCS compat/getopt.c
-fi
-
-print_check "whether dlopen() requires libdl"
-if compile "" "dlfcn.h stddef.h" "dlopen(NULL, 0)"; then
-	print_result no
-elif compile "" "dlfcn.h stddef.h" "dlopen(NULL, 0)" -ldl; then
-	print_result yes
-	makefile_append LDFLAGS -ldl
-else
-	print_result no
-	error "cannot determine how to use dlopen()"
 fi
 
 if check_plugin_pkgconfig $enable_flac flac ip flac; then
