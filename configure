@@ -140,7 +140,7 @@ compile()
 {
 	local header line macro outfile result srcfile
 
-	outfile=configure-test.o
+	outfile=configure-test.out
 	srcfile=configure-test.c
 
 	rm -f $srcfile
