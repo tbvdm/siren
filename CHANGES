@@ -4,7 +4,7 @@ for a list of all changes.
 Siren 0.4 (2014-07-16):
 
 - Add the playlist view.
-- Add the load-playlist.
+- Add the load-playlist command.
 - Allow continued playback of all audio files in the browser view.
 - Add the -d flag to the update-metadata command to delete the metadata of
   non-existent tracks.
