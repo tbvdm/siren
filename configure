@@ -334,6 +334,16 @@ makefile_assign CFLAGS "$CFLAGS"
 makefile_assign CPPFLAGS "$CPPFLAGS"
 makefile_assign LDFLAGS "$LDFLAGS"
 
+if [ "$(uname)" = Darwin ]; then
+	makefile_assign LDFLAGS_PROG -lcurses
+	makefile_assign LDFLAGS_LIB \
+	    "-bundle -flat_namespace -undefined suppress"
+else
+	makefile_assign LDFLAGS_PROG "-Wl,--export-dynamic -pthread -lcurses"
+	makefile_assign CFLAGS_LIB -fPIC
+	makefile_assign LDFLAGS_LIB "-fPIC -shared"
+fi
+
 [ -z "$bindir" ] && bindir="$prefix/$bindir_suffix"
 [ -z "$mandir" ] && mandir="$prefix/$mandir_suffix"
 [ -z "$plugindir" ] && plugindir="$prefix/$plugindir_suffix"

@@ -45,7 +45,6 @@ INSTALL_MAN=	install -m 444
 
 CFLAGS+=	-Wall -W -Wbad-function-cast -Wcast-align -Wcast-qual \
 		-Wformat=2 -Wpointer-arith -Wshadow -Wundef -Wwrite-strings
-LDFLAGS_PROG+=	-lcurses -pthread -Wl,--export-dynamic
 CPPCHECKFLAGS?=	-I /usr/include -I /usr/local/include --enable=all --force \
 		--quiet
 MKDEPFLAGS?=	-a
@@ -55,13 +54,14 @@ MKDEPFLAGS?=	-a
 .SUFFIXES: .c .lo .o .so
 
 .c.lo:
-	${CC} ${CFLAGS} ${CPPFLAGS} ${CPPFLAGS_${@:T:R}} -fPIC -c -o $@ $<
+	${CC} ${CFLAGS} ${CFLAGS_LIB} ${CPPFLAGS} ${CPPFLAGS_${@:T:R}} -c -o \
+	    $@ $<
 
 .c.o:
 	${CC} ${CFLAGS} ${CPPFLAGS} -c -o $@ $<
 
 .lo.so:
-	${CC} -fPIC -shared -o $@ $< ${LDFLAGS} ${LDFLAGS_${@:T:R}}
+	${CC} -o $@ $< ${LDFLAGS} ${LDFLAGS_LIB} ${LDFLAGS_${@:T:R}}
 
 all: ${PROG} ${IP_LIBS} ${OP_LIBS}
 

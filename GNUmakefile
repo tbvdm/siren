@@ -45,7 +45,6 @@ INSTALL_MAN=	install -m 444
 
 CFLAGS+=	-Wall -W -Wbad-function-cast -Wcast-align -Wcast-qual \
 		-Wformat=2 -Wpointer-arith -Wshadow -Wundef -Wwrite-strings
-LDFLAGS_PROG+=	-lcurses -pthread -Wl,--export-dynamic
 CPPCHECKFLAGS?=	-I /usr/include -I /usr/local/include --enable=all --force \
 		--quiet
 MKDEPFLAGS?=	-a
@@ -53,16 +52,16 @@ MKDEPFLAGS?=	-a
 .PHONY: all clean cleandir cleanlog cppcheck depend dist install
 
 ip/%.o: ip/%.c
-	${CC} ${CFLAGS} ${CPPFLAGS} ${CPPFLAGS_$(*F)} -fPIC -c -o $@ $<
+	${CC} ${CFLAGS} ${CFLAGS_LIB} ${CPPFLAGS} ${CPPFLAGS_$(*F)} -c -o $@ $<
 
 ip/%.so: ip/%.o
-	${CC} -fPIC -shared -o $@ $< ${LDFLAGS} ${LDFLAGS_$(*F)}
+	${CC} -o $@ $< ${LDFLAGS} ${LDFLAGS_LIB} ${LDFLAGS_$(*F)}
 
 op/%.o: op/%.c
-	${CC} ${CFLAGS} ${CPPFLAGS} ${CPPFLAGS_$(*F)} -fPIC -c -o $@ $<
+	${CC} ${CFLAGS} ${CFLAGS_LIB} ${CPPFLAGS} ${CPPFLAGS_$(*F)} -c -o $@ $<
 
 op/%.so: op/%.o
-	${CC} -fPIC -shared -o $@ $< ${LDFLAGS} ${LDFLAGS_$(*F)}
+	${CC} -o $@ $< ${LDFLAGS} ${LDFLAGS_LIB} ${LDFLAGS_$(*F)}
 
 %.o: %.c
 	${CC} ${CFLAGS} ${CPPFLAGS} -c -o $@ $<
