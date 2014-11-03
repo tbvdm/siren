@@ -359,7 +359,7 @@ fi
 if ! check_function dlopen "dlopen(NULL, 0)" "dlfcn.h stddef.h"; then
 	if check_function "dlopen() in libdl" "dlopen(NULL, 0)" \
 	    "dlfcn.h stddef.h" "" -ldl; then
-		makefile_append LDFLAGS -ldl
+		makefile_append LDFLAGS_PROG -ldl
 	else
 		error "cannot determine how to use dlopen()"
 	fi

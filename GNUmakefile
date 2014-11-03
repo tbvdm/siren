@@ -45,7 +45,7 @@ INSTALL_MAN=	install -m 444
 
 CFLAGS+=	-Wall -W -Wbad-function-cast -Wcast-align -Wcast-qual \
 		-Wformat=2 -Wpointer-arith -Wshadow -Wundef -Wwrite-strings
-LDFLAGS+=	-lcurses -pthread -Wl,--export-dynamic
+LDFLAGS_PROG+=	-lcurses -pthread -Wl,--export-dynamic
 CPPCHECKFLAGS?=	-I /usr/include -I /usr/local/include --enable=all --force \
 		--quiet
 MKDEPFLAGS?=	-a
@@ -56,13 +56,13 @@ ip/%.o: ip/%.c
 	${CC} ${CFLAGS} ${CPPFLAGS} ${CPPFLAGS_$(*F)} -fPIC -c -o $@ $<
 
 ip/%.so: ip/%.o
-	${CC} -fPIC -shared -o $@ $< ${LDFLAGS_$(*F)}
+	${CC} -fPIC -shared -o $@ $< ${LDFLAGS} ${LDFLAGS_$(*F)}
 
 op/%.o: op/%.c
 	${CC} ${CFLAGS} ${CPPFLAGS} ${CPPFLAGS_$(*F)} -fPIC -c -o $@ $<
 
 op/%.so: op/%.o
-	${CC} -fPIC -shared -o $@ $< ${LDFLAGS_$(*F)}
+	${CC} -fPIC -shared -o $@ $< ${LDFLAGS} ${LDFLAGS_$(*F)}
 
 %.o: %.c
 	${CC} ${CFLAGS} ${CPPFLAGS} -c -o $@ $<
@@ -70,7 +70,7 @@ op/%.so: op/%.o
 all: ${PROG} ${IP_LIBS} ${OP_LIBS}
 
 ${PROG}: ${OBJS}
-	${CC} -o $@ ${OBJS} ${LDFLAGS}
+	${CC} -o $@ ${OBJS} ${LDFLAGS} ${LDFLAGS_PROG}
 
 .depend: ${SRCS} ${IP_SRCS} ${OP_SRCS} ${PROG}.h
 	${MKDEP} ${MKDEPFLAGS} ${CPPFLAGS} ${SRCS}
