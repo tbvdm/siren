@@ -98,7 +98,7 @@ dist:
 	GZIP=-9 tar -czf ${DIST}.tar.gz ${DIST}
 	rm -fr ${DIST}
 	sha256 ${DIST}.tar.gz > ${DIST}.tar.gz.sha256
-	gpg -bu 4cdfe96f ${DIST}.tar.gz
+	gpg -b ${DIST}.tar.gz
 
 install:
 	${INSTALL_DIR} ${DESTDIR}${BINDIR}
