@@ -336,8 +336,7 @@ makefile_assign LDFLAGS "$LDFLAGS"
 
 if [ "$(uname)" = Darwin ]; then
 	makefile_assign LDFLAGS_PROG -lcurses
-	makefile_assign LDFLAGS_LIB \
-	    "-bundle -flat_namespace -undefined suppress"
+	makefile_assign LDFLAGS_LIB "-bundle -bundle_loader siren"
 else
 	makefile_assign LDFLAGS_PROG "-Wl,--export-dynamic -pthread -lcurses"
 	makefile_assign CFLAGS_LIB -fPIC
