@@ -645,8 +645,7 @@ option_string_to_colour(const char *name, int *colour)
 
 	if (!strncasecmp(name, "colour", 6)) {
 		*colour = strtonum(name + 6, 0, INT_MAX, &errstr);
-		if (errstr == NULL)
-			return 0;
+		return errstr == NULL ? 0 : -1;
 	}
 
 	for (i = 0; i < NELEMENTS(option_colour_names); i++)
