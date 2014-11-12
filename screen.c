@@ -63,7 +63,7 @@
 #define clrtoeol		screen_clrtoeol
 #endif
 
-static short int		 screen_get_colour(const char *, enum colour);
+static short int		 screen_get_colour(const char *, int);
 static void			 screen_msg_vprintf(int, const char *,
 				    va_list);
 static void			 screen_print_row(const char *);
@@ -305,9 +305,13 @@ static short int
 screen_get_colour(const char *option, enum colour default_colour)
 {
 	size_t		i;
-	enum colour	colour;
+	int		colour;
 
 	colour = option_get_colour(option);
+
+	if (colour >= 0 && colour < COLORS)
+		return colour;
+
 #ifdef HAVE_USE_DEFAULT_COLORS
 	if (colour == COLOUR_DEFAULT && !screen_have_default_colours)
 #else
@@ -319,7 +323,7 @@ screen_get_colour(const char *option, enum colour default_colour)
 		if (colour == screen_colours[i].colour)
 			return screen_colours[i].curses_colour;
 
-	LOG_FATALX("unknown colour");
+	LOG_FATALX("unknown colour: %d", colour);
 }
 
 int
@@ -345,6 +349,12 @@ screen_get_key(void)
 	return K_NONE;
 }
 
+int
+screen_get_ncolours(void)
+{
+	return screen_have_colours ? COLORS : 0;
+}
+
 unsigned int
 screen_get_ncols(void)
 {
@@ -365,9 +375,12 @@ screen_init(void)
 			LOG_ERRX("start_color() failed");
 		else {
 			screen_have_colours = 1;
+			LOG_INFO("terminal supports %d colours", COLORS);
 #ifdef HAVE_USE_DEFAULT_COLORS
-			if (use_default_colors() == OK)
+			if (use_default_colors() == OK) {
 				screen_have_default_colours = 1;
+				LOG_INFO("terminal supports default colours");
+			}
 #endif
 		}
 	}

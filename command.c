@@ -73,7 +73,7 @@ struct command_set_data {
 	enum option_type  type;
 	union {
 		struct format	*format;
-		enum colour	 colour;
+		int		 colour;
 		int		 attrib;
 		int		 boolean;
 		int		 number;
@@ -1402,6 +1402,11 @@ command_set_parse(int argc, char **argv, void **datap, char **error)
 			(void)xasprintf(error, "Invalid colour: %s", argv[2]);
 			goto error;
 		}
+		if (data->value.colour >= screen_get_ncolours()) {
+			(void)xasprintf(error, "Terminal does not support "
+			    "more than %d colours ", screen_get_ncolours());
+			goto error;
+		}
 		break;
 	case OPTION_TYPE_FORMAT:
 		data->value.format = format_parse(argv[2]);
@@ -1548,8 +1553,9 @@ command_show_option_exec(void *datap)
 		    option_boolean_to_string(option_get_boolean(name)));
 		break;
 	case OPTION_TYPE_COLOUR:
-		msg_info("%s",
-		    option_colour_to_string(option_get_colour(name)));
+		value = option_colour_to_string(option_get_colour(name));
+		msg_info("%s", value);
+		free(value);
 		break;
 	case OPTION_TYPE_FORMAT:
 		option_lock();

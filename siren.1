@@ -12,7 +12,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd July 18, 2014
+.Dd November 8, 2014
 .Dt SIREN 1
 .Os
 .Sh NAME
@@ -704,13 +704,19 @@ Valid values are
 .Em black ,
 .Em blue ,
 .Em cyan ,
-.Em default ,
 .Em green ,
 .Em magenta ,
 .Em red ,
-.Em white
+.Em white ,
+.Em yellow ,
+.Em default
 and
-.Em yellow .
+.Em colour0
+to
+.Em colourN
+where
+.Em N
++ 1 is the number of colours supported by the terminal.
 .Pp
 If supported by the terminal, the colour
 .Em default

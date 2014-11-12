@@ -184,15 +184,15 @@ enum cache_mode {
 };
 
 enum colour {
-	COLOUR_BLACK,
-	COLOUR_BLUE,
-	COLOUR_CYAN,
-	COLOUR_DEFAULT,
-	COLOUR_GREEN,
-	COLOUR_MAGENTA,
-	COLOUR_RED,
-	COLOUR_WHITE,
-	COLOUR_YELLOW
+	COLOUR_BLACK	= -1,
+	COLOUR_BLUE	= -2,
+	COLOUR_CYAN	= -3,
+	COLOUR_DEFAULT	= -4,
+	COLOUR_GREEN	= -5,
+	COLOUR_MAGENTA	= -6,
+	COLOUR_RED	= -7,
+	COLOUR_WHITE	= -8,
+	COLOUR_YELLOW	= -9
 };
 
 enum file_type {
@@ -485,12 +485,12 @@ void		 option_add_string(const char *, const char *,
 		    void (*)(void)) NONNULL(1, 2);
 char		*option_attrib_to_string(int);
 const char	*option_boolean_to_string(int);
-const char	*option_colour_to_string(enum colour);
+char		*option_colour_to_string(int);
 void		 option_end(void);
 const char	*option_format_to_string(const struct format *) NONNULL();
 int		 option_get_attrib(const char *) NONNULL();
 int		 option_get_boolean(const char *) NONNULL();
-enum colour	 option_get_colour(const char *) NONNULL();
+int		 option_get_colour(const char *) NONNULL();
 struct format	*option_get_format(const char *) NONNULL();
 int		 option_get_number(const char *) NONNULL();
 void		 option_get_number_range(const char *, int *, int *) NONNULL();
@@ -500,13 +500,13 @@ void		 option_init(void);
 void		 option_lock(void);
 void		 option_set_attrib(const char *, int) NONNULL();
 void		 option_set_boolean(const char *, int) NONNULL();
-void		 option_set_colour(const char *, enum colour) NONNULL();
+void		 option_set_colour(const char *, int) NONNULL();
 void		 option_set_format(const char *, struct format *) NONNULL();
 void		 option_set_number(const char *, int) NONNULL();
 void		 option_set_string(const char *, const char *) NONNULL();
 int		 option_string_to_attrib(const char *) NONNULL();
 int		 option_string_to_boolean(const char *) NONNULL();
-int		 option_string_to_colour(const char *, enum colour *)
+int		 option_string_to_colour(const char *, int *)
 		    NONNULL();
 void		 option_toggle_boolean(const char *) NONNULL();
 void		 option_unlock(void);
@@ -591,6 +591,7 @@ void		 screen_configure_cursor(void);
 void		 screen_configure_objects(void);
 void		 screen_end(void);
 int		 screen_get_key(void);
+int		 screen_get_ncolours(void);
 unsigned int	 screen_get_ncols(void);
 void		 screen_init(void);
 void		 screen_msg_error_printf(const char *, ...) NONNULL()

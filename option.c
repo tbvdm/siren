@@ -46,7 +46,7 @@ struct option_entry {
 		} number;
 
 		struct format		*format;
-		enum colour		 colour;
+		int			 colour;
 		int			 attrib;
 		int			 boolean;
 		char			*string;
@@ -139,7 +139,7 @@ option_add_boolean(const char *name, int value, void (*callback)(void))
 }
 
 static void
-option_add_colour(const char *name, enum colour value, void (*callback)(void))
+option_add_colour(const char *name, int value, void (*callback)(void))
 {
 	struct option_entry *o;
 
@@ -238,16 +238,22 @@ option_cmp_entry(struct option_entry *o1, struct option_entry *o2)
 	return strcmp(o1->name, o2->name);
 }
 
-const char *
-option_colour_to_string(enum colour colour)
+char *
+option_colour_to_string(int colour)
 {
-	size_t i;
+	size_t	 i;
+	char	*str;
+
+	if (colour >= 0) {
+		(void)xasprintf(&str, "colour%d", colour);
+		return str;
+	}
 
 	for (i = 0; i < NELEMENTS(option_colour_names); i++)
 		if (colour == option_colour_names[i].colour)
-			return option_colour_names[i].name;
+			return xstrdup(option_colour_names[i].name);
 
-	LOG_FATALX("unknown colour");
+	LOG_FATALX("unknown colour: %d", colour);
 }
 
 void
@@ -334,11 +340,11 @@ option_get_boolean(const char *name)
 	return boolean;
 }
 
-enum colour
+int
 option_get_colour(const char *name)
 {
 	struct option_entry	*o;
-	enum colour		 colour;
+	int			 colour;
 
 	XPTHREAD_MUTEX_LOCK(&option_tree_mtx);
 	o = option_find_type(name, OPTION_TYPE_COLOUR);
@@ -543,7 +549,7 @@ option_set_boolean(const char *name, int value)
 }
 
 void
-option_set_colour(const char *name, enum colour value)
+option_set_colour(const char *name, int value)
 {
 	struct option_entry *o;
 
@@ -632,15 +638,23 @@ option_string_to_boolean(const char *name)
 }
 
 int
-option_string_to_colour(const char *name, enum colour *colour)
+option_string_to_colour(const char *name, int *colour)
 {
-	size_t i;
+	size_t		 i;
+	const char	*errstr;
+
+	if (!strncasecmp(name, "colour", 6)) {
+		*colour = strtonum(name + 6, 0, INT_MAX, &errstr);
+		if (errstr == NULL)
+			return 0;
+	}
 
 	for (i = 0; i < NELEMENTS(option_colour_names); i++)
 		if (!strcasecmp(name, option_colour_names[i].name)) {
 			*colour = option_colour_names[i].colour;
 			return 0;
 		}
+
 	return -1;
 }
 
