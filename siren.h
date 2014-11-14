@@ -370,6 +370,7 @@ void		 conf_end(void);
 void		 conf_init(const char *);
 char		*conf_get_path(const char *) NONNULL();
 void		 conf_read_file(void);
+void		 conf_source_file(const char *) NONNULL();
 
 void		 dir_close(struct dir *) NONNULL();
 struct dir_entry *dir_get_entry(struct dir *) NONNULL();

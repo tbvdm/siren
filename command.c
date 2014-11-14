@@ -162,6 +162,8 @@ COMMAND_EXEC_PROTOTYPE(show_binding);
 COMMAND_PARSE_PROTOTYPE(show_binding);
 COMMAND_EXEC_PROTOTYPE(show_option);
 COMMAND_PARSE_PROTOTYPE(show_option);
+COMMAND_EXEC_PROTOTYPE(source);
+COMMAND_PARSE_PROTOTYPE(source);
 COMMAND_EXEC_PROTOTYPE(stop);
 COMMAND_EXEC_PROTOTYPE(unbind_key);
 COMMAND_PARSE_PROTOTYPE(unbind_key);
@@ -383,6 +385,12 @@ static struct command command_list[] = {
 		"show-option",
 		command_show_option_parse,
 		command_show_option_exec,
+		free
+	},
+	{
+		"source",
+		command_source_parse,
+		command_source_exec,
 		free
 	},
 	{
@@ -1579,6 +1587,24 @@ command_show_option_parse(int argc, char **argv, void **datap, char **error)
 {
 	if (argc != 2) {
 		*error = xstrdup("Usage: show-option option");
+		return -1;
+	}
+
+	*datap = xstrdup(argv[1]);
+	return 0;
+}
+
+static void
+command_source_exec(void *datap)
+{
+	conf_source_file((char *)datap);
+}
+
+static int
+command_source_parse(int argc, char **argv, void **datap, char **error)
+{
+	if (argc != 2) {
+		*error = xstrdup("Usage: source file");
 		return -1;
 	}
 

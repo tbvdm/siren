@@ -20,6 +20,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "siren.h"
 
@@ -63,23 +64,27 @@ conf_get_path(const char *file)
 	return path;
 }
 
-/*
- * Read the configuration file.
- */
 void
 conf_read_file(void)
 {
-	FILE	*fp;
-	size_t	 len, lineno;
-	char	*buf, *error, *file, *lbuf;
+	char *file;
 
 	file = conf_get_path(CONF_FILE);
+	if (access(file, F_OK) == 0 || errno != ENOENT)
+		conf_source_file(file);
+	free(file);
+}
+
+void
+conf_source_file(const char *file)
+{
+	FILE	*fp;
+	size_t	 len, lineno;
+	char	*buf, *error, *lbuf;
+
 	if ((fp = fopen(file, "r")) == NULL) {
-		if (errno != ENOENT) {
-			LOG_ERR("fopen: %s", file);
-			msg_err("Cannot open configuration file");
-		}
-		free(file);
+		LOG_ERR("fopen: %s", file);
+		msg_err("Cannot open %s", file);
 		return;
 	}
 
@@ -101,7 +106,6 @@ conf_read_file(void)
 		msg_err("Cannot read configuration file");
 	}
 	free(lbuf);
-	free(file);
 
 	(void)fclose(fp);
 }
