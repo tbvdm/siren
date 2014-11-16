@@ -240,6 +240,7 @@ plugindir_suffix=lib/siren
 enable_debug=no
 enable_flac=yes
 enable_mad=yes
+enable_mpg123=no
 enable_sndfile=yes
 enable_vorbis=yes
 enable_wavpack=yes
@@ -285,6 +286,9 @@ for arg; do
 		;;
 	mad=*)
 		get_option_value enable_mad "$arg"
+		;;
+	mpg123=*)
+		get_option_value enable_mpg123 "$arg"
 		;;
 	sndfile=*)
 		get_option_value enable_sndfile "$arg"
@@ -467,6 +471,8 @@ if check_plugin_pkgconfig $enable_flac flac ip flac; then
 fi
 
 check_plugin_pkgconfig $enable_mad mad ip "mad id3tag"
+
+check_plugin_pkgconfig $enable_mpg123 mpg123 ip libmpg123
 
 if check_plugin_pkgconfig $enable_sndfile sndfile ip sndfile; then
 	if pkg-config --atleast-version 1.0.23 sndfile; then

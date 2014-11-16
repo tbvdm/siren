@@ -34,6 +34,9 @@ flac=yes|no
 mad=yes|no
 	Whether to build the mad input plug-in. The default is "yes".
 
+mpg123=yes|no
+	Whether to build the mpg123 input plug-in. The default is "no".
+
 sndfile=yes|no
 	Whether to build the sndfile input plug-in. The default is "yes".
 
