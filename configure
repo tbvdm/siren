@@ -77,30 +77,29 @@ check_pkgconfig()
 	fi
 }
 
-# $1: value of $enable_$2
-# $2: plug-in name
-# $3: plug-in type (either "ip" or "op")
-# $4: packages to check for
+# $1: plug-in name
+# $2: plug-in type (either "ip" or "op")
+# $3: packages to check for
 check_plugin_pkgconfig()
 {
 	local pkg
 
-	[ "$1" = no ] && return 1
+	eval [ "\$enable_$1" = no ] && return 1
 
-	for pkg in $4; do
+	for pkg in $3; do
 		check_pkgconfig $pkg || return 1
 	done
 
-	if [ "$3" = ip ]; then
-		enabled_ips="$enabled_ips $2"
-		makefile_append IP $2
+	if [ "$2" = ip ]; then
+		enabled_ips="$enabled_ips $1"
+		makefile_append IP $1
 	else
-		enabled_ops="$enabled_ops $2"
-		makefile_append OP $2
+		enabled_ops="$enabled_ops $1"
+		makefile_append OP $1
 	fi
 
-	makefile_assign CPPFLAGS_$2 "$(pkg-config --cflags $4)"
-	makefile_assign LDFLAGS_$2 "$(pkg-config --libs $4)"
+	makefile_assign CPPFLAGS_$1 "$(pkg-config --cflags $3)"
+	makefile_assign LDFLAGS_$1 "$(pkg-config --libs $3)"
 
 	return 0
 }
@@ -462,7 +461,7 @@ else
 	makefile_append SRCS compat/getopt.c
 fi
 
-if check_plugin_pkgconfig $enable_flac flac ip flac; then
+if check_plugin_pkgconfig flac ip flac; then
 	# The include path provided by the flac pkg-config file has changed in
 	# flac 1.3.0.
 	if pkg-config --atleast-version 1.3.0 flac; then
@@ -470,24 +469,24 @@ if check_plugin_pkgconfig $enable_flac flac ip flac; then
 	fi
 fi
 
-check_plugin_pkgconfig $enable_mad mad ip "mad id3tag"
+check_plugin_pkgconfig mad ip "mad id3tag"
 
-check_plugin_pkgconfig $enable_mpg123 mpg123 ip libmpg123
+check_plugin_pkgconfig mpg123 ip libmpg123
 
-if check_plugin_pkgconfig $enable_sndfile sndfile ip sndfile; then
+if check_plugin_pkgconfig sndfile ip sndfile; then
 	if pkg-config --atleast-version 1.0.23 sndfile; then
 		header_define HAVE_SF_STR_GENRE
 		header_define HAVE_SF_STR_TRACKNUMBER
 	fi
 fi
 
-check_plugin_pkgconfig $enable_vorbis vorbis ip vorbisfile
+check_plugin_pkgconfig vorbis ip vorbisfile
 
-check_plugin_pkgconfig $enable_wavpack wavpack ip wavpack
+check_plugin_pkgconfig wavpack ip wavpack
 
-check_plugin_pkgconfig $enable_alsa alsa op alsa
+check_plugin_pkgconfig alsa op alsa
 
-if check_plugin_pkgconfig $enable_ao ao op ao; then
+if check_plugin_pkgconfig ao op ao; then
 	if pkg-config --atleast-version 1.0.0 ao; then
 		header_define HAVE_AO_MATRIX
 	fi
@@ -512,7 +511,7 @@ if [ "$enable_oss" != no ]; then
 	fi
 fi
 
-check_plugin_pkgconfig $enable_pulse pulse op libpulse-simple
+check_plugin_pkgconfig pulse op libpulse-simple
 
 if [ "$enable_sndio" != no ] && check_header sndio.h; then
 	makefile_append OP sndio
