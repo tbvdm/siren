@@ -22,6 +22,8 @@
 
 #include "../siren.h"
 
+extern char *__progname;
+
 void
 err(int ret, const char *fmt, ...)
 {
@@ -59,9 +61,8 @@ verrx(int ret, const char *fmt, va_list ap)
 void
 vwarn(const char *fmt, va_list ap)
 {
-	extern char	*__progname;
-	int		 oerrno;
-	char		 errstr[STRERROR_BUFSIZE];
+	int	oerrno;
+	char	errstr[STRERROR_BUFSIZE];
 
 	oerrno = errno;
 
@@ -79,8 +80,6 @@ vwarn(const char *fmt, va_list ap)
 void
 vwarnx(const char *fmt, va_list ap)
 {
-	extern char *__progname;
-
 	(void)fputs(__progname, stderr);
 	if (fmt != NULL) {
 		(void)fputs(": ", stderr);

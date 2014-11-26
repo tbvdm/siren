@@ -20,10 +20,14 @@
 
 #include "siren.h"
 
+#if defined(DEBUG) && defined(__OpenBSD__)
+extern const char	*malloc_options;
+#endif
+
 #ifdef HAVE___PROGNAME
-extern char	*__progname;
+extern char		*__progname;
 #else
-char		*__progname;
+char			*__progname;
 #endif
 
 NORETURN static void
@@ -45,9 +49,8 @@ main(int argc, char **argv)
 {
 	int			 c, lflag;
 	char			*confdir;
-#if defined(DEBUG) && defined(__OpenBSD__)
-	extern const char	*malloc_options;
 
+#if defined(DEBUG) && defined(__OpenBSD__)
 	malloc_options = "AFGJPRS";
 #endif
 
