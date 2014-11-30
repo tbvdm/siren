@@ -70,7 +70,7 @@ static pthread_mutex_t		option_tree_mtx = PTHREAD_MUTEX_INITIALIZER;
 static const struct {
 	const int		 attrib;
 	const char		*name;
-} option_attrib_names[] = {
+} option_attribs[] = {
 	{ ATTRIB_BLINK,		"blink" },
 	{ ATTRIB_BOLD,		"bold" },
 	{ ATTRIB_DIM,		"dim" },
@@ -83,7 +83,7 @@ static const struct {
 static const struct {
 	const enum colour	 colour;
 	const char		*name;
-} option_colour_names[] = {
+} option_colours[] = {
 	{ COLOUR_BLACK,		"black" },
 	{ COLOUR_BLUE,		"blue" },
 	{ COLOUR_CYAN,		"cyan" },
@@ -98,7 +98,7 @@ static const struct {
 static const struct {
 	const int		 boolean;
 	const char		*name;
-} option_boolean_names[] = {
+} option_booleans[] = {
 	{ 0,			"false" },
 	{ 1,			"true" },
 	/* Aliases for the above two names. */
@@ -208,12 +208,12 @@ option_attrib_to_string(int attrib)
 	char	str[OPTION_ATTRIB_MAXLEN];
 
 	str[0] = '\0';
-	for (i = 0; i < NELEMENTS(option_attrib_names); i++)
-		if (attrib & option_attrib_names[i].attrib ||
-		    attrib == option_attrib_names[i].attrib) {
+	for (i = 0; i < NELEMENTS(option_attribs); i++)
+		if (attrib & option_attribs[i].attrib ||
+		    attrib == option_attribs[i].attrib) {
 			if (str[0] != '\0')
 				(void)strlcat(str, ",", sizeof str);
-			(void)strlcat(str, option_attrib_names[i].name,
+			(void)strlcat(str, option_attribs[i].name,
 			    sizeof str);
 		}
 
@@ -225,9 +225,9 @@ option_boolean_to_string(int boolean)
 {
 	size_t i;
 
-	for (i = 0; i < NELEMENTS(option_boolean_names); i++)
-		if (boolean == option_boolean_names[i].boolean)
-			return option_boolean_names[i].name;
+	for (i = 0; i < NELEMENTS(option_booleans); i++)
+		if (boolean == option_booleans[i].boolean)
+			return option_booleans[i].name;
 
 	LOG_FATALX("unknown boolean");
 }
@@ -249,9 +249,9 @@ option_colour_to_string(int colour)
 		return str;
 	}
 
-	for (i = 0; i < NELEMENTS(option_colour_names); i++)
-		if (colour == option_colour_names[i].colour)
-			return xstrdup(option_colour_names[i].name);
+	for (i = 0; i < NELEMENTS(option_colours); i++)
+		if (colour == option_colours[i].colour)
+			return xstrdup(option_colours[i].name);
 
 	LOG_FATALX("unknown colour: %d", colour);
 }
@@ -620,9 +620,9 @@ option_string_to_attrib(const char *name)
 {
 	size_t i;
 
-	for (i = 0; i < NELEMENTS(option_attrib_names); i++)
-		if (!strcasecmp(name, option_attrib_names[i].name))
-			return option_attrib_names[i].attrib;
+	for (i = 0; i < NELEMENTS(option_attribs); i++)
+		if (!strcasecmp(name, option_attribs[i].name))
+			return option_attribs[i].attrib;
 	return -1;
 }
 
@@ -631,9 +631,9 @@ option_string_to_boolean(const char *name)
 {
 	size_t i;
 
-	for (i = 0; i < NELEMENTS(option_boolean_names); i++)
-		if (!strcasecmp(name, option_boolean_names[i].name))
-			return option_boolean_names[i].boolean;
+	for (i = 0; i < NELEMENTS(option_booleans); i++)
+		if (!strcasecmp(name, option_booleans[i].name))
+			return option_booleans[i].boolean;
 	return -1;
 }
 
@@ -648,9 +648,9 @@ option_string_to_colour(const char *name, int *colour)
 		return errstr == NULL ? 0 : -1;
 	}
 
-	for (i = 0; i < NELEMENTS(option_colour_names); i++)
-		if (!strcasecmp(name, option_colour_names[i].name)) {
-			*colour = option_colour_names[i].colour;
+	for (i = 0; i < NELEMENTS(option_colours); i++)
+		if (!strcasecmp(name, option_colours[i].name)) {
+			*colour = option_colours[i].colour;
 			return 0;
 		}
 

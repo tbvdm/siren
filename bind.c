@@ -59,7 +59,7 @@ static struct bind_tree bind_tree = SPLAY_INITIALIZER(bind_tree);
 static const struct {
 	const enum bind_scope	 scope;
 	const char		*name;
-} bind_scope_names[] = {
+} bind_scopes[] = {
 	{ BIND_SCOPE_BROWSER,	"browser" },
 	{ BIND_SCOPE_COMMON,	"common" },
 	{ BIND_SCOPE_LIBRARY,	"library" },
@@ -69,7 +69,7 @@ static const struct {
 static const struct {
 	const int		 key;
 	const char		*name;
-} bind_key_names[] = {
+} bind_keys[] = {
 	{ ' ',			"space" },
 	{ K_BACKSPACE,		"backspace" },
 	{ K_BACKTAB,		"backtab" },
@@ -272,9 +272,9 @@ bind_key_to_string(int key, char *name, size_t namelen)
 		return name;
 	}
 
-	for (i = 0; i < NELEMENTS(bind_key_names); i++)
-		if (key == bind_key_names[i].key) {
-			(void)strlcpy(name, bind_key_names[i].name, namelen);
+	for (i = 0; i < NELEMENTS(bind_keys); i++)
+		if (key == bind_keys[i].key) {
+			(void)strlcpy(name, bind_keys[i].name, namelen);
 			return name;
 		}
 
@@ -296,9 +296,9 @@ bind_scope_to_string(enum bind_scope scope)
 {
 	size_t i;
 
-	for (i = 0; i < NELEMENTS(bind_scope_names); i++)
-		if (scope == bind_scope_names[i].scope)
-			return bind_scope_names[i].name;
+	for (i = 0; i < NELEMENTS(bind_scopes); i++)
+		if (scope == bind_scopes[i].scope)
+			return bind_scopes[i].name;
 
 	LOG_FATALX("unknown scope");
 }
@@ -326,9 +326,9 @@ bind_string_to_scope(const char *name, enum bind_scope *scope)
 {
 	size_t i;
 
-	for (i = 0; i < NELEMENTS(bind_scope_names); i++)
-		if (!strcasecmp(name, bind_scope_names[i].name)) {
-			*scope = bind_scope_names[i].scope;
+	for (i = 0; i < NELEMENTS(bind_scopes); i++)
+		if (!strcasecmp(name, bind_scopes[i].name)) {
+			*scope = bind_scopes[i].scope;
 			return 0;
 		}
 
@@ -350,9 +350,9 @@ bind_string_to_key(const char *str)
 		return K_CTRL(toupper((int)str[1]));
 
 	/* Key names. */
-	for (i = 0; i < NELEMENTS(bind_key_names); i++)
-		if (!strcasecmp(str, bind_key_names[i].name))
-			return bind_key_names[i].key;
+	for (i = 0; i < NELEMENTS(bind_keys); i++)
+		if (!strcasecmp(str, bind_keys[i].name))
+			return bind_keys[i].key;
 
 	return K_NONE;
 }
