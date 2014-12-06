@@ -201,8 +201,10 @@ cache_read_number(unsigned int *num)
 		return -1;
 
 	*num = (unsigned int)strtonum(field, 0, UINT_MAX, &errstr);
-	if (errstr != NULL)
+	if (errstr != NULL) {
 		LOG_ERRX("%s: number is %s", field, errstr);
+		return -1;
+	}
 
 	return 0;
 }
