@@ -219,11 +219,7 @@ cache_read_string(char **str)
 		return -1;
 	}
 
-	if (field[0] == '\0')
-		*str = NULL;
-	else
-		*str = xstrdup(field);
-
+	*str = (field[0] == '\0') ? NULL : xstrdup(field);
 	return 0;
 }
 
