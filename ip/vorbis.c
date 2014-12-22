@@ -132,6 +132,7 @@ ip_vorbis_get_metadata(struct track *t)
 		LOG_ERRX("ov_open: %s: %s", t->path, ip_vorbis_error(ret));
 		msg_errx("%s: Cannot open track: %s", t->path,
 		    ip_vorbis_error(ret));
+		(void)fclose(fp);
 		return -1;
 	}
 
@@ -220,6 +221,7 @@ ip_vorbis_open(struct track *t)
 		LOG_ERRX("ov_open: %s: %s", t->path, ip_vorbis_error(ret));
 		msg_errx("%s: Cannot open track: %s", t->path,
 		    ip_vorbis_error(ret));
+		(void)fclose(fp);
 		free(ipd);
 		return -1;
 	}
