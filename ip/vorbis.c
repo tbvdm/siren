@@ -29,15 +29,6 @@
 
 #include "../siren.h"
 
-#define IP_VORBIS_BUFSIZE 4096
-
-struct ip_vorbis_ipdata {
-	OggVorbis_File	 ovf;
-	char		*buf;
-	unsigned int	 bufidx;
-	unsigned int	 buflen;
-};
-
 static void		 ip_vorbis_close(struct track *);
 static const char	*ip_vorbis_error(int);
 static int		 ip_vorbis_get_metadata(struct track *);
@@ -63,12 +54,11 @@ const struct ip		 ip = {
 static void
 ip_vorbis_close(struct track *t)
 {
-	struct ip_vorbis_ipdata *ipd;
+	OggVorbis_File *ovf;
 
-	ipd = t->ipdata;
-	(void)ov_clear(&ipd->ovf);
-	free(ipd->buf);
-	free(ipd);
+	ovf = t->ipdata;
+	(void)ov_clear(ovf);
+	free(ovf);
 }
 
 static const char *
@@ -184,11 +174,11 @@ ip_vorbis_get_metadata(struct track *t)
 static int
 ip_vorbis_get_position(struct track *t, unsigned int *pos)
 {
-	struct ip_vorbis_ipdata *ipd;
-	double ret;
+	OggVorbis_File	*ovf;
+	double		 ret;
 
-	ipd = t->ipdata;
-	if ((ret = ov_time_tell(&ipd->ovf)) == OV_EINVAL) {
+	ovf = t->ipdata;
+	if ((ret = ov_time_tell(ovf)) == OV_EINVAL) {
 		LOG_ERRX("ov_time_tell: %s: %s", t->path,
 		    ip_vorbis_error((int)ret));
 		msg_errx("Cannot get track position: %s",
@@ -204,10 +194,10 @@ ip_vorbis_get_position(struct track *t, unsigned int *pos)
 static int
 ip_vorbis_open(struct track *t)
 {
-	struct ip_vorbis_ipdata	*ipd;
-	vorbis_info		*info;
-	FILE			*fp;
-	int			 ret;
+	OggVorbis_File	*ovf;
+	vorbis_info	*info;
+	FILE		*fp;
+	int		 ret;
 
 	if ((fp = fopen(t->path, "r")) == NULL) {
 		LOG_ERR("fopen: %s", t->path);
@@ -215,22 +205,22 @@ ip_vorbis_open(struct track *t)
 		return -1;
 	}
 
-	ipd = xmalloc(sizeof *ipd);
+	ovf = xmalloc(sizeof *ovf);
 
-	if ((ret = ov_open(fp, &ipd->ovf, NULL, 0)) != 0) {
+	if ((ret = ov_open(fp, ovf, NULL, 0)) != 0) {
 		LOG_ERRX("ov_open: %s: %s", t->path, ip_vorbis_error(ret));
 		msg_errx("%s: Cannot open track: %s", t->path,
 		    ip_vorbis_error(ret));
 		(void)fclose(fp);
-		free(ipd);
+		free(ovf);
 		return -1;
 	}
 
-	if ((info = ov_info(&ipd->ovf, -1)) == NULL) {
+	if ((info = ov_info(ovf, -1)) == NULL) {
 		LOG_ERRX("%s: ov_info() failed", t->path);
 		msg_errx("%s: Cannot get bitstream information", t->path);
-		(void)ov_clear(&ipd->ovf);
-		free(ipd);
+		(void)ov_clear(ovf);
+		free(ovf);
 		return -1;
 	}
 
@@ -238,67 +228,43 @@ ip_vorbis_open(struct track *t)
 	t->format.nchannels = (unsigned int)info->channels;
 	t->format.rate = (unsigned int)info->rate;
 
-	ipd->buf = xreallocarray(NULL, IP_VORBIS_BUFSIZE, sizeof *ipd->buf);
-	ipd->bufidx = 0;
-	ipd->buflen = 0;
-
-	t->ipdata = ipd;
+	t->ipdata = ovf;
 	return 0;
 }
 
 static int
 ip_vorbis_read(struct track *t, int16_t *samples, size_t maxsamples)
 {
-	struct ip_vorbis_ipdata *ipd;
-	size_t nsamples;
-	int ret, stream;
+	OggVorbis_File	*ovf;
+	int		 endian, len, ret, size, stream;
 
-	ipd = t->ipdata;
+	ovf = t->ipdata;
+	endian = t->format.byte_order == BYTE_ORDER_BIG;
+	len = 0;
+	size = maxsamples / 2;
 
-	for (nsamples = 0; nsamples < maxsamples; nsamples++) {
-		if (ipd->bufidx + 1 >= ipd->buflen) {
-			/* Fill buffer. */
-			for (;;) {
-				ret = (int)ov_read(&ipd->ovf, ipd->buf,
-				    IP_VORBIS_BUFSIZE, 1, 2, 1, &stream);
-				if (ret == OV_HOLE)
-					LOG_ERRX("ov_read: %s: %s", t->path,
-					    ip_vorbis_error(ret));
-				else
-					break;
-			}
+	do
+		ret = (int)ov_read(ovf, (char *)samples + len, size - len,
+		    endian, 2, 1, &stream);
+	while (ret > 0 && (len += ret) < size);
 
-			if (ret == 0)
-				break;
-			if (ret < 0) {
-				LOG_ERRX("ov_read: %s: %s", t->path,
-				    ip_vorbis_error(ret));
-				msg_errx("%s: Cannot read from track: %s",
-				    t->path, ip_vorbis_error(ret));
-				return -1;
-			}
-
-			ipd->bufidx = 0;
-			ipd->buflen = (unsigned int)ret;
-		}
-
-		samples[nsamples] =
-		    (int16_t)((unsigned char)ipd->buf[ipd->bufidx] << 8 |
-		    (unsigned char)ipd->buf[ipd->bufidx + 1]);
-		ipd->bufidx += 2;
+	if (ret < 0) {
+		LOG_ERRX("ov_read: %s: %s", t->path, ip_vorbis_error(ret));
+		msg_errx("Cannot read from track: %s", ip_vorbis_error(ret));
+		return -1;
 	}
 
-	return (int)nsamples;
+	return len / 2;
 }
 
 static void
 ip_vorbis_seek(struct track *t, unsigned int sec)
 {
-	struct ip_vorbis_ipdata *ipd;
-	int ret;
+	OggVorbis_File	*ovf;
+	int		 ret;
 
-	ipd = t->ipdata;
-	if ((ret = ov_time_seek_lap(&ipd->ovf, sec)) != 0) {
+	ovf = t->ipdata;
+	if ((ret = ov_time_seek_lap(ovf, sec)) != 0) {
 		LOG_ERRX("ov_time_seek_lap: %s: %s", t->path,
 		    ip_vorbis_error(ret));
 		msg_errx("Cannot seek: %s", ip_vorbis_error(ret));
