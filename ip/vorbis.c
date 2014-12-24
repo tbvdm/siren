@@ -241,7 +241,7 @@ ip_vorbis_read(struct track *t, int16_t *samples, size_t maxsamples)
 	ovf = t->ipdata;
 	endian = t->format.byte_order == BYTE_ORDER_BIG;
 	len = 0;
-	size = maxsamples / 2;
+	size = maxsamples * 2;
 
 	do
 		ret = (int)ov_read(ovf, (char *)samples + len, size - len,
