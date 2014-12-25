@@ -499,13 +499,13 @@ static int
 ip_mpg123_read(struct track *t, int16_t *samples, size_t maxsamples)
 {
 	struct ip_mpg123_ipdata	*ipd;
-	size_t			 nsamples;
+	size_t			 nbytes;
 	int			 ret;
 
 	ipd = t->ipdata;
 
 	ret = mpg123_read(ipd->hdl, (unsigned char *)samples, maxsamples * 2,
-	    &nsamples);
+	    &nbytes);
 	if (ret != MPG123_OK && ret != MPG123_DONE) {
 		LOG_ERRX("%s: mpg123_read: %s", t->path,
 		    mpg123_strerror(ipd->hdl));
@@ -514,7 +514,7 @@ ip_mpg123_read(struct track *t, int16_t *samples, size_t maxsamples)
 		return -1;
 	}
 
-	return nsamples / 2;
+	return nbytes / 2;
 }
 
 static void
