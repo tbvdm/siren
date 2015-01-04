@@ -155,10 +155,17 @@ op_sndio_start(struct sample_format *sf)
 	if (op_sndio_par.bits != sf->nbits ||
 	    op_sndio_par.bps != 2U ||
 	    op_sndio_par.pchan != sf->nchannels ||
-	    op_sndio_par.rate != sf->rate ||
 	    op_sndio_par.sig != 1U) {
 		LOG_ERRX("cannot negotiate stream parameters");
 		msg_errx("Cannot negotiate stream parameters");
+		return -1;
+	}
+
+	/* Allow a 0.5% deviation in the sampling rate. */
+	if (op_sndio_par.rate < sf->rate * 995 / 1000 ||
+	    op_sndio_par.rate > sf->rate * 1005 / 1000) {
+		LOG_ERRX("cannot set sampling rate");
+		msg_errx("Cannot set sampling rate");
 		return -1;
 	}
 
