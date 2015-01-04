@@ -211,7 +211,7 @@ op_sun_start(struct sample_format *sf)
 		goto error;
 	}
 
-	/* Allow a deviation of 5% in the sampling rate. */
+	/* Allow a 0.5% deviation in the sampling rate. */
 	if (info.play.sample_rate < sf->rate * 995 / 1000 ||
 	    info.play.sample_rate > sf->rate * 1005 / 1000) {
 		LOG_ERRX("sampling rate (%u Hz) not supported", sf->rate);

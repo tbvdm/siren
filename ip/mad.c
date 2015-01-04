@@ -443,7 +443,7 @@ ip_mad_read(struct track *t, int16_t *samples, size_t maxsamples)
 
 	/* Sanity check. */
 	if (maxsamples < (size_t)t->format.nchannels) {
-		LOG_ERRX("%s: sample buffer to small", t->path);
+		LOG_ERRX("%s: sample buffer too small", t->path);
 		msg_errx("Cannot read from track: Sample buffer too small");
 		return -1;
 	}

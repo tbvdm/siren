@@ -227,7 +227,7 @@ op_oss_start(struct sample_format *sf)
 		msg_err("Cannot set sampling rate");
 		goto error;
 	}
-	/* Allow a deviation of 5% in the sampling rate. */
+	/* Allow a 0.5% deviation in the sampling rate. */
 	if ((unsigned int)arg < sf->rate * 995 / 1000 ||
 	    (unsigned int)arg > sf->rate * 1005 / 1000) {
 		LOG_ERRX("sampling rate (%u Hz) not supported", sf->rate);
