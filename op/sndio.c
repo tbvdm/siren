@@ -50,7 +50,7 @@ struct op		 op = {
 	op_sndio_write
 };
 
-static struct sio_hdl	*op_sndio_handle = NULL;
+static struct sio_hdl	*op_sndio_handle;
 static struct sio_par	 op_sndio_par;
 static unsigned int	 op_sndio_volume;
 static int		 op_sndio_volume_support;
