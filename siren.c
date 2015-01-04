@@ -76,7 +76,7 @@ main(int argc, char **argv)
 			break;
 		}
 
-	if (argc - optind)
+	if (argc != optind)
 		usage();
 
 	opterr = 0;

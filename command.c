@@ -446,7 +446,7 @@ command_add_entry_parse(int argc, char **argv, void **datap, char **error)
 			goto usage;
 		}
 
-	if (argc - optind != 0)
+	if (argc != optind)
 		goto usage;
 
 	*datap = view;
@@ -696,7 +696,7 @@ command_command_prompt_parse(int argc, char **argv, void **datap, char **error)
 			goto usage;
 		}
 
-	if (argc - optind != 0)
+	if (argc != optind)
 		goto usage;
 
 	if (data->prompt == NULL)
@@ -828,7 +828,7 @@ command_delete_entry_parse(int argc, char **argv, void **datap, char **error)
 			goto usage;
 		}
 
-	if (argc - optind != 0)
+	if (argc != optind)
 		goto usage;
 
 	*datap = delete_all;
@@ -1132,7 +1132,7 @@ command_search_prompt_parse(int argc, char **argv, void **datap, char **error)
 			goto usage;
 		}
 
-	if (argc - optind != 0)
+	if (argc != optind)
 		goto usage;
 
 	if (data->prompt == NULL)
@@ -1180,7 +1180,7 @@ command_seek_parse(int argc, char **argv, void **datap, char **error)
 			goto usage;
 		}
 
-	if (argc - optind != 1)
+	if (argc != optind + 1)
 		goto usage;
 
 	/*
@@ -1473,7 +1473,7 @@ command_set_volume_parse(int argc, char **argv, void **datap, char **error)
 			goto usage;
 		}
 
-	if (argc - optind != 1)
+	if (argc != optind + 1)
 		goto usage;
 
 	data->volume = (int)strtonum(argv[optind], 0, 100, &errstr);
@@ -1686,7 +1686,7 @@ command_update_metadata_parse(int argc, char **argv, void **datap,
 			goto usage;
 		}
 
-	if (argc - optind != 0)
+	if (argc != optind)
 		goto usage;
 
 	*datap = delete;
