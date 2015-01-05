@@ -238,13 +238,6 @@ ip_flac_read(struct track *t, int16_t *samples, size_t maxsamples)
 	size_t		nsamples;
 	unsigned int	i;
 
-	/* Sanity check. */
-	if (maxsamples < (size_t)t->format.nchannels) {
-		LOG_ERRX("%s: sample buffer too small", t->path);
-		msg_errx("Cannot read from track: Sample buffer too small");
-		return -1;
-	}
-
 	ipd = t->ipdata;
 
 	nsamples = 0;
