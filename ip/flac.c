@@ -29,6 +29,10 @@
 #include <stream_decoder.h>
 #endif
 
+#define IP_FLAC_ERROR	-1
+#define IP_FLAC_EOF	0
+#define IP_FLAC_OK	1
+
 struct ip_flac_ipdata {
 	FLAC__StreamDecoder *decoder;
 
@@ -87,6 +91,33 @@ ip_flac_error_cb(UNUSED const FLAC__StreamDecoder *decoder,
 
 	t = tp;
 	LOG_ERRX("%s: %s", t->path, ip_flac_error_status_to_string(error));
+}
+
+static int
+ip_flac_fill_buffer(const char *path, struct ip_flac_ipdata *ipd)
+{
+	FLAC__bool			ret;
+	FLAC__StreamDecoderState	state;
+
+	ipd->bufidx = 0;
+	ipd->buflen = 0;
+
+	for (;;) {
+		ret = FLAC__stream_decoder_process_single(ipd->decoder);
+		state = FLAC__stream_decoder_get_state(ipd->decoder);
+
+		if (ipd->buflen)
+			return IP_FLAC_OK;
+		if (state == FLAC__STREAM_DECODER_END_OF_STREAM)
+			return IP_FLAC_EOF;
+		if (ret == false) {
+			LOG_ERRX("FLAC__stream_decoder_process_single: %s: %s",
+			    path, ip_flac_state_to_string(state));
+			msg_errx("Cannot read from track: %s",
+			    ip_flac_state_to_string(state));
+			return IP_FLAC_ERROR;
+		}
+	}
 }
 
 static int
@@ -184,7 +215,7 @@ ip_flac_open(struct track *t)
 	}
 
 	status = FLAC__stream_decoder_init_FILE(ipd->decoder, fp,
-	    ip_flac_write_cb, NULL, ip_flac_error_cb, t);
+	    ip_flac_write_cb, NULL, ip_flac_error_cb, ipd);
 
 	if (status != FLAC__STREAM_DECODER_INIT_STATUS_OK) {
 		LOG_ERRX("FLAC__stream_decoder_init: %s: %s", t->path,
@@ -232,41 +263,27 @@ error1:
 static int
 ip_flac_read(struct track *t, int16_t *samples, size_t maxsamples)
 {
-	struct ip_flac_ipdata *ipd;
-	FLAC__StreamDecoderState state;
-	FLAC__bool	ret;
-	size_t		nsamples;
-	unsigned int	i;
+	struct ip_flac_ipdata	*ipd;
+	size_t			 nsamples;
+	int			 ret;
+	unsigned int		 i;
 
 	ipd = t->ipdata;
 
 	nsamples = 0;
 	while (nsamples + (size_t)t->format.nchannels <= maxsamples) {
-		/* Fill the buffer. */
-		while (ipd->bufidx == ipd->buflen) {
-			/* Read a new frame. */
-			ret = FLAC__stream_decoder_process_single(
-			    ipd->decoder);
-			state = FLAC__stream_decoder_get_state(ipd->decoder);
-
-			if (state == FLAC__STREAM_DECODER_END_OF_STREAM)
-				/* EOF. */
-				return 0;
-
-			if (ret == false) {
-				/* Error. */
-				LOG_ERRX("FLAC__stream_decoder_process_single:"
-				    " %s: %s", t->path,
-				    ip_flac_state_to_string(state));
-				msg_errx("Cannot read from track: %s",
-				    ip_flac_state_to_string(state));
+		if (ipd->bufidx == ipd->buflen) {
+			ret = ip_flac_fill_buffer(t->path, ipd);
+			if (ret == IP_FLAC_EOF)
+				break;
+			if (ret == IP_FLAC_ERROR)
 				return -1;
-			}
 		}
 
 		for (i = 0; i < t->format.nchannels; i++)
 			samples[nsamples++] =
 			    (int16_t)ipd->buf[i][ipd->bufidx];
+
 		ipd->bufidx++;
 	}
 
@@ -310,13 +327,11 @@ ip_flac_seek(struct track *t, unsigned int sec)
 
 static FLAC__StreamDecoderWriteStatus
 ip_flac_write_cb(UNUSED const FLAC__StreamDecoder *decoder,
-    const FLAC__Frame *frame, const FLAC__int32 * const *buffer, void *tp)
+    const FLAC__Frame *frame, const FLAC__int32 * const *buffer, void *data)
 {
-	struct track *t;
 	struct ip_flac_ipdata *ipd;
 
-	t = tp;
-	ipd = t->ipdata;
+	ipd = data;
 
 	if (frame->header.number_type == FLAC__FRAME_NUMBER_TYPE_FRAME_NUMBER)
 		/* Fixed blocksize. */
@@ -327,7 +342,6 @@ ip_flac_write_cb(UNUSED const FLAC__StreamDecoder *decoder,
 		    frame->header.number.sample_number;
 
 	ipd->buf = buffer;
-	ipd->bufidx = 0;
 	ipd->buflen = frame->header.blocksize;
 
 	return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
