@@ -213,8 +213,7 @@ option_attrib_to_string(int attrib)
 		    attrib == option_attribs[i].attrib) {
 			if (str[0] != '\0')
 				(void)strlcat(str, ",", sizeof str);
-			(void)strlcat(str, option_attribs[i].name,
-			    sizeof str);
+			(void)strlcat(str, option_attribs[i].name, sizeof str);
 		}
 
 	return xstrdup(str);
