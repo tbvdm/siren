@@ -47,8 +47,8 @@ version(void)
 int
 main(int argc, char **argv)
 {
-	int			 c, lflag;
-	char			*confdir;
+	int	 c, lflag;
+	char	*confdir;
 
 #if defined(DEBUG) && defined(__OpenBSD__)
 	malloc_options = "AFGJPRS";
