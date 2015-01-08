@@ -36,6 +36,9 @@
 #define IP_MAD_EOF		0
 #define IP_MAD_OK		1
 
+#define IP_MAD_NEED_REFILL(error) \
+    ((error) == MAD_ERROR_BUFLEN || (error) == MAD_ERROR_BUFPTR)
+
 struct ip_mad_ipdata {
 	FILE			*fp;
 
@@ -137,33 +140,23 @@ ip_mad_decode_frame(struct ip_mad_ipdata *ipd)
 	int ret;
 
 	for (;;) {
-		/* Fill the stream buffer if necessary. */
-		if (ipd->stream.buffer == NULL || ipd->stream.error ==
-		    MAD_ERROR_BUFLEN) {
+		if (mad_frame_decode(&ipd->frame, &ipd->stream) == 0) {
+			mad_synth_frame(&ipd->synth, &ipd->frame);
+			ipd->sampleidx = 0;
+			return IP_MAD_OK;
+		}
+		if (IP_MAD_NEED_REFILL(ipd->stream.error)) {
 			ret = ip_mad_fill_stream(ipd->fp, &ipd->stream,
 			    ipd->buf, IP_MAD_BUFSIZE);
 			if (ret == IP_MAD_EOF || ret == IP_MAD_ERROR)
 				return ret;
+		} else if (!MAD_RECOVERABLE(ipd->stream.error)) {
+			LOG_ERRX("mad_frame_decode: %s",
+			    mad_stream_errorstr(&ipd->stream));
+			msg_errx("Cannot decode frame: %s",
+			    mad_stream_errorstr(&ipd->stream));
+			return IP_MAD_ERROR;
 		}
-
-		if (mad_frame_decode(&ipd->frame, &ipd->stream) == -1) {
-			/* Error encountered. */
-			if (MAD_RECOVERABLE(ipd->stream.error) ||
-			    ipd->stream.error == MAD_ERROR_BUFLEN)
-				/* Non-fatal error: try again. */
-				continue;
-			else {
-				/* Fatal error. */
-				LOG_ERRX("mad_frame_decode: %s",
-				    mad_stream_errorstr(&ipd->stream));
-				msg_errx("Cannot decode frame: %s",
-				    mad_stream_errorstr(&ipd->stream));
-				return IP_MAD_ERROR;
-			}
-		}
-
-		/* Success. */
-		return IP_MAD_OK;
 	}
 }
 
@@ -440,29 +433,24 @@ ip_mad_read(struct track *t, int16_t *samples, size_t maxsamples)
 	struct ip_mad_ipdata	*ipd;
 	size_t			 nsamples;
 	int			 ret;
+	unsigned short		 i;
 
 	ipd = t->ipdata;
 
 	nsamples = 0;
 	while (nsamples + (size_t)t->format.nchannels <= maxsamples) {
 		if (ipd->sampleidx == ipd->synth.pcm.length) {
-			ret = ip_mad_decode_frame(ipd);
-			if (ret == IP_MAD_EOF || ret == IP_MAD_ERROR)
-				return ret;
-
-			mad_synth_frame(&ipd->synth, &ipd->frame);
 			mad_timer_add(&ipd->timer, ipd->frame.header.duration);
-			ipd->sampleidx = 0;
+			ret = ip_mad_decode_frame(ipd);
+			if (ret == IP_MAD_EOF)
+				break;
+			if (ret == IP_MAD_ERROR)
+				return ret;
 		}
 
-		/* Left channel (or mono). */
-		samples[nsamples++] = ip_mad_fixed_to_int(
-		    ipd->synth.pcm.samples[0][ipd->sampleidx]);
-
-		if (ipd->synth.pcm.channels > 1)
-			/* Right channel. */
+		for (i = 0; i < ipd->synth.pcm.channels; i++)
 			samples[nsamples++] = ip_mad_fixed_to_int(
-			    ipd->synth.pcm.samples[1][ipd->sampleidx]);
+			    ipd->synth.pcm.samples[i][ipd->sampleidx]);
 
 		ipd->sampleidx++;
 	}
