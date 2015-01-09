@@ -167,32 +167,19 @@ ip_mad_decode_frame_header(FILE *fp, struct mad_stream *stream,
 	int ret;
 
 	for (;;) {
-		/* Fill the stream buffer if necessary. */
-		if (stream->buffer == NULL || stream->error ==
-		    MAD_ERROR_BUFLEN) {
+		if (mad_header_decode(header, stream) == 0)
+			return IP_MAD_OK;
+		if (IP_MAD_NEED_REFILL(stream->error)) {
 			ret = ip_mad_fill_stream(fp, stream, buf, bufsize);
 			if (ret == IP_MAD_EOF || ret == IP_MAD_ERROR)
 				return ret;
+		} else if (!MAD_RECOVERABLE(stream->error)) {
+			LOG_ERRX("mad_header_decode: %s",
+			    mad_stream_errorstr(stream));
+			msg_errx("Cannot decode frame header: %s",
+			    mad_stream_errorstr(stream));
+			return IP_MAD_ERROR;
 		}
-
-		if (mad_header_decode(header, stream) == -1) {
-			/* Error encountered. */
-			if (MAD_RECOVERABLE(stream->error) ||
-			    stream->error == MAD_ERROR_BUFLEN)
-				/* Non-fatal error: try again. */
-				continue;
-			else {
-				/* Fatal error. */
-				LOG_ERRX("mad_header_decode: %s",
-				    mad_stream_errorstr(stream));
-				msg_errx("Cannot decode frame header: %s",
-				    mad_stream_errorstr(stream));
-				return IP_MAD_ERROR;
-			}
-		}
-
-		/* Success. */
-		return IP_MAD_OK;
 	}
 }
 
