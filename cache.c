@@ -41,7 +41,7 @@ static char		*cache_buf;
 void
 cache_close(void)
 {
-	(void)fclose(cache_fp);
+	fclose(cache_fp);
 	free(cache_buf);
 }
 
@@ -94,7 +94,7 @@ cache_open_read(const char *path)
 
 error:
 	free(cache_buf);
-	(void)fclose(cache_fp);
+	fclose(cache_fp);
 	return -1;
 }
 
@@ -164,7 +164,7 @@ cache_read_field(char **field)
 		}
 
 		if (cache_bufidx > 0) {
-			(void)memmove(cache_buf, cache_buf + cache_bufidx,
+			memmove(cache_buf, cache_buf + cache_bufidx,
 			    cache_buflen - cache_bufidx);
 			cache_buflen -= cache_bufidx;
 			cache_bufidx = 0;
@@ -200,7 +200,7 @@ cache_read_number(unsigned int *num)
 	if (cache_read_field(&field) == -1)
 		return -1;
 
-	*num = (unsigned int)strtonum(field, 0, UINT_MAX, &errstr);
+	*num = strtonum(field, 0, UINT_MAX, &errstr);
 	if (errstr != NULL) {
 		LOG_ERRX("%s: number is %s", field, errstr);
 		return -1;
@@ -239,13 +239,13 @@ cache_write_entry(const struct track *t)
 static void
 cache_write_number(unsigned int num)
 {
-	(void)fprintf(cache_fp, "%u%c", num, '\0');
+	fprintf(cache_fp, "%u%c", num, '\0');
 }
 
 static void
 cache_write_string(const char *str)
 {
 	if (str != NULL)
-		(void)fputs(str, cache_fp);
-	(void)putc('\0', cache_fp);
+		fputs(str, cache_fp);
+	putc('\0', cache_fp);
 }

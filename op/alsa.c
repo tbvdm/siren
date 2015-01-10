@@ -62,13 +62,12 @@ static size_t		 op_alsa_framesize;
 static void
 op_alsa_close(void)
 {
-	(void)snd_pcm_close(op_alsa_pcm_handle);
+	snd_pcm_close(op_alsa_pcm_handle);
 
 	if (op_alsa_mixer_handle != NULL) {
 		snd_mixer_free(op_alsa_mixer_handle);
-		(void)snd_mixer_detach(op_alsa_mixer_handle,
-		    op_alsa_mixer_dev);
-		(void)snd_mixer_close(op_alsa_mixer_handle);
+		snd_mixer_detach(op_alsa_mixer_handle, op_alsa_mixer_dev);
+		snd_mixer_close(op_alsa_mixer_handle);
 		free(op_alsa_mixer_dev);
 	}
 }
@@ -105,7 +104,7 @@ op_alsa_get_volume(void)
 		return -1;
 	}
 
-	return (int)volume;
+	return volume;
 }
 
 static int
@@ -122,7 +121,7 @@ op_alsa_handle_error(const char *file, int line, const char *func, int errnum,
 	char	*msg;
 
 	va_start(ap, fmt);
-	(void)xvasprintf(&msg, fmt, ap);
+	xvasprintf(&msg, fmt, ap);
 	va_end(ap);
 
 	if (errnum == 0)
@@ -150,7 +149,7 @@ op_alsa_init(void)
 	 * which clutters the screen. To prevent this, install an error handler
 	 * that writes these error messages to the log file.
 	 */
-	(void)snd_lib_error_set_handler(op_alsa_handle_error);
+	snd_lib_error_set_handler(op_alsa_handle_error);
 }
 
 static int
@@ -261,10 +260,10 @@ error3:
 	snd_mixer_free(op_alsa_mixer_handle);
 
 error2:
-	(void)snd_mixer_detach(op_alsa_mixer_handle, op_alsa_mixer_dev);
+	snd_mixer_detach(op_alsa_mixer_handle, op_alsa_mixer_dev);
 
 error1:
-	(void)snd_mixer_close(op_alsa_mixer_handle);
+	snd_mixer_close(op_alsa_mixer_handle);
 	op_alsa_mixer_handle = NULL;
 	free(op_alsa_mixer_dev);
 
@@ -280,7 +279,7 @@ op_alsa_set_volume(unsigned int volume)
 		return;
 
 	ret = snd_mixer_selem_set_playback_volume_all(op_alsa_mixer_elem,
-	    (long)volume);
+	    volume);
 	if (ret) {
 		LOG_ERRX("snd_mixer_selem_set_playback_volume_all: %s",
 		    snd_strerror(ret));
@@ -305,7 +304,7 @@ op_alsa_start(struct sample_format *sf)
 	}
 
 	/* Set defaults. */
-	(void)snd_pcm_hw_params_any(op_alsa_pcm_handle, params);
+	snd_pcm_hw_params_any(op_alsa_pcm_handle, params);
 
 	/* Set access type. */
 	ret = snd_pcm_hw_params_set_access(op_alsa_pcm_handle, params,
@@ -361,9 +360,9 @@ op_alsa_start(struct sample_format *sf)
 	 * The ALSA application buffer is divided into periods. Determine the
 	 * size of 1 period and use that as the size of our buffer.
 	 */
-	(void)snd_pcm_hw_params_get_period_size(params, &nframes, &dir);
+	snd_pcm_hw_params_get_period_size(params, &nframes, &dir);
 	op_alsa_framesize = (sf->nbits / 8) * sf->nchannels;
-	op_alsa_bufsize = (size_t)nframes * op_alsa_framesize;
+	op_alsa_bufsize = nframes * op_alsa_framesize;
 
 	snd_pcm_hw_params_free(params);
 
@@ -380,7 +379,7 @@ error:
 static int
 op_alsa_stop(void)
 {
-	(void)snd_pcm_drain(op_alsa_pcm_handle);
+	snd_pcm_drain(op_alsa_pcm_handle);
 	return 0;
 }
 

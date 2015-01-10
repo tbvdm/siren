@@ -57,7 +57,7 @@ ip_vorbis_close(struct track *t)
 	OggVorbis_File *ovf;
 
 	ovf = t->ipdata;
-	(void)ov_clear(ovf);
+	ov_clear(ovf);
 	free(ovf);
 }
 
@@ -122,14 +122,14 @@ ip_vorbis_get_metadata(struct track *t)
 		LOG_ERRX("ov_open: %s: %s", t->path, ip_vorbis_error(ret));
 		msg_errx("%s: Cannot open track: %s", t->path,
 		    ip_vorbis_error(ret));
-		(void)fclose(fp);
+		fclose(fp);
 		return -1;
 	}
 
 	if ((vc = ov_comment(&ovf, -1)) == NULL) {
 		LOG_ERRX("%s: ov_comment() failed", t->path);
 		msg_errx("%s: Cannot get Vorbis comments", t->path);
-		(void)ov_clear(&ovf);
+		ov_clear(&ovf);
 		return -1;
 	}
 
@@ -161,13 +161,13 @@ ip_vorbis_get_metadata(struct track *t)
 	if ((duration = ov_time_total(&ovf, -1)) == OV_EINVAL) {
 		LOG_ERRX("%s: ov_time_total() failed", t->path);
 		msg_errx("%s: Cannot get track duration", t->path);
-		(void)ov_clear(&ovf);
+		ov_clear(&ovf);
 		return -1;
 	}
 
-	t->duration = (unsigned int)duration;
+	t->duration = duration;
 
-	(void)ov_clear(&ovf);
+	ov_clear(&ovf);
 	return 0;
 }
 
@@ -180,14 +180,14 @@ ip_vorbis_get_position(struct track *t, unsigned int *pos)
 	ovf = t->ipdata;
 	if ((ret = ov_time_tell(ovf)) == OV_EINVAL) {
 		LOG_ERRX("ov_time_tell: %s: %s", t->path,
-		    ip_vorbis_error((int)ret));
+		    ip_vorbis_error(ret));
 		msg_errx("Cannot get track position: %s",
-		    ip_vorbis_error((int)ret));
+		    ip_vorbis_error(ret));
 		*pos = 0;
 		return -1;
 	}
 
-	*pos = (unsigned int)ret;
+	*pos = ret;
 	return 0;
 }
 
@@ -211,7 +211,7 @@ ip_vorbis_open(struct track *t)
 		LOG_ERRX("ov_open: %s: %s", t->path, ip_vorbis_error(ret));
 		msg_errx("%s: Cannot open track: %s", t->path,
 		    ip_vorbis_error(ret));
-		(void)fclose(fp);
+		fclose(fp);
 		free(ovf);
 		return -1;
 	}
@@ -219,14 +219,14 @@ ip_vorbis_open(struct track *t)
 	if ((info = ov_info(ovf, -1)) == NULL) {
 		LOG_ERRX("%s: ov_info() failed", t->path);
 		msg_errx("%s: Cannot get bitstream information", t->path);
-		(void)ov_clear(ovf);
+		ov_clear(ovf);
 		free(ovf);
 		return -1;
 	}
 
 	t->format.nbits = 16;
-	t->format.nchannels = (unsigned int)info->channels;
-	t->format.rate = (unsigned int)info->rate;
+	t->format.nchannels = info->channels;
+	t->format.rate = info->rate;
 
 	t->ipdata = ovf;
 	return 0;
@@ -244,8 +244,8 @@ ip_vorbis_read(struct track *t, int16_t *samples, size_t maxsamples)
 	size = maxsamples * 2;
 
 	do
-		ret = (int)ov_read(ovf, (char *)samples + len, size - len,
-		    endian, 2, 1, &stream);
+		ret = ov_read(ovf, (char *)samples + len, size - len, endian,
+		    2, 1, &stream);
 	while (ret > 0 && (len += ret) < size);
 
 	if (ret < 0) {

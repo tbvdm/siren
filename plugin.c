@@ -82,13 +82,13 @@ plugin_end(void)
 
 	while ((ipe = SLIST_FIRST(&plugin_ip_list)) != NULL) {
 		SLIST_REMOVE_HEAD(&plugin_ip_list, entries);
-		(void)dlclose(ipe->handle);
+		dlclose(ipe->handle);
 		free(ipe);
 	}
 
 	while ((ope = SLIST_FIRST(&plugin_op_list)) != NULL) {
 		SLIST_REMOVE_HEAD(&plugin_op_list, entries);
-		(void)dlclose(ope->handle);
+		dlclose(ope->handle);
 		free(ope);
 	}
 }
@@ -186,7 +186,7 @@ plugin_load_dir(const char *dir, const char *symbol,
 
 		if ((plugin = dlsym(handle, symbol)) == NULL) {
 			LOG_ERRX("dlsym: %s: %s", de->path, dlerror());
-			(void)dlclose(handle);
+			dlclose(handle);
 			continue;
 		}
 

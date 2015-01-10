@@ -70,14 +70,13 @@ op_sndio_get_buffer_size(void)
 	 * the number of channels and the number of bytes per sample to get the
 	 * buffer size in bytes.
 	 */
-	return (size_t)(op_sndio_par.appbufsz * op_sndio_par.pchan *
-	    op_sndio_par.bps);
+	return op_sndio_par.appbufsz * op_sndio_par.pchan * op_sndio_par.bps;
 }
 
 static int
 op_sndio_get_volume(void)
 {
-	return (int)op_sndio_volume;
+	return op_sndio_volume;
 }
 
 static int

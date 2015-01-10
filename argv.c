@@ -36,7 +36,7 @@ argv_add_args(char ***argv, int *argc, char **args, size_t nargs)
 {
 	size_t i;
 
-	*argv = xreallocarray(*argv, (size_t)*argc + nargs, sizeof **argv);
+	*argv = xreallocarray(*argv, *argc + nargs, sizeof **argv);
 
 	for (i = 0; i < nargs; i++)
 		(*argv)[(*argc)++] = xstrdup(args[i]);
@@ -72,7 +72,7 @@ argv_expand_tilde(char **arg)
 	}
 
 	if (home != NULL) {
-		(void)xasprintf(&narg, "%s%s", home, *arg + userlen + 1);
+		xasprintf(&narg, "%s%s", home, *arg + userlen + 1);
 		free(home);
 		free(*arg);
 		*arg = narg;
@@ -328,7 +328,7 @@ argv_unescape(char *arg)
 	len = strlen(arg);
 	for (i = 0; i < len; i++)
 		if (arg[i] == '\\') {
-			(void)memmove(arg + i, arg + i + 1, len - i);
+			memmove(arg + i, arg + i + 1, len - i);
 			len--;
 		}
 }

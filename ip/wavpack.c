@@ -69,7 +69,7 @@ ip_wavpack_close(struct track *t)
 	struct ip_wavpack_ipdata *ipd;
 
 	ipd = t->ipdata;
-	(void)WavpackCloseFile(ipd->wpc);
+	WavpackCloseFile(ipd->wpc);
 	free(ipd->buf);
 	free(ipd);
 }
@@ -118,7 +118,7 @@ ip_wavpack_float_to_int(int32_t flt)
 	if (IP_WAVPACK_FLOAT_SIGN(flt))
 		frac = -frac;
 
-	return (int16_t)frac;
+	return frac;
 }
 
 static int
@@ -153,7 +153,7 @@ ip_wavpack_get_metadata(struct track *t)
 	else
 		t->duration = nframes / rate;
 
-	(void)WavpackCloseFile(wpc);
+	WavpackCloseFile(wpc);
 	return 0;
 }
 
@@ -186,7 +186,7 @@ ip_wavpack_get_tag_item_value(WavpackContext *wpc, const char *key)
 		if (len < INT_MAX)
 			len++;
 		value = xmalloc(len);
-		(void)WavpackGetTagItem(wpc, key, value, len);
+		WavpackGetTagItem(wpc, key, value, len);
 	}
 
 	return value;
@@ -225,7 +225,7 @@ ip_wavpack_open(struct track *t)
 			    t->path, t->format.nbits);
 			msg_errx("%s: %d bits per sample not supported",
 			    t->path, t->format.nbits);
-			(void)WavpackCloseFile(wpc);
+			WavpackCloseFile(wpc);
 			return -1;
 		}
 	}
@@ -276,10 +276,10 @@ ip_wavpack_read(struct track *t, int16_t *samples, size_t maxsamples)
 			samples[i] =
 			    ip_wavpack_float_to_int(ipd->buf[ipd->bufidx++]);
 		else
-			samples[i] = (int16_t)ipd->buf[ipd->bufidx++];
+			samples[i] = ipd->buf[ipd->bufidx++];
 	}
 
-	return (int)i;
+	return i;
 }
 
 static void

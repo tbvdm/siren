@@ -58,7 +58,7 @@ op_pulse_close(void)
 static size_t
 op_pulse_get_buffer_size(void)
 {
-	return (size_t)option_get_number("pulse-buffer-size");
+	return option_get_number("pulse-buffer-size");
 }
 
 static int

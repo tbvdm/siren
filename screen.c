@@ -192,8 +192,8 @@ screen_clrtoeol(void)
 
 	getyx(stdscr, row, col);
 	for (i = col; i < COLS; i++)
-		(void)addch(' ');
-	(void)move(row, col);
+		addch(' ');
+	move(row, col);
 }
 #endif
 
@@ -236,7 +236,7 @@ screen_configure_colours(void)
 		XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
 		if (init_pair(screen_objects[i].colour_pair, fg, bg) == OK)
 			screen_objects[i].attr |=
-			    (chtype)COLOR_PAIR(screen_objects[i].colour_pair);
+			    COLOR_PAIR(screen_objects[i].colour_pair);
 		XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
 	}
 }
@@ -248,14 +248,14 @@ screen_configure_cursor(void)
 
 	show = option_get_boolean("show-cursor");
 	XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
-	(void)curs_set(show);
+	curs_set(show);
 #ifdef SCREEN_HAVE_NETBSD_CURSES_BUGS
 	/*
 	 * NetBSD's curs_set() does not let the cursor-visibility change take
 	 * effect immediately. This has been fixed in NetBSD 6.0. We work
 	 * around this by calling refresh() after curs_set().
 	 */
-	(void)refresh();
+	refresh();
 #endif
 	XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
 }
@@ -297,7 +297,7 @@ screen_configure_rows(void)
 void
 screen_end(void)
 {
-	(void)endwin();
+	endwin();
 	free(screen_row);
 }
 
@@ -358,17 +358,17 @@ screen_get_ncolours(void)
 unsigned int
 screen_get_ncols(void)
 {
-	return (unsigned int)COLS;
+	return COLS;
 }
 
 void
 screen_init(void)
 {
-	(void)initscr();
-	(void)cbreak();
-	(void)noecho();
-	(void)nonl();
-	(void)keypad(stdscr, TRUE);
+	initscr();
+	cbreak();
+	noecho();
+	nonl();
+	keypad(stdscr, TRUE);
 
 	if (has_colors() == TRUE) {
 		if (start_color() == ERR)
@@ -423,8 +423,8 @@ screen_msg_vprintf(int obj, const char *fmt, va_list ap)
 	if (move(screen_status_row, 0) == OK) {
 		bkgdset(screen_objects[obj].attr);
 		screen_vprintf(fmt, ap);
-		(void)move(row, col);
-		(void)refresh();
+		move(row, col);
+		refresh();
 	}
 	XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
 }
@@ -441,8 +441,8 @@ screen_player_status_printf(const struct format *fmt,
 	if (move(screen_player_row + 1, 0) == OK) {
 		bkgdset(screen_objects[SCREEN_OBJ_PLAYER].attr);
 		screen_print_row(screen_row);
-		(void)move(row, col);
-		(void)refresh();
+		move(row, col);
+		refresh();
 	}
 	XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
 }
@@ -462,8 +462,8 @@ screen_player_track_printf(const struct format *fmt, const struct track *track)
 	if (move(screen_player_row, 0) == OK) {
 		bkgdset(screen_objects[SCREEN_OBJ_PLAYER].attr);
 		screen_print_row(screen_row);
-		(void)move(row, col);
-		(void)refresh();
+		move(row, col);
+		refresh();
 	}
 	XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
 }
@@ -487,10 +487,10 @@ screen_print_row(const char *s)
 {
 	int col UNUSED, row;
 
-	(void)addnstr(s, COLS);
+	addnstr(s, COLS);
 
 	if (strlen(s) < (size_t)COLS)
-		(void)clrtoeol();
+		clrtoeol();
 	else {
 		/*
 		 * If the length of the printed string is equal to the screen
@@ -498,7 +498,7 @@ screen_print_row(const char *s)
 		 * moving the cursor back to the original row.
 		 */
 		getyx(stdscr, row, col);
-		(void)move(row - 1, COLS - 1);
+		move(row - 1, COLS - 1);
 	}
 }
 
@@ -506,7 +506,7 @@ void
 screen_prompt_begin(void)
 {
 	XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
-	(void)curs_set(1);
+	curs_set(1);
 	screen_status_col = 0;
 	XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
 }
@@ -520,9 +520,9 @@ screen_prompt_end(void)
 	screen_status_clear();
 	XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
 	if (!show)
-		(void)curs_set(0);
-	(void)move(screen_view_selected_row, 0);
-	(void)refresh();
+		curs_set(0);
+	move(screen_view_selected_row, 0);
+	refresh();
 	XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
 }
 
@@ -536,13 +536,13 @@ screen_prompt_printf(size_t cursorpos, const char *fmt, ...)
 	if ((int)cursorpos >= COLS && COLS > 0)
 		screen_status_col = COLS - 1;
 	else
-		screen_status_col = (int)cursorpos;
+		screen_status_col = cursorpos;
 
 	if (move(screen_status_row, 0) == OK) {
 		bkgdset(screen_objects[SCREEN_OBJ_PROMPT].attr);
 		screen_vprintf(fmt, ap);
-		(void)move(screen_status_row, screen_status_col);
-		(void)refresh();
+		move(screen_status_row, screen_status_col);
+		refresh();
 	}
 	XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
 	va_end(ap);
@@ -552,7 +552,7 @@ void
 screen_refresh(void)
 {
 	XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
-	(void)clear();
+	clear();
 	XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
 #if defined(HAVE_RESIZETERM) && defined(TIOCGWINSZ)
 	screen_resize();
@@ -600,9 +600,9 @@ screen_status_clear(void)
 	getyx(stdscr, row, col);
 	if (move(screen_status_row, 0) == OK) {
 		bkgdset(screen_objects[SCREEN_OBJ_STATUS].attr);
-		(void)clrtoeol();
-		(void)move(row, col);
-		(void)refresh();
+		clrtoeol();
+		move(row, col);
+		refresh();
 	}
 	XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
 }
@@ -610,7 +610,7 @@ screen_status_clear(void)
 unsigned int
 screen_view_get_nrows(void)
 {
-	return (unsigned int)screen_view_nrows;
+	return screen_view_nrows;
 }
 
 void
@@ -638,8 +638,8 @@ screen_view_print_begin(void)
 	/* Clear the view area. */
 	bkgdset(screen_objects[SCREEN_OBJ_VIEW].attr);
 	for (i = 0; i < screen_view_nrows; i++) {
-		(void)move(SCREEN_VIEW_ROW + i, 0);
-		(void)clrtoeol();
+		move(SCREEN_VIEW_ROW + i, 0);
+		clrtoeol();
 	}
 	screen_view_current_row = screen_view_selected_row = SCREEN_VIEW_ROW;
 	XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
@@ -650,10 +650,10 @@ screen_view_print_end(void)
 {
 	XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
 	if (input_get_mode() == INPUT_MODE_PROMPT)
-		(void)move(screen_status_row, screen_status_col);
+		move(screen_status_row, screen_status_col);
 	else
-		(void)move(screen_view_selected_row, 0);
-	(void)refresh();
+		move(screen_view_selected_row, 0);
+	refresh();
 	XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
 }
 
@@ -664,7 +664,7 @@ static void
 screen_view_print_row(chtype attr, const char *s)
 {
 	bkgdset(attr);
-	(void)move(screen_view_current_row++, 0);
+	move(screen_view_current_row++, 0);
 	screen_print_row(s);
 }
 
@@ -704,9 +704,9 @@ screen_view_title_printf_right(const char *fmt, ...)
 	bkgdset(screen_objects[SCREEN_OBJ_TITLE].attr);
 	len = xvsnprintf(screen_row, screen_rowsize, fmt, ap);
 	if (len < COLS)
-		(void)mvaddstr(SCREEN_TITLE_ROW, COLS - len, screen_row);
+		mvaddstr(SCREEN_TITLE_ROW, COLS - len, screen_row);
 	else
-		(void)mvaddstr(SCREEN_TITLE_ROW, 0, screen_row + len - COLS);
+		mvaddstr(SCREEN_TITLE_ROW, 0, screen_row + len - COLS);
 	/* No refresh() yet; screen_view_print_end() will do that. */
 	XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
 	va_end(ap);
@@ -721,10 +721,10 @@ screen_vprintf(const char *fmt, va_list ap)
 	int col UNUSED, len, row;
 
 	len = xvsnprintf(screen_row, screen_rowsize, fmt, ap);
-	(void)addnstr(screen_row, COLS);
+	addnstr(screen_row, COLS);
 
 	if (len < COLS)
-		(void)clrtoeol();
+		clrtoeol();
 	else {
 		/*
 		 * If the length of the printed string is equal to the screen
@@ -732,6 +732,6 @@ screen_vprintf(const char *fmt, va_list ap)
 		 * moving the cursor back to the original row.
 		 */
 		getyx(stdscr, row, col);
-		(void)move(row - 1, COLS - 1);
+		move(row - 1, COLS - 1);
 	}
 }

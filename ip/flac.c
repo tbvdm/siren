@@ -78,7 +78,7 @@ ip_flac_close(struct track *t)
 	struct ip_flac_ipdata *ipd;
 
 	ipd = t->ipdata;
-	(void)FLAC__stream_decoder_finish(ipd->decoder);
+	FLAC__stream_decoder_finish(ipd->decoder);
 	FLAC__stream_decoder_delete(ipd->decoder);
 	free(ipd);
 }
@@ -134,8 +134,7 @@ ip_flac_get_metadata(struct track *t)
 	}
 
 	for (i = 0; i < comments->data.vorbis_comment.num_comments; i++) {
-		comment = (char *)
-		    comments->data.vorbis_comment.comments[i].entry;
+		comment = comments->data.vorbis_comment.comments[i].entry;
 		if (!strncasecmp(comment, "album=", 6)) {
 			free(t->album);
 			t->album = xstrdup(comment + 6);
@@ -169,8 +168,7 @@ ip_flac_get_metadata(struct track *t)
 	if (streaminfo.data.stream_info.sample_rate == 0)
 		t->duration = 0;
 	else
-		t->duration =
-		    (unsigned int)streaminfo.data.stream_info.total_samples /
+		t->duration = streaminfo.data.stream_info.total_samples /
 		    streaminfo.data.stream_info.sample_rate;
 
 	return 0;
@@ -222,7 +220,7 @@ ip_flac_open(struct track *t)
 		    ip_flac_init_status_to_string(status));
 		msg_errx("%s: Cannot initialise FLAC decoder: %s", t->path,
 		    ip_flac_init_status_to_string(status));
-		(void)fclose(fp);
+		fclose(fp);
 		goto error2;
 	}
 
@@ -252,7 +250,7 @@ ip_flac_open(struct track *t)
 	return 0;
 
 error3:
-	(void)FLAC__stream_decoder_finish(ipd->decoder);
+	FLAC__stream_decoder_finish(ipd->decoder);
 error2:
 	FLAC__stream_decoder_delete(ipd->decoder);
 error1:
@@ -271,7 +269,7 @@ ip_flac_read(struct track *t, int16_t *samples, size_t maxsamples)
 	ipd = t->ipdata;
 
 	nsamples = 0;
-	while (nsamples + (size_t)t->format.nchannels <= maxsamples) {
+	while (nsamples + t->format.nchannels <= maxsamples) {
 		if (ipd->bufidx == ipd->buflen) {
 			ret = ip_flac_fill_buffer(t->path, ipd);
 			if (ret == IP_FLAC_EOF)
@@ -281,13 +279,12 @@ ip_flac_read(struct track *t, int16_t *samples, size_t maxsamples)
 		}
 
 		for (i = 0; i < t->format.nchannels; i++)
-			samples[nsamples++] =
-			    (int16_t)ipd->buf[i][ipd->bufidx];
+			samples[nsamples++] = ipd->buf[i][ipd->bufidx];
 
 		ipd->bufidx++;
 	}
 
-	return (int)nsamples;
+	return nsamples;
 }
 
 static void
@@ -299,14 +296,13 @@ ip_flac_seek(struct track *t, unsigned int sec)
 
 	ipd = t->ipdata;
 	sample = sec * t->format.rate;
-	nsamples = (unsigned int)FLAC__stream_decoder_get_total_samples(
-	    ipd->decoder);
+	nsamples = FLAC__stream_decoder_get_total_samples(ipd->decoder);
 
 	if (sample >= nsamples)
 		sample = nsamples > 0 ? nsamples - 1 : 0;
 
-	if (FLAC__stream_decoder_seek_absolute(ipd->decoder,
-	    (FLAC__uint64)sample) == false) {
+	if (FLAC__stream_decoder_seek_absolute(ipd->decoder, sample) ==
+	    false) {
 		state = FLAC__stream_decoder_get_state(ipd->decoder);
 
 		LOG_ERRX("FLAC__stream_decoder_seek_absolute: %s: %s", t->path,
@@ -315,7 +311,7 @@ ip_flac_seek(struct track *t, unsigned int sec)
 
 		/* The decoder must be flushed after a seek error. */
 		if (state == FLAC__STREAM_DECODER_SEEK_ERROR) {
-			(void)FLAC__stream_decoder_flush(ipd->decoder);
+			FLAC__stream_decoder_flush(ipd->decoder);
 			ipd->bufidx = 0;
 		}
 	} else {
@@ -340,8 +336,7 @@ ip_flac_write_cb(UNUSED const FLAC__StreamDecoder *decoder,
 		ipd->cursample += frame->header.blocksize;
 	else
 		/* Variable blocksize. */
-		ipd->cursample = (unsigned int)
-		    frame->header.number.sample_number;
+		ipd->cursample = frame->header.number.sample_number;
 
 	ipd->buf = buffer;
 	ipd->buflen = frame->header.blocksize;

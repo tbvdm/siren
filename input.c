@@ -49,7 +49,7 @@ input_init(void)
 
 	sa.sa_handler = input_handle_signal;
 	sa.sa_flags = 0;
-	(void)sigemptyset(&sa.sa_mask);
+	sigemptyset(&sa.sa_mask);
 
 	if (sigaction(SIGINT, &sa, NULL) == -1)
 		LOG_ERR("sigaction");
@@ -77,7 +77,7 @@ input_init(void)
 	}
 
 	if (tio.c_cc[VDSUSP] == K_CTRL('Y')) {
-		tio.c_cc[VDSUSP] = (cc_t)vdisable;
+		tio.c_cc[VDSUSP] = vdisable;
 		if (tcsetattr(STDIN_FILENO, TCSANOW, &tio) == -1)
 			LOG_ERR("tcsetattr");
 	}

@@ -62,7 +62,7 @@ browser_activate_entry(void)
 		browser_change_dir(be->name);
 		break;
 	case FILE_TYPE_REGULAR:
-		(void)xasprintf(&path, "%s/%s", browser_dir, be->name);
+		xasprintf(&path, "%s/%s", browser_dir, be->name);
 		if ((t = track_get(path, be->ip)) != NULL) {
 			XPTHREAD_MUTEX_LOCK(&browser_menu_mtx);
 			menu_activate_entry(browser_menu, me);
@@ -87,7 +87,7 @@ browser_change_dir(const char *dir)
 	if (dir[0] == '/')
 		newdir = path_normalise(dir);
 	else {
-		(void)xasprintf(&tmp, "%s/%s", browser_dir, dir);
+		xasprintf(&tmp, "%s/%s", browser_dir, dir);
 		newdir = path_normalise(tmp);
 		free(tmp);
 	}
@@ -134,7 +134,7 @@ browser_copy_entry(enum view_id view)
 	if ((e = menu_get_selected_entry_data(browser_menu)) == NULL)
 		return;
 
-	(void)xasprintf(&tmp, "%s/%s", browser_dir, e->name);
+	xasprintf(&tmp, "%s/%s", browser_dir, e->name);
 	path = path_normalise(tmp);
 	free(tmp);
 
@@ -177,9 +177,9 @@ browser_get_entry_text(const void *e, char *buf, size_t bufsize)
 	const struct browser_entry *be;
 
 	be = e;
-	(void)strlcpy(buf, be->name, bufsize);
+	strlcpy(buf, be->name, bufsize);
 	if (be->type == FILE_TYPE_DIRECTORY)
-		(void)strlcat(buf, "/", bufsize);
+		strlcat(buf, "/", bufsize);
 }
 
 struct track *
@@ -205,7 +205,7 @@ browser_get_next_track(void)
 
 			be = menu_get_entry_data(me);
 			if (be->ip != NULL) {
-				(void)xasprintf(&path, "%s/%s", browser_dir,
+				xasprintf(&path, "%s/%s", browser_dir,
 				    be->name);
 				t = track_get(path, be->ip);
 				free(path);
@@ -243,7 +243,7 @@ browser_get_prev_track(void)
 
 			be = menu_get_entry_data(me);
 			if (be->ip != NULL) {
-				(void)xasprintf(&path, "%s/%s", browser_dir,
+				xasprintf(&path, "%s/%s", browser_dir,
 				    be->name);
 				t = track_get(path, be->ip);
 				free(path);

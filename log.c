@@ -44,7 +44,7 @@ void
 log_end(void)
 {
 	if (log_enabled)
-		(void)fclose(log_fp);
+		fclose(log_fp);
 }
 
 void
@@ -108,7 +108,7 @@ log_init(int enable)
 	char		*file;
 
 	if (enable) {
-		(void)xasprintf(&file, "siren-%ld.log", (long int)getpid());
+		xasprintf(&file, "siren-%ld.log", (long int)getpid());
 		if ((log_fp = fopen(file, "w")) == NULL)
 			err(1, "fopen: %s", file);
 		free(file);
@@ -139,8 +139,8 @@ log_verr(const char *func, const char *fmt, va_list ap)
 	char	errstr[STRERROR_BUFSIZE], *msg;
 
 	oerrno = errno;
-	(void)strerror_r(errno, errstr, sizeof errstr);
-	(void)xvasprintf(&msg, fmt, ap);
+	strerror_r(errno, errstr, sizeof errstr);
+	xvasprintf(&msg, fmt, ap);
 	log_printf(func, "%s: %s", msg, errstr);
 	free(msg);
 	errno = oerrno;
@@ -150,12 +150,12 @@ static void
 log_vprintf(const char *func, const char *fmt, va_list ap)
 {
 	if (log_enabled) {
-		(void)pthread_mutex_lock(&log_fp_mtx);
+		pthread_mutex_lock(&log_fp_mtx);
 		if (func != NULL)
-			(void)fprintf(log_fp, "%s: ", func);
+			fprintf(log_fp, "%s: ", func);
 		if (fmt != NULL)
-			(void)vfprintf(log_fp, fmt, ap);
-		(void)putc('\n', log_fp);
-		(void)pthread_mutex_unlock(&log_fp_mtx);
+			vfprintf(log_fp, fmt, ap);
+		putc('\n', log_fp);
+		pthread_mutex_unlock(&log_fp_mtx);
 	}
 }

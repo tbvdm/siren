@@ -33,14 +33,14 @@ char			*__progname;
 NORETURN static void
 usage(void)
 {
-	(void)fprintf(stderr, "usage: %s [-lv] [-c directory]\n", __progname);
+	fprintf(stderr, "usage: %s [-lv] [-c directory]\n", __progname);
 	exit(1);
 }
 
 NORETURN static void
 version(void)
 {
-	(void)printf("siren %s\n", VERSION);
+	printf("siren %s\n", VERSION);
 	exit(0);
 }
 

@@ -212,8 +212,8 @@ option_attrib_to_string(int attrib)
 		if (attrib & option_attribs[i].attrib ||
 		    attrib == option_attribs[i].attrib) {
 			if (str[0] != '\0')
-				(void)strlcat(str, ",", sizeof str);
-			(void)strlcat(str, option_attribs[i].name, sizeof str);
+				strlcat(str, ",", sizeof str);
+			strlcat(str, option_attribs[i].name, sizeof str);
 		}
 
 	return xstrdup(str);
@@ -244,7 +244,7 @@ option_colour_to_string(int colour)
 	char	*str;
 
 	if (colour >= 0) {
-		(void)xasprintf(&str, "colour%d", colour);
+		xasprintf(&str, "colour%d", colour);
 		return str;
 	}
 
@@ -261,7 +261,7 @@ option_end(void)
 	struct option_entry *o;
 
 	while ((o = SPLAY_ROOT(&option_tree)) != NULL) {
-		(void)SPLAY_REMOVE(option_tree, &option_tree, o);
+		SPLAY_REMOVE(option_tree, &option_tree, o);
 		free(o->name);
 		switch (o->type) {
 		case OPTION_TYPE_FORMAT:

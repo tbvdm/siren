@@ -188,7 +188,7 @@ playlist_load(const char *file)
 
 	XPTHREAD_MUTEX_UNLOCK(&playlist_menu_mtx);
 
-	(void)fclose(fp);
+	fclose(fp);
 
 	playlist_print();
 }

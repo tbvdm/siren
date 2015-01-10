@@ -117,7 +117,7 @@ track_cmp_number(const char *s1, const char *s2)
 	if (s2 == NULL)
 		return 1;
 
-	i1 = (int)strtonum(s1, 0, INT_MAX, &errstr);
+	i1 = strtonum(s1, 0, INT_MAX, &errstr);
 	if (errstr != NULL)
 		/*
 		 * Numerical comparison failed; fall back to a lexicographical
@@ -125,7 +125,7 @@ track_cmp_number(const char *s1, const char *s2)
 		 */
 		return track_cmp_string(s1, s2);
 
-	i2 = (int)strtonum(s2, 0, INT_MAX, &errstr);
+	i2 = strtonum(s2, 0, INT_MAX, &errstr);
 	if (errstr != NULL)
 		return track_cmp_string(s1, s2);
 
@@ -148,7 +148,7 @@ track_end(void)
 	struct track_entry *te;
 
 	if (track_tree_modified)
-		(void)track_write_cache();
+		track_write_cache();
 
 	while ((te = RB_ROOT(&track_tree)) != NULL)
 		track_remove_entry(te);
@@ -284,7 +284,7 @@ track_read_cache(void)
 static void
 track_remove_entry(struct track_entry *te)
 {
-	(void)RB_REMOVE(track_tree, &track_tree, te);
+	RB_REMOVE(track_tree, &track_tree, te);
 	track_free_entry(te);
 	track_nentries--;
 }
@@ -376,7 +376,7 @@ track_update_metadata(int delete)
 		track_lock_metadata();
 		track_free_metadata(te);
 		track_init_metadata(te);
-		(void)te->track.ip->get_metadata(&te->track);
+		te->track.ip->get_metadata(&te->track);
 		track_unlock_metadata();
 	}
 

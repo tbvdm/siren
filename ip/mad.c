@@ -110,12 +110,12 @@ ip_mad_calculate_duration(const char *file)
 	free(buf);
 	mad_header_finish(&header);
 	mad_stream_finish(&stream);
-	(void)fclose(fp);
+	fclose(fp);
 
 	if (ret == IP_MAD_ERROR)
 		return 0;
 
-	return (unsigned int)mad_timer_count(timer, MAD_UNITS_SECONDS);
+	return mad_timer_count(timer, MAD_UNITS_SECONDS);
 }
 
 static void
@@ -128,7 +128,7 @@ ip_mad_close(struct track *t)
 	mad_synth_finish(&ipd->synth);
 	mad_frame_finish(&ipd->frame);
 	mad_stream_finish(&ipd->stream);
-	(void)fclose(ipd->fp);
+	fclose(ipd->fp);
 
 	free(ipd->buf);
 	free(ipd);
@@ -193,7 +193,7 @@ ip_mad_fill_stream(FILE *fp, struct mad_stream *stream, unsigned char *buf,
 		buflen = 0;
 	else {
 		buflen = stream->bufend - stream->next_frame;
-		(void)memmove(buf, stream->next_frame, buflen);
+		memmove(buf, stream->next_frame, buflen);
 	}
 	buffree = bufsize - buflen;
 
@@ -207,8 +207,7 @@ ip_mad_fill_stream(FILE *fp, struct mad_stream *stream, unsigned char *buf,
 			if (nread == 0)
 				return IP_MAD_EOF;
 
-			(void)memset(buf + buflen + nread, 0,
-			    MAD_BUFFER_GUARD);
+			memset(buf + buflen + nread, 0, MAD_BUFFER_GUARD);
 			buflen += MAD_BUFFER_GUARD;
 		}
 	}
@@ -235,7 +234,7 @@ ip_mad_fixed_to_int(mad_fixed_t fixed)
 		fixed = -MAD_F_ONE;
 
 	/* Save the sign bit and the 15 most significant fraction bits. */
-	return (int16_t)(fixed >> (MAD_F_FRACBITS - 15));
+	return fixed >> (MAD_F_FRACBITS - 15);
 }
 
 static char *
@@ -265,7 +264,7 @@ ip_mad_get_id3_frame(const struct id3_tag *tag, const char *id)
 	 * Note that id3_ucs4_latin1duplicate() returns NULL if its call to
 	 * malloc() failed.
 	 */
-	return (char *)id3_ucs4_latin1duplicate(value);
+	return id3_ucs4_latin1duplicate(value);
 }
 
 static char *
@@ -285,7 +284,7 @@ ip_mad_get_id3_genre(struct id3_tag *tag)
 	if (genre[0] == '\0')
 		return NULL;
 
-	return (char *)id3_ucs4_latin1duplicate(genre);
+	return id3_ucs4_latin1duplicate(genre);
 }
 
 static int
@@ -321,8 +320,7 @@ ip_mad_get_metadata(struct track *t)
 	if ((tlen = ip_mad_get_id3_frame(tag, "TLEN")) == NULL)
 		t->duration = ip_mad_calculate_duration(t->path);
 	else {
-		t->duration = (unsigned int)strtonum(tlen, 0, UINT_MAX,
-		    &errstr);
+		t->duration = strtonum(tlen, 0, UINT_MAX, &errstr);
 		if (errstr != NULL)
 			LOG_ERRX("%s: %s: TLEN frame is %s", t->path, tlen,
 			    errstr);
@@ -343,7 +341,7 @@ ip_mad_get_position(struct track *t, unsigned int *pos)
 	struct ip_mad_ipdata *ipd;
 
 	ipd = t->ipdata;
-	*pos = (unsigned int)mad_timer_count(ipd->timer, MAD_UNITS_SECONDS);
+	*pos = mad_timer_count(ipd->timer, MAD_UNITS_SECONDS);
 	return 0;
 }
 
@@ -376,7 +374,7 @@ ip_mad_get_sample_format(const char *file, struct sample_format *sf,
 
 	mad_header_finish(&header);
 	mad_stream_finish(&stream);
-	(void)fclose(fp);
+	fclose(fp);
 
 	return ret == IP_MAD_OK ? 0 : -1;
 }
@@ -425,7 +423,7 @@ ip_mad_read(struct track *t, int16_t *samples, size_t maxsamples)
 	ipd = t->ipdata;
 
 	nsamples = 0;
-	while (nsamples + (size_t)t->format.nchannels <= maxsamples) {
+	while (nsamples + t->format.nchannels <= maxsamples) {
 		if (ipd->sampleidx == ipd->synth.pcm.length) {
 			mad_timer_add(&ipd->timer, ipd->frame.header.duration);
 			ret = ip_mad_decode_frame(ipd);
@@ -442,7 +440,7 @@ ip_mad_read(struct track *t, int16_t *samples, size_t maxsamples)
 		ipd->sampleidx++;
 	}
 
-	return (int)nsamples;
+	return nsamples;
 }
 
 static void
@@ -454,7 +452,7 @@ ip_mad_seek(struct track *t, unsigned int seekpos)
 
 	ipd = t->ipdata;
 
-	pos = (unsigned int)mad_timer_count(ipd->timer, MAD_UNITS_SECONDS);
+	pos = mad_timer_count(ipd->timer, MAD_UNITS_SECONDS);
 	if (pos > seekpos) {
 		if (fseek(ipd->fp, 0, SEEK_SET) == -1) {
 			LOG_ERR("fseek: %s", t->path);

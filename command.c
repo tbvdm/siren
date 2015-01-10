@@ -581,13 +581,13 @@ command_bind_key_parse(int argc, char **argv, void **datap, char **error)
 	data = xmalloc(sizeof *data);
 
 	if (bind_string_to_scope(argv[1], &data->scope) == -1) {
-		(void)xasprintf(error, "Invalid scope: %s", argv[1]);
+		xasprintf(error, "Invalid scope: %s", argv[1]);
 		free(data);
 		return -1;
 	}
 
 	if ((data->key = bind_string_to_key(argv[2])) == K_NONE) {
-		(void)xasprintf(error, "Invalid key: %s", argv[2]);
+		xasprintf(error, "Invalid key: %s", argv[2]);
 		free(data);
 		return -1;
 	}
@@ -599,7 +599,7 @@ command_bind_key_parse(int argc, char **argv, void **datap, char **error)
 	}
 
 	if (data->command == NULL) {
-		(void)xasprintf(error, "Missing command: %s", argv[3]);
+		xasprintf(error, "Missing command: %s", argv[3]);
 		free(data);
 		return -1;
 	}
@@ -778,15 +778,14 @@ command_confirm_parse(int argc, char **argv, void **datap, char **error)
 		goto error;
 
 	if (data->command == NULL) {
-		(void)xasprintf(error, "Missing command: %s", argv[0]);
+		xasprintf(error, "Missing command: %s", argv[0]);
 		goto error;
 	}
 
 	if (prompt != NULL)
-		(void)xasprintf(&data->prompt, "%s? ([y]/n): ", prompt);
+		xasprintf(&data->prompt, "%s? ([y]/n): ", prompt);
 	else
-		(void)xasprintf(&data->prompt, "Execute \"%s\"? ([y]/n): ",
-		    argv[0]);
+		xasprintf(&data->prompt, "Execute \"%s\"? ([y]/n): ", argv[0]);
 
 	*datap = data;
 	return 0;
@@ -857,7 +856,7 @@ static int
 command_generic_parse(int argc, char **argv, void **datap, char **error)
 {
 	if (argc != 1) {
-		(void)xasprintf(error, "Usage: %s", argv[0]);
+		xasprintf(error, "Usage: %s", argv[0]);
 		return -1;
 	}
 
@@ -922,7 +921,7 @@ command_parse_string(const char *str, struct command **cmd,
 		}
 
 	if (*cmd == NULL) {
-		(void)xasprintf(error, "No such command: %s", argv[0]);
+		xasprintf(error, "No such command: %s", argv[0]);
 		ret = -1;
 	} else {
 		optind = optreset = 1;
@@ -1037,8 +1036,7 @@ command_scroll_parse(int argc, char **argv, void **datap, char **error)
 			*scroll = MENU_SCROLL_PAGE;
 			break;
 		default:
-			(void)xasprintf(error, "Usage: %s [-h | -l | -p]",
-			    argv[0]);
+			xasprintf(error, "Usage: %s [-h | -l | -p]", argv[0]);
 			free(scroll);
 			return -1;
 		}
@@ -1193,7 +1191,7 @@ command_seek_parse(int argc, char **argv, void **datap, char **error)
 
 	/* Parse the first field. */
 	field = strsep(&position, ":");
-	data->position = (int)strtonum(field, 0, INT_MAX, &errstr);
+	data->position = strtonum(field, 0, INT_MAX, &errstr);
 	if (errstr != NULL)
 		goto error;
 
@@ -1201,7 +1199,7 @@ command_seek_parse(int argc, char **argv, void **datap, char **error)
 	if (position != NULL) {
 		field = strsep(&position, ":");
 		data->position *= 60;
-		data->position += (int)strtonum(field, 0, 59, &errstr);
+		data->position += strtonum(field, 0, 59, &errstr);
 		if (errstr != NULL)
 			goto error;
 
@@ -1209,7 +1207,7 @@ command_seek_parse(int argc, char **argv, void **datap, char **error)
 		if (position != NULL) {
 			field = strsep(&position, ":");
 			data->position *= 60;
-			data->position += (int)strtonum(field, 0, 59, &errstr);
+			data->position += strtonum(field, 0, 59, &errstr);
 			if (errstr != NULL)
 				goto error;
 
@@ -1295,7 +1293,7 @@ command_select_view_parse(int argc, char **argv, void **datap, char **error)
 	else if (!strcmp(argv[1], "queue"))
 		*data = VIEW_ID_QUEUE;
 	else {
-		(void)xasprintf(error, "Invalid view: %s", argv[1]);
+		xasprintf(error, "Invalid view: %s", argv[1]);
 		free(data);
 		return -1;
 	}
@@ -1363,12 +1361,12 @@ command_set_parse(int argc, char **argv, void **datap, char **error)
 	data = xmalloc(sizeof *data);
 
 	if (option_get_type(argv[1], &data->type) == -1) {
-		(void)xasprintf(error, "Invalid option: %s", argv[1]);
+		xasprintf(error, "Invalid option: %s", argv[1]);
 		goto error;
 	}
 
 	if (argc == 2 && data->type != OPTION_TYPE_BOOLEAN) {
-		(void)xasprintf(error, "Cannot toggle option: %s", argv[1]);
+		xasprintf(error, "Cannot toggle option: %s", argv[1]);
 		goto error;
 	}
 
@@ -1383,7 +1381,7 @@ command_set_parse(int argc, char **argv, void **datap, char **error)
 				/* Empty field. */
 				continue;
 			if ((attrib = option_string_to_attrib(field)) == -1) {
-				(void)xasprintf(error, "Invalid attribute: %s",
+				xasprintf(error, "Invalid attribute: %s",
 				    field);
 				goto error;
 			}
@@ -1400,19 +1398,19 @@ command_set_parse(int argc, char **argv, void **datap, char **error)
 			data->value.boolean = -1;
 		else if ((data->value.boolean =
 		    option_string_to_boolean(argv[2])) == -1) {
-			(void)xasprintf(error, "Invalid boolean: %s", argv[2]);
+			xasprintf(error, "Invalid boolean: %s", argv[2]);
 			goto error;
 		}
 		break;
 	case OPTION_TYPE_COLOUR:
 		if (option_string_to_colour(argv[2], &data->value.colour) ==
 		    -1) {
-			(void)xasprintf(error, "Invalid colour: %s", argv[2]);
+			xasprintf(error, "Invalid colour: %s", argv[2]);
 			goto error;
 		}
 		if (data->value.colour >= screen_get_ncolours()) {
-			(void)xasprintf(error, "Terminal does not support "
-			    "more than %d colours ", screen_get_ncolours());
+			xasprintf(error, "Terminal does not support more than "
+			    "%d colours ", screen_get_ncolours());
 			goto error;
 		}
 		break;
@@ -1421,10 +1419,9 @@ command_set_parse(int argc, char **argv, void **datap, char **error)
 		break;
 	case OPTION_TYPE_NUMBER:
 		option_get_number_range(argv[1], &min, &max);
-		data->value.number = (int)strtonum(argv[2], min, max, &errstr);
+		data->value.number = strtonum(argv[2], min, max, &errstr);
 		if (errstr != NULL) {
-			(void)xasprintf(error, "Number is %s: %s", errstr,
-			    argv[2]);
+			xasprintf(error, "Number is %s: %s", errstr, argv[2]);
 			goto error;
 		}
 		break;
@@ -1476,9 +1473,9 @@ command_set_volume_parse(int argc, char **argv, void **datap, char **error)
 	if (argc != optind + 1)
 		goto usage;
 
-	data->volume = (int)strtonum(argv[optind], 0, 100, &errstr);
+	data->volume = strtonum(argv[optind], 0, 100, &errstr);
 	if (errstr != NULL) {
-		(void)xasprintf(error, "Volume level is %s: %s", errstr,
+		xasprintf(error, "Volume level is %s: %s", errstr,
 		    argv[optind]);
 		free(data);
 		return -1;
@@ -1523,13 +1520,13 @@ command_show_binding_parse(int argc, char **argv, void **datap, char **error)
 	data = xmalloc(sizeof *data);
 
 	if (bind_string_to_scope(argv[1], &data->scope) == -1) {
-		(void)xasprintf(error, "Invalid scope: %s", argv[1]);
+		xasprintf(error, "Invalid scope: %s", argv[1]);
 		free(data);
 		return -1;
 	}
 
 	if ((data->key = bind_string_to_key(argv[2])) == K_NONE) {
-		(void)xasprintf(error, "Invalid key: %s", argv[2]);
+		xasprintf(error, "Invalid key: %s", argv[2]);
 		free(data);
 		return -1;
 	}
@@ -1597,7 +1594,7 @@ command_show_option_parse(int argc, char **argv, void **datap, char **error)
 static void
 command_source_exec(void *datap)
 {
-	conf_source_file((char *)datap);
+	conf_source_file(datap);
 }
 
 static int
@@ -1641,13 +1638,13 @@ command_unbind_key_parse(int argc, char **argv, void **datap, char **error)
 	data = xmalloc(sizeof *data);
 
 	if (bind_string_to_scope(argv[1], &data->scope) == -1) {
-		(void)xasprintf(error, "Invalid scope: %s", argv[1]);
+		xasprintf(error, "Invalid scope: %s", argv[1]);
 		free(data);
 		return -1;
 	}
 
 	if ((data->key = bind_string_to_key(argv[2])) == K_NONE) {
-		(void)xasprintf(error, "Invalid key: %s", argv[2]);
+		xasprintf(error, "Invalid key: %s", argv[2]);
 		free(data);
 		return -1;
 	}

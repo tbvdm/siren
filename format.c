@@ -223,8 +223,7 @@ format_get_value(char *buf, size_t bufsize, const struct format_field *fld,
 		if (fld->conditional)
 			condition = (vars[i].value.number != 0);
 		else {
-			(void)xsnprintf(buf, bufsize, "%d",
-			    vars[i].value.number);
+			xsnprintf(buf, bufsize, "%d", vars[i].value.number);
 			value = buf;
 		}
 		break;
@@ -239,12 +238,12 @@ format_get_value(char *buf, size_t bufsize, const struct format_field *fld,
 			condition = (vars[i].value.time != 0);
 		else {
 			if (vars[i].value.time >= 3600)
-				(void)xsnprintf(buf, bufsize, "%u:%02u:%02u",
+				xsnprintf(buf, bufsize, "%u:%02u:%02u",
 				    HOURS(vars[i].value.time),
 				    HMINS(vars[i].value.time),
 				    MSECS(vars[i].value.time));
 			else
-				(void)xsnprintf(buf, bufsize, "%u:%02u",
+				xsnprintf(buf, bufsize, "%u:%02u",
 				    MINS(vars[i].value.time),
 				    MSECS(vars[i].value.time));
 
@@ -463,7 +462,7 @@ format_write_literal(char *buf, size_t off, size_t bufsize, const char *str,
 	if (len > bufsize - off - 1)
 		len = bufsize - off - 1;
 
-	(void)memcpy(buf + off, str, len);
+	memcpy(buf + off, str, len);
 	return len;
 }
 
@@ -504,15 +503,15 @@ format_write_field(char *buf, size_t off, size_t bufsize, const char *value,
 	padlen = width - valuelen;
 
 	if (fld->align == FORMAT_ALIGN_RIGHT) {
-		(void)memset(buf + off, fld->padchar, padlen);
+		memset(buf + off, fld->padchar, padlen);
 		off += padlen;
 	}
 	if (value != NULL) {
-		(void)memcpy(buf + off, value, valuelen);
+		memcpy(buf + off, value, valuelen);
 		off += valuelen;
 	}
 	if (fld->align == FORMAT_ALIGN_LEFT)
-		(void)memset(buf + off, fld->padchar, padlen);
+		memset(buf + off, fld->padchar, padlen);
 
 	return width;
 }

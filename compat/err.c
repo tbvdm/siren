@@ -66,13 +66,13 @@ vwarn(const char *fmt, va_list ap)
 
 	oerrno = errno;
 
-	(void)fputs(__progname, stderr);
+	fputs(__progname, stderr);
 	if (fmt != NULL) {
-		(void)fputs(": ", stderr);
-		(void)vfprintf(stderr, fmt, ap);
+		fputs(": ", stderr);
+		vfprintf(stderr, fmt, ap);
 	}
-	(void)strerror_r(oerrno, errstr, sizeof errstr);
-	(void)fprintf(stderr, ": %s\n", errstr);
+	strerror_r(oerrno, errstr, sizeof errstr);
+	fprintf(stderr, ": %s\n", errstr);
 
 	errno = oerrno;
 }
@@ -80,12 +80,12 @@ vwarn(const char *fmt, va_list ap)
 void
 vwarnx(const char *fmt, va_list ap)
 {
-	(void)fputs(__progname, stderr);
+	fputs(__progname, stderr);
 	if (fmt != NULL) {
-		(void)fputs(": ", stderr);
-		(void)vfprintf(stderr, fmt, ap);
+		fputs(": ", stderr);
+		vfprintf(stderr, fmt, ap);
 	}
-	(void)putc('\n', stderr);
+	putc('\n', stderr);
 }
 
 void

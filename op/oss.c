@@ -150,7 +150,7 @@ op_oss_open(void)
 	}
 
 	op_oss_volume = op_oss_get_volume();
-	(void)close(op_oss_fd);
+	close(op_oss_fd);
 	op_oss_fd = -1;
 #endif
 
@@ -168,7 +168,7 @@ op_oss_set_volume(unsigned int volume)
 		    "closed");
 	else {
 		/* Set the volume level for the left and right channels. */
-		arg = (int)volume | ((int)volume << 8);
+		arg = volume | (volume << 8);
 		if (ioctl(op_oss_fd, SNDCTL_DSP_SETPLAYVOL, &arg) == -1) {
 			LOG_ERR("ioctl: SNDCTL_DSP_SETPLAYVOL");
 			msg_err("Cannot set volume");
@@ -250,12 +250,12 @@ op_oss_start(struct sample_format *sf)
 		LOG_ERR("ioctl: SNDCTL_DSP_GETBLKSIZE");
 		op_oss_buffer_size = OP_OSS_BUFSIZE;
 	} else
-		op_oss_buffer_size = (size_t)arg;
+		op_oss_buffer_size = arg;
 
 	return 0;
 
 error:
-	(void)close(op_oss_fd);
+	close(op_oss_fd);
 	op_oss_fd = -1;
 	return -1;
 }
@@ -274,7 +274,7 @@ op_oss_stop(void)
 	}
 #endif
 
-	(void)close(op_oss_fd);
+	close(op_oss_fd);
 	op_oss_fd = -1;
 	return 0;
 }

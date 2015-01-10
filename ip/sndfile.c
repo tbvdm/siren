@@ -94,7 +94,7 @@ ip_sndfile_close(struct track *t)
 
 	ipd = t->ipdata;
 
-	(void)sf_close(ipd->sffp);
+	sf_close(ipd->sffp);
 	free(ipd->buf);
 	free(ipd);
 }
@@ -118,7 +118,7 @@ ip_sndfile_get_metadata(struct track *t)
 		LOG_ERRX("sf_open_fd: %s: %s", t->path, sf_strerror(sffp));
 		msg_errx("%s: Cannot open track: %s", t->path,
 		    sf_strerror(sffp));
-		(void)close(fd);
+		close(fd);
 		return -1;
 	}
 
@@ -144,7 +144,7 @@ ip_sndfile_get_metadata(struct track *t)
 	else
 		t->duration = sfinfo.frames / sfinfo.samplerate;
 
-	(void)sf_close(sffp);
+	sf_close(sffp);
 
 	return 0;
 }
@@ -159,8 +159,8 @@ ip_sndfile_get_position(struct track *t, unsigned int *pos)
 	if (ipd->sfinfo.channels <= 0 || ipd->sfinfo.samplerate <= 0)
 		*pos = 0;
 	else
-		*pos = (unsigned int)(ipd->position / ipd->sfinfo.channels /
-		    ipd->sfinfo.samplerate);
+		*pos = ipd->position / ipd->sfinfo.channels /
+		    ipd->sfinfo.samplerate;
 
 	return 0;
 }
@@ -187,7 +187,7 @@ ip_sndfile_open(struct track *t)
 		msg_errx("%s: Cannot open track: %s", t->path,
 		    sf_strerror(ipd->sffp));
 		free(ipd);
-		(void)close(fd);
+		close(fd);
 		return -1;
 	}
 
@@ -233,11 +233,11 @@ ip_sndfile_read(struct track *t, int16_t *samples, size_t maxsamples)
 				break;
 		}
 
-		samples[nsamples] = (int16_t)ipd->buf[ipd->bufidx++];
+		samples[nsamples] = ipd->buf[ipd->bufidx++];
 	}
 
 	ipd->position += nsamples;
-	return (int)nsamples;
+	return nsamples;
 }
 
 static void
@@ -248,7 +248,7 @@ ip_sndfile_seek(struct track *t, unsigned int pos)
 
 	ipd = t->ipdata;
 
-	seekframe = (sf_count_t)pos * ipd->sfinfo.samplerate;
+	seekframe = pos * ipd->sfinfo.samplerate;
 	if ((frame = sf_seek(ipd->sffp, seekframe, SEEK_SET)) == -1) {
 		LOG_ERRX("sf_seek: %s: %s", t->path, sf_strerror(ipd->sffp));
 		msg_errx("Cannot seek: %s", sf_strerror(ipd->sffp));

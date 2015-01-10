@@ -155,7 +155,7 @@ void
 library_end(void)
 {
 	if (library_modified)
-		(void)library_write_file();
+		library_write_file();
 
 	menu_free(library_menu);
 }
@@ -308,7 +308,7 @@ library_read_file(void)
 	free(lbuf);
 	free(file);
 
-	(void)fclose(fp);
+	fclose(fp);
 
 	library_print();
 }
@@ -457,11 +457,11 @@ library_write_file(void)
 		XPTHREAD_MUTEX_LOCK(&library_menu_mtx);
 		MENU_FOR_EACH_ENTRY(library_menu, entry) {
 			t = menu_get_entry_data(entry);
-			(void)fprintf(fp, "%s\n", t->path);
+			fprintf(fp, "%s\n", t->path);
 		}
 		XPTHREAD_MUTEX_UNLOCK(&library_menu_mtx);
 
-		(void)fclose(fp);
+		fclose(fp);
 		ret = 0;
 	}
 

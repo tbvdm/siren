@@ -283,7 +283,7 @@ prompt_line_handle_key(int key)
 		for (i = prompt_linelen; i > prompt_linepos; i--)
 			prompt_line[i] = prompt_line[i - 1];
 
-		prompt_line[prompt_linepos++] = (char)key;
+		prompt_line[prompt_linepos++] = key;
 		break;
 	}
 

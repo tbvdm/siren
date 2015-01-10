@@ -268,24 +268,24 @@ bind_key_to_string(int key, char *name, size_t namelen)
 	size_t i;
 
 	if (K_IS_CTRL(key)) {
-		(void)xsnprintf(name, namelen, "^%c", K_UNCTRL(key));
+		xsnprintf(name, namelen, "^%c", K_UNCTRL(key));
 		return name;
 	}
 
 	for (i = 0; i < NELEMENTS(bind_keys); i++)
 		if (key == bind_keys[i].key) {
-			(void)strlcpy(name, bind_keys[i].name, namelen);
+			strlcpy(name, bind_keys[i].name, namelen);
 			return name;
 		}
 
-	(void)xsnprintf(name, namelen, "%c", key);
+	xsnprintf(name, namelen, "%c", key);
 	return name;
 }
 
 static void
 bind_remove(struct bind_entry *b)
 {
-	(void)SPLAY_REMOVE(bind_tree, &bind_tree, b);
+	SPLAY_REMOVE(bind_tree, &bind_tree, b);
 	command_free_data(b->command, b->command_data);
 	free(b->command_string);
 	free(b);
@@ -318,7 +318,7 @@ bind_set(enum bind_scope scope, int key, struct command *command,
 	b->command = command;
 	b->command_data = command_data;
 	b->command_string = xstrdup(command_string);
-	(void)SPLAY_INSERT(bind_tree, &bind_tree, b);
+	SPLAY_INSERT(bind_tree, &bind_tree, b);
 }
 
 int

@@ -60,7 +60,7 @@ dir_get_entry(struct dir *d)
 	}
 
 	d->entry.name = d->dp->d_name;
-	(void)xsnprintf(d->entry.path, d->entry.pathsize, "%s/%s", d->dir,
+	xsnprintf(d->entry.path, d->entry.pathsize, "%s/%s", d->dir,
 	    d->entry.name);
 
 	if (stat(d->entry.path, &sb) == -1) {

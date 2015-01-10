@@ -41,9 +41,9 @@ conf_init(const char *dir)
 		conf_dir = path_normalise(dir);
 	else {
 		if ((home = path_get_home_dir(NULL)) == NULL)
-			(void)xasprintf(&conf_dir, "/%s", CONF_DIR);
+			xasprintf(&conf_dir, "/%s", CONF_DIR);
 		else {
-			(void)xasprintf(&conf_dir, "%s/%s", home, CONF_DIR);
+			xasprintf(&conf_dir, "%s/%s", home, CONF_DIR);
 			free(home);
 		}
 	}
@@ -60,7 +60,7 @@ conf_get_path(const char *file)
 {
 	char *path;
 
-	(void)xasprintf(&path, "%s/%s", conf_dir, file);
+	xasprintf(&path, "%s/%s", conf_dir, file);
 	return path;
 }
 
@@ -107,5 +107,5 @@ conf_source_file(const char *file)
 	}
 	free(lbuf);
 
-	(void)fclose(fp);
+	fclose(fp);
 }

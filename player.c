@@ -35,9 +35,9 @@
 #endif
 
 #if defined(HAVE_FREEBSD_BSWAP16) || defined(HAVE_NETBSD_BSWAP16)
-#define PLAYER_SWAP16(i)	bswap16((uint16_t)(i))
+#define PLAYER_SWAP16(i)	bswap16(i)
 #elif defined(HAVE_OPENBSD_SWAP16)
-#define PLAYER_SWAP16(i)	swap16((u_int16_t)(i))
+#define PLAYER_SWAP16(i)	swap16(i)
 #else
 #define PLAYER_SWAP16(i)	((uint16_t)(i) >> 8 | (uint16_t)(i) << 8)
 #endif
@@ -164,7 +164,7 @@ player_change_op(void)
 	XPTHREAD_MUTEX_LOCK(&player_op_mtx);
 	player_close_op();
 	player_op = NULL;
-	(void)player_open_op();
+	player_open_op();
 	XPTHREAD_MUTEX_UNLOCK(&player_op_mtx);
 
 	XPTHREAD_MUTEX_LOCK(&player_state_mtx);
@@ -706,8 +706,8 @@ player_set_signal_mask(void)
 {
 	sigset_t ss;
 
-	(void)sigfillset(&ss);
-	(void)pthread_sigmask(SIG_BLOCK, &ss, NULL);
+	sigfillset(&ss);
+	pthread_sigmask(SIG_BLOCK, &ss, NULL);
 }
 
 void

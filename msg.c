@@ -70,8 +70,8 @@ msg_verr(const char *fmt, va_list ap)
 
 	oerrno = errno;
 	if (input_get_mode() != INPUT_MODE_PROMPT) {
-		(void)strerror_r(oerrno, errstr, sizeof errstr);
-		(void)xvasprintf(&msg, fmt, ap);
+		strerror_r(oerrno, errstr, sizeof errstr);
+		xvasprintf(&msg, fmt, ap);
 		screen_msg_error_printf("%s: %s", msg, errstr);
 		free(msg);
 	}

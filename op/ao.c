@@ -63,7 +63,7 @@ op_ao_close(void)
 static size_t
 op_ao_get_buffer_size(void)
 {
-	return (size_t)option_get_number("ao-buffer-size");
+	return option_get_number("ao-buffer-size");
 }
 
 static int

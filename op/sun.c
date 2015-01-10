@@ -99,7 +99,7 @@ op_sun_get_volume(void)
 		return -1;
 	}
 
-	return OP_SUN_GAIN_TO_PERCENT((int)info.play.gain);
+	return OP_SUN_GAIN_TO_PERCENT(info.play.gain);
 }
 
 static int
@@ -130,7 +130,7 @@ op_sun_open(void)
 
 	op_sun_volume = op_sun_get_volume();
 
-	(void)close(op_sun_fd);
+	close(op_sun_fd);
 	op_sun_fd = -1;
 
 	if (op_sun_volume == -1) {
@@ -242,7 +242,7 @@ op_sun_start(struct sample_format *sf)
 	return 0;
 
 error:
-	(void)close(op_sun_fd);
+	close(op_sun_fd);
 	op_sun_fd = -1;
 	return -1;
 }
@@ -251,7 +251,7 @@ static int
 op_sun_stop(void)
 {
 	op_sun_volume = op_sun_get_volume();
-	(void)close(op_sun_fd);
+	close(op_sun_fd);
 	op_sun_fd = -1;
 	return 0;
 }

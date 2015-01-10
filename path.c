@@ -113,7 +113,7 @@ path_normalise(const char *path)
 	tmp = NULL;
 	if (path[0] != '/') {
 		cwd = path_get_cwd();
-		(void)xasprintf(&tmp, "%s/%s", cwd, path);
+		xasprintf(&tmp, "%s/%s", cwd, path);
 		free(cwd);
 		path = tmp;
 	}
