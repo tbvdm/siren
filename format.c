@@ -123,7 +123,7 @@ format_get_field(const char **fmt, struct format_field *fld)
 		(*fmt)++;
 	} else
 		/* Explicit fixed width. */
-		while (isdigit((int)**fmt)) {
+		while (isdigit((unsigned char)**fmt)) {
 			fld->width = 10 * fld->width + (**fmt - '0');
 			(*fmt)++;
 		}

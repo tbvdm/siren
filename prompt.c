@@ -216,12 +216,12 @@ prompt_line_handle_key(int key)
 		break;
 	case K_CTRL('W'):
 		i = 0;
-		while (prompt_linepos - i > 0 &&
-		    !isalnum((int)prompt_line[prompt_linepos - i - 1]))
+		while (i < prompt_linepos && !isalnum(
+		    (unsigned char)prompt_line[prompt_linepos - i - 1]))
 			i++;
 
-		while (prompt_linepos - i > 0 &&
-		    isalnum((int)prompt_line[prompt_linepos - i - 1]))
+		while (i < prompt_linepos && isalnum(
+		    (unsigned char)prompt_line[prompt_linepos - i - 1]))
 			i++;
 
 		prompt_linepos -= i;
@@ -272,7 +272,7 @@ prompt_line_handle_key(int key)
 		 * Ignore control characters and function keys not handled
 		 * above.
 		 */
-		if (iscntrl(key) || key > 127)
+		if (iscntrl((unsigned char)key) || key > 127)
 			break;
 
 		if (++prompt_linelen == prompt_linesize) {

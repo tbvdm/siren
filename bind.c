@@ -345,9 +345,9 @@ bind_string_to_key(const char *str)
 		return str[0];
 
 	/* Control characters (ASCII 0 to 31 decimal, and 127 decimal). */
-	if (str[0] == '^' && K_IS_CTRL(K_CTRL(toupper((int)str[1]))) &&
-	    str[2] == '\0')
-		return K_CTRL(toupper((int)str[1]));
+	if (str[0] == '^' && K_IS_CTRL(K_CTRL(toupper((unsigned char)str[1])))
+	    && str[2] == '\0')
+		return K_CTRL(toupper((unsigned char)str[1]));
 
 	/* Key names. */
 	for (i = 0; i < NELEMENTS(bind_keys); i++)
