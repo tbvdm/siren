@@ -23,7 +23,7 @@ but with the following copyright.
 The files compat/strlcat.c and compat/strlcpy.c are distributed under the ISC
 licence as well, but with the following copyright.
 
- * Copyright (c) 1998 Todd C. Miller <Todd.Miller@courtesan.com>
+ * Copyright (c) 1998, 2015 Todd C. Miller <Todd.Miller@courtesan.com>
 
 The file compat/strtonum.c is distributed under the ISC licence as well, but
 with the following copyright.
