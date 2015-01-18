@@ -339,21 +339,21 @@ ip_mpg123_get_metadata(struct track *t)
 		goto error;
 	}
 
-	if (v2 != NULL)
-		for (i = 0; i < v2->texts; i++) {
+	if (v2 != NULL) {
+		for (i = 0; i < v2->texts; i++)
 			if (!strncmp(v2->text[i].id, "TALB", 4))
 				t->album = xstrdup(v2->text[i].text.p);
-			if (!strncmp(v2->text[i].id, "TPE1", 4))
+			else if (!strncmp(v2->text[i].id, "TPE1", 4))
 				t->artist = xstrdup(v2->text[i].text.p);
-			if (!strncmp(v2->text[i].id, "TDRC", 4) ||
+			else if (!strncmp(v2->text[i].id, "TDRC", 4) ||
 			    !strncmp(v2->text[i].id, "TYER", 4))
 				t->date = xstrdup(v2->text[i].text.p);
-			if (!strncmp(v2->text[i].id, "TCON", 4))
+			else if (!strncmp(v2->text[i].id, "TCON", 4))
 				t->genre =
 				    ip_mpg123_get_genre(&v2->text[i].text);
-			if (!strncmp(v2->text[i].id, "TIT2", 4))
+			else if (!strncmp(v2->text[i].id, "TIT2", 4))
 				t->title = xstrdup(v2->text[i].text.p);
-			if (!strncmp(v2->text[i].id, "TRCK", 4)) {
+			else if (!strncmp(v2->text[i].id, "TRCK", 4)) {
 				/*
 				 * ID3v2 allows track numbers of the form
 				 * "x/y". Ignore the "/y" part.
@@ -362,8 +362,7 @@ ip_mpg123_get_metadata(struct track *t)
 				    "/")] = '\0';
 				t->tracknumber = xstrdup(v2->text[i].text.p);
 			}
-		}
-	else if (v1 != NULL) {
+	} else if (v1 != NULL) {
 		t->album = xstrndup(v1->album, sizeof v1->album);
 		t->artist = xstrndup(v1->artist, sizeof v1->artist);
 		t->date = xstrndup(v1->year, sizeof v1->year);
