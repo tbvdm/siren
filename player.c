@@ -288,7 +288,7 @@ player_open_op(void)
 		free(name);
 	}
 
-	LOG_INFO("opening %s output plug-in", player_op->name);
+	LOG_INFO("opening %s", player_op->name);
 	if (player_op->open() == -1)
 		return -1;
 
@@ -663,7 +663,7 @@ player_reopen_op(void)
 
 	XPTHREAD_MUTEX_LOCK(&player_op_mtx);
 	if (player_op_opened) {
-		LOG_INFO("reopening %s output plug-in", player_op->name);
+		LOG_INFO("reopening %s", player_op->name);
 		player_op->close();
 		if (player_op->open() != 0)
 			player_op_opened = 0;
