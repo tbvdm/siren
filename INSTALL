@@ -37,6 +37,9 @@ mad=yes|no
 mpg123=yes|no
 	Whether to build the mpg123 input plug-in. The default is "no".
 
+opus=yes|no
+	Whether to build the opus input plug-in. The default is "yes".
+
 sndfile=yes|no
 	Whether to build the sndfile input plug-in. The default is "yes".
 

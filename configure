@@ -240,6 +240,7 @@ enable_debug=no
 enable_flac=yes
 enable_mad=yes
 enable_mpg123=no
+enable_opus=yes
 enable_sndfile=yes
 enable_vorbis=yes
 enable_wavpack=yes
@@ -288,6 +289,9 @@ for arg; do
 		;;
 	mpg123=*)
 		get_option_value enable_mpg123 "$arg"
+		;;
+	opus=*)
+		get_option_value enable_opus "$arg"
 		;;
 	sndfile=*)
 		get_option_value enable_sndfile "$arg"
@@ -472,6 +476,8 @@ fi
 check_plugin_pkgconfig mad ip "mad id3tag"
 
 check_plugin_pkgconfig mpg123 ip libmpg123
+
+check_plugin_pkgconfig opus ip opusfile
 
 if check_plugin_pkgconfig sndfile ip sndfile; then
 	if pkg-config --atleast-version 1.0.23 sndfile; then
