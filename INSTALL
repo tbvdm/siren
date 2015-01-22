@@ -7,82 +7,107 @@ Siren is built and installed with the following commands.
 	make
 	make install
 
-The configure script supports the following options.
+The configure script supports the following options. Default values are in
+parentheses.
 
-prefix=path
-	Install Siren in <path>. The default is "/usr/local".
+prefix=path (/usr/local)
+	Install Siren in <path>.
 
-bindir=path
-	Install the binary in <path>. The default is "<prefix>/bin".
+bindir=path (<prefix>/bin)
+	Install the binary in <path>.
 
-mandir=path
-	Install the manual page in <path>. The default is "<prefix>/man".
+mandir=path (<prefix>/man)
+	Install the manual page in <path>.
 
-plugindir=path
+plugindir=path (<prefix>/lib/siren)
 	Install the plug-ins in <path>. Input plug-ins will be installed in
-	"<path>/ip" and output plug-ins in "<path>/op". The default is
-	"<prefix>/lib/siren".
+	"<path>/ip" and output plug-ins in "<path>/op".
 
-debug=yes|no
-	Whether to build a debug version of Siren. The debug version is built
-	with debug symbols and, if Siren is run with the -l option, provides
-	additional debug messages in the log file. The default is "no".
+debug=yes|no (no)
+	Whether to build a debug version of Siren.
 
-flac=yes|no
-	Whether to build the FLAC input plug-in. The default is "yes".
+flac=yes|no (yes)
+	Whether to build the flac input plug-in. This plug-in provides support
+	for the FLAC audio format. It requires the libFLAC library. For more
+	information, see <http://www.xiph.org/flac/>.
 
-mad=yes|no
-	Whether to build the mad input plug-in. The default is "yes".
+mad=yes|no (yes)
+	Whether to build the mad input plug-in. This plug-in provides support
+	for MPEG audio formats such as MP3. It requires the libmad and
+	libid3tag libraries. For more information, see
+	<http://www.underbit.com/products/mad/>.
 
-mpg123=yes|no
-	Whether to build the mpg123 input plug-in. The default is "no".
+mpg123=yes|no (no)
+	Whether to build the mpg123 input plug-in. This plug-in is an
+	alternative to the mad input plug-in. It requires the libmpg123
+	library. For more information, see <http://www.mpg123.org/>.
 
-opus=yes|no
-	Whether to build the opus input plug-in. The default is "yes".
+opus=yes|no (yes)
+	Whether to build the opus input plug-in. This plug-in provides support
+	for the Opus audio format. It requires the libopusfile library. For
+	more information, see <http://www.opus-codec.org/>.
 
-sndfile=yes|no
-	Whether to build the sndfile input plug-in. The default is "yes".
+sndfile=yes|no (yes)
+	Whether to build the sndfile input plug-in. This plug-in provides
+	support for a variety of audio formats including WAVE and AIFF. It
+	requires the libsndfile library. For more information, see
+	<http://www.mega-nerd.com/libsndfile/>.
 
-vorbis=yes|no
-	Whether to build the Ogg Vorbis input plug-in. The default is "yes".
+vorbis=yes|no (yes)
+	Whether to build the vorbis input plug-in. This plug-in provides
+	support for the Ogg Vorbis audio format. It requires the libvorbisfile
+	library. For more information, see <http://www.xiph.org/vorbis/>.
 
-wavpack=yes|no
-	Whether to build the WavPack input plug-in. The default is "yes".
+wavpack=yes|no (yes)
+	Whether to build the wavpack input plug-in. This plug-in provides
+	support for the WavPack audio format. It requires the libwavpack
+	library. For more information, see <http://www.wavpack.com/>.
 
-alsa=yes|no
-	Whether to build the ALSA output plug-in. The default is "yes".
+alsa=yes|no (yes)
+	Whether to build the alsa output plug-in. This plug-in provides support
+	for ALSA. It requires the libasound library. For more information, see
+	<http://www.alsa-project.org/>.
 
-ao=yes|no
-	Whether to build the ao output plug-in. The default is "yes".
+ao=yes|no (yes)
+	Whether to build the ao output plug-in. This plug-in provides support
+	for libao which in turn supports a variety of audio systems. It
+	requires the libao library. For more information, see
+	<http://www.xiph.org/ao/>.
 
-oss=yes|no
-	Whether to build the OSS output plug-in. Both OSS 3 and OSS 4 are
-	supported, but volume support is available only for OSS 4. The default
-	is "yes".
+oss=yes|no (yes)
+	Whether to build the oss output plug-in. This plug-in provides support
+	for OSS. Both OSS 3 and OSS 4 are supported, but volume support is
+	available only for OSS 4. For more information, see
+	<http://www.opensound.com/>.
 
-pulse=yes|no
-	Whether to build the PulseAudio output plug-in. The default is "yes".
+pulse=yes|no (yes)
+	Whether to build the pulse output plug-in. This plug-in provides
+	support for PulseAudio. It requires the libpulse-simple library. For
+	more information, see <http://www.pulseaudio.org/>.
 
-sndio=yes|no
-	Whether to build the sndio output plug-in. The default is "yes".
+sndio=yes|no (yes)
+	Whether to build the sndio output plug-in. This plug-in provides
+	support for sndio. For more information, see the OpenBSD sndio(7)
+	manual page and <http://www.sndio.org/>.
 
-sun=yes|no
-	Whether to build the Sun output plug-in. The default is "yes".
+sun=yes|no (yes)
+	Whether to build the sun output plug-in. This plug-in provides support
+	for the SunOS audio system.
 
-Running Siren without installing it first
------------------------------------------
+Running Siren from the source directory
+---------------------------------------
 
-It is possible to run Siren without installing it first. This is useful, for
-example, if you wish to try out Siren. To do so, run the following commands.
+To run Siren from the source directory (i.e. without installing it first), run
+the following commands.
 
 	./configure plugindir="$PWD"
 	make
 	./siren
 
-Should you later wish to install Siren, then ensure you reconfigure and rebuild
-it first so that the plugindir variable is set to a proper value. It is perhaps
-safest to start from a clean source directory. Therefore, run the following
-command before reconfiguring.
+Should you later wish to install Siren after all, then ensure you reconfigure
+and rebuild it first so that the plugindir variable is set to a proper value.
+It is perhaps safest to start from a clean source directory. Therefore, run the
+following command before reconfiguring.
 
 	make cleandir
 
