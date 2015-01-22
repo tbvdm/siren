@@ -28,14 +28,13 @@
 
 #include "../siren.h"
 
-#define IP_WAVPACK_BUFSIZE	2048
+#define IP_WAVPACK_BUFSIZE	2048	/* Buffer size, in frames */
 #define IP_WAVPACK_ERRSTRLEN	80	/* As per the documentation */
 
 struct ip_wavpack_ipdata {
 	WavpackContext	*wpc;
 	int		 float_samples;
 	int32_t		*buf;
-	uint32_t	 bufsize;	/* Buffer size, in frames */
 	uint32_t	 bufidx;	/* Current sample */
 	uint32_t	 buflen;	/* Buffer length, in samples */
 };
@@ -238,9 +237,8 @@ ip_wavpack_open(struct track *t)
 	ipd->float_samples = float_samples;
 	ipd->bufidx = 0;
 	ipd->buflen = 0;
-	ipd->bufsize = IP_WAVPACK_BUFSIZE;
-	ipd->buf = xreallocarray(NULL, ipd->bufsize * t->format.nchannels,
-	    sizeof *ipd->buf);
+	ipd->buf = xreallocarray(NULL,
+	    IP_WAVPACK_BUFSIZE * t->format.nchannels, sizeof *ipd->buf);
 
 	t->ipdata = ipd;
 	return 0;
@@ -258,7 +256,7 @@ ip_wavpack_read(struct track *t, int16_t *samples, size_t maxsamples)
 	for (i = 0; i < maxsamples; i++) {
 		if (ipd->bufidx == ipd->buflen) {
 			ret = WavpackUnpackSamples(ipd->wpc, ipd->buf,
-			    ipd->bufsize);
+			    IP_WAVPACK_BUFSIZE);
 			if (ret == 0)
 				/* EOF reached. */
 				break;
