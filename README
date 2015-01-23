@@ -1,10 +1,9 @@
 Siren is a text-based audio player for UNIX-like operating systems. Various
-aspects of Siren have been inspired by cmus. Siren is distributed under the ISC
-licence.
+aspects of Siren have been inspired by cmus.
 
-Siren supports Ogg Vorbis, MP3, FLAC, WavPack, WAVE, AIFF and a few other file
-formats. Playback is possible through sndio, PulseAudio, ALSA, OSS, Sun audio
-and libao. Siren has been tested on OpenBSD, NetBSD, FreeBSD and Linux.
+Supported file formats include Ogg Vorbis, MP3, Opus, FLAC, WavPack, WAVE and
+AIFF. Playback is possible through sndio, PulseAudio, ALSA, OSS, Sun audio and
+libao. Siren is known to run on OpenBSD, NetBSD, FreeBSD, Linux and OS X.
 
 Please see the website for more information:
 
