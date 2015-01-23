@@ -195,7 +195,7 @@ op_sun_start(struct sample_format *sf)
 		goto error;
 	}
 
-	LOG_DEBUG("sample_rate=%u, channels=%u, precision=%u, encoding=%u",
+	LOG_INFO("sample_rate=%u, channels=%u, precision=%u, encoding=%u",
 	    info.play.sample_rate, info.play.channels, info.play.precision,
 	    info.play.encoding);
 

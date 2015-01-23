@@ -366,7 +366,7 @@ op_alsa_start(struct sample_format *sf)
 
 	snd_pcm_hw_params_free(params);
 
-	LOG_DEBUG("format=%s, channels=%u, rate=%u, bufsize=%zu",
+	LOG_INFO("format=%s, channels=%u, rate=%u, bufsize=%zu",
 	    snd_pcm_format_name(format), sf->nchannels, rate, op_alsa_bufsize);
 	return 0;
 

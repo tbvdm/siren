@@ -170,7 +170,7 @@ op_sndio_start(struct sample_format *sf)
 
 	sf->byte_order = op_sndio_par.le ? BYTE_ORDER_LITTLE : BYTE_ORDER_BIG;
 
-	LOG_DEBUG("bits=%u, sig=%u, le=%u, pchan=%u, rate=%u, appbufsz=%u",
+	LOG_INFO("bits=%u, sig=%u, le=%u, pchan=%u, rate=%u, appbufsz=%u",
 	    op_sndio_par.bits, op_sndio_par.sig, op_sndio_par.le,
 	    op_sndio_par.pchan, op_sndio_par.rate, op_sndio_par.appbufsz);
 

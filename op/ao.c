@@ -211,7 +211,7 @@ op_ao_start(struct sample_format *sf)
 		break;
 	}
 
-	LOG_DEBUG("bits=%d, rate=%d, channels=%d, byte_format=%d", aosf.bits,
+	LOG_INFO("bits=%d, rate=%d, channels=%d, byte_format=%d", aosf.bits,
 	    aosf.rate, aosf.channels, aosf.byte_format);
 
 	return 0;

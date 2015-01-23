@@ -99,7 +99,7 @@ op_pulse_start(struct sample_format *sf)
 		return -1;
 	}
 
-	LOG_DEBUG("format=%s, rate=%u, channels=%u",
+	LOG_INFO("format=%s, rate=%u, channels=%u",
 	    pa_sample_format_to_string(spec.format), spec.rate,
 	    spec.channels);
 
