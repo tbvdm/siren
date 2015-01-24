@@ -30,7 +30,6 @@
 
 struct ip_sndfile_ipdata {
 	SNDFILE		*sffp;
-	SF_INFO		 sfinfo;
 
 	short int	*buf;
 	sf_count_t	 bufidx;
@@ -156,11 +155,10 @@ ip_sndfile_get_position(struct track *t, unsigned int *pos)
 
 	ipd = t->ipdata;
 
-	if (ipd->sfinfo.channels <= 0 || ipd->sfinfo.samplerate <= 0)
+	if (t->format.nchannels <= 0 || t->format.rate <= 0)
 		*pos = 0;
 	else
-		*pos = ipd->position / ipd->sfinfo.channels /
-		    ipd->sfinfo.samplerate;
+		*pos = ipd->position / t->format.nchannels / t->format.rate;
 
 	return 0;
 }
@@ -169,7 +167,8 @@ static int
 ip_sndfile_open(struct track *t)
 {
 	struct ip_sndfile_ipdata *ipd;
-	int fd;
+	SF_INFO	sfinfo;
+	int	fd;
 
 	if ((fd = open(t->path, O_RDONLY)) == -1) {
 		LOG_ERR("open: %s", t->path);
@@ -179,9 +178,8 @@ ip_sndfile_open(struct track *t)
 
 	ipd = xmalloc(sizeof *ipd);
 
-	ipd->sfinfo.format = 0;
-	if ((ipd->sffp = sf_open_fd(fd, SFM_READ, &ipd->sfinfo, SF_TRUE)) ==
-	    NULL) {
+	sfinfo.format = 0;
+	if ((ipd->sffp = sf_open_fd(fd, SFM_READ, &sfinfo, SF_TRUE)) == NULL) {
 		LOG_ERRX("sf_open_fd: %s: %s", t->path,
 		    sf_strerror(ipd->sffp));
 		msg_errx("%s: Cannot open track: %s", t->path,
@@ -192,8 +190,8 @@ ip_sndfile_open(struct track *t)
 	}
 
 	t->format.nbits = 16;
-	t->format.nchannels = ipd->sfinfo.channels;
-	t->format.rate = ipd->sfinfo.samplerate;
+	t->format.nchannels = sfinfo.channels;
+	t->format.rate = sfinfo.samplerate;
 
 	ipd->buf = xreallocarray(NULL, IP_SNDFILE_BUFSIZE, sizeof *ipd->buf);
 	ipd->bufidx = 0;
@@ -248,12 +246,12 @@ ip_sndfile_seek(struct track *t, unsigned int pos)
 
 	ipd = t->ipdata;
 
-	seekframe = pos * ipd->sfinfo.samplerate;
+	seekframe = pos * t->format.rate;
 	if ((frame = sf_seek(ipd->sffp, seekframe, SEEK_SET)) == -1) {
 		LOG_ERRX("sf_seek: %s: %s", t->path, sf_strerror(ipd->sffp));
 		msg_errx("Cannot seek: %s", sf_strerror(ipd->sffp));
 	} else {
-		ipd->position = frame * ipd->sfinfo.channels;
+		ipd->position = frame * t->format.nchannels;
 
 		/* Discard buffered samples from the old position. */
 		ipd->bufidx = 0;
