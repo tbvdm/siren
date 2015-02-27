@@ -509,7 +509,7 @@ ip_mpg123_read(struct track *t, int16_t *samples, size_t maxsamples)
 	if (ret != MPG123_OK && ret != MPG123_DONE) {
 		LOG_ERRX("%s: mpg123_read: %s", t->path,
 		    mpg123_strerror(ipd->hdl));
-		msg_errx("%s: Cannot decode: %s", t->path,
+		msg_errx("Cannot read from track: %s",
 		    mpg123_strerror(ipd->hdl));
 		return -1;
 	}
