@@ -26,17 +26,9 @@
 
 #include "../siren.h"
 
-#define IP_SNDFILE_BUFSIZE 4096
-
 struct ip_sndfile_ipdata {
 	SNDFILE		*sffp;
-
-	short int	*buf;
-	sf_count_t	 bufidx;
-	sf_count_t	 buflen;
-
-	/* Current position in track, measured in samples. */
-	sf_count_t	 position;
+	sf_count_t	 position;	/* Current position, in samples. */
 };
 
 static void		 ip_sndfile_close(struct track *);
@@ -94,7 +86,6 @@ ip_sndfile_close(struct track *t)
 	ipd = t->ipdata;
 
 	sf_close(ipd->sffp);
-	free(ipd->buf);
 	free(ipd);
 }
 
@@ -177,6 +168,7 @@ ip_sndfile_open(struct track *t)
 	}
 
 	ipd = xmalloc(sizeof *ipd);
+	ipd->position = 0;
 
 	sfinfo.format = 0;
 	if ((ipd->sffp = sf_open_fd(fd, SFM_READ, &sfinfo, SF_TRUE)) == NULL) {
@@ -193,11 +185,6 @@ ip_sndfile_open(struct track *t)
 	t->format.nchannels = sfinfo.channels;
 	t->format.rate = sfinfo.samplerate;
 
-	ipd->buf = xreallocarray(NULL, IP_SNDFILE_BUFSIZE, sizeof *ipd->buf);
-	ipd->bufidx = 0;
-	ipd->buflen = 0;
-	ipd->position = 0;
-
 	t->ipdata = ipd;
 	return 0;
 }
@@ -206,36 +193,22 @@ static int
 ip_sndfile_read(struct track *t, int16_t *samples, size_t maxsamples)
 {
 	struct ip_sndfile_ipdata *ipd;
-	size_t nsamples;
+	size_t n;
 
 	ipd = t->ipdata;
 
-	for (nsamples = 0; nsamples < maxsamples; nsamples++) {
-		if (ipd->bufidx == ipd->buflen) {
-			/* Fill the buffer. */
-			ipd->bufidx = 0;
-			ipd->buflen = sf_read_short(ipd->sffp, ipd->buf,
-			    IP_SNDFILE_BUFSIZE);
+	/* Assume, like libsndfile, that short ints always are 2 bytes long. */
+	n = sf_read_short(ipd->sffp, (short int *)samples, maxsamples);
 
-			/* Check for error. */
-			if (sf_error(ipd->sffp) != SF_ERR_NO_ERROR) {
-				LOG_ERRX("sf_read_short: %s: %s", t->path,
-				    sf_strerror(ipd->sffp));
-				msg_errx("%s: Cannot read from track: %s",
-				    t->path, sf_strerror(ipd->sffp));
-				return -1;
-			}
-
-			/* Check for EOF. */
-			if (ipd->buflen == 0)
-				break;
-		}
-
-		samples[nsamples] = ipd->buf[ipd->bufidx++];
+	if (sf_error(ipd->sffp) != SF_ERR_NO_ERROR) {
+		LOG_ERRX("sf_read_short: %s: %s", t->path,
+		    sf_strerror(ipd->sffp));
+		msg_errx("Cannot read from track: %s", sf_strerror(ipd->sffp));
+		return -1;
 	}
 
-	ipd->position += nsamples;
-	return nsamples;
+	ipd->position += n;
+	return n;
 }
 
 static void
@@ -247,14 +220,10 @@ ip_sndfile_seek(struct track *t, unsigned int pos)
 	ipd = t->ipdata;
 
 	seekframe = pos * t->format.rate;
-	if ((frame = sf_seek(ipd->sffp, seekframe, SEEK_SET)) == -1) {
+	if ((frame = sf_seek(ipd->sffp, seekframe, SEEK_SET)) >= 0)
+		ipd->position = frame * t->format.nchannels;
+	else {
 		LOG_ERRX("sf_seek: %s: %s", t->path, sf_strerror(ipd->sffp));
 		msg_errx("Cannot seek: %s", sf_strerror(ipd->sffp));
-	} else {
-		ipd->position = frame * t->format.nchannels;
-
-		/* Discard buffered samples from the old position. */
-		ipd->bufidx = 0;
-		ipd->buflen = 0;
 	}
 }
