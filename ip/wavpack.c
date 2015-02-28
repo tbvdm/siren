@@ -73,53 +73,6 @@ ip_wavpack_close(struct track *t)
 	free(ipd);
 }
 
-/*
- * Perform a rudimentary conversion of a 32-bit IEEE 754 floating-point value
- * between -1 and 1 to an integral value between -32767 and 32767.
- */
-
-#define IP_WAVPACK_FLOAT_SIGN(flt)	((flt) & 0x80000000)
-#define IP_WAVPACK_FLOAT_EXP(flt)	(((flt) & 0x7f800000) >> 23)
-#define IP_WAVPACK_FLOAT_FRAC(flt)	((flt) & 0x007fffff)
-
-static int16_t
-ip_wavpack_float_to_int(int32_t flt)
-{
-	int32_t exp, frac;
-
-	exp = IP_WAVPACK_FLOAT_EXP(flt);
-	frac = IP_WAVPACK_FLOAT_FRAC(flt);
-
-	/* Handle the value 0. */
-	if (exp == 0 && frac == 0)
-		return 0;
-
-	/* Unbias the exponent. */
-	exp -= 127;
-
-	/* Handle the values -1 or less and 1 or greater. */
-	if (exp >= 0) {
-		if (IP_WAVPACK_FLOAT_SIGN(flt))
-			return -INT16_MAX;
-		else
-			return INT16_MAX;
-	}
-
-	/* Add the implicit 24th bit. */
-	frac |= 1 << 23;
-
-	/* Perform exponentiation. */
-	frac >>= -exp;
-
-	/* There is room only for 16 bits, so discard the 8 LSBs. */
-	frac >>= 8;
-
-	if (IP_WAVPACK_FLOAT_SIGN(flt))
-		frac = -frac;
-
-	return frac;
-}
-
 static int
 ip_wavpack_get_metadata(struct track *t)
 {
@@ -249,6 +202,7 @@ ip_wavpack_read(struct track *t, int16_t *samples, size_t maxsamples)
 {
 	struct ip_wavpack_ipdata	*ipd;
 	uint32_t			 ret;
+	float				 f;
 	size_t				 i;
 
 	ipd = t->ipdata;
@@ -270,11 +224,20 @@ ip_wavpack_read(struct track *t, int16_t *samples, size_t maxsamples)
 			ipd->bufidx = 0;
 		}
 
-		if (ipd->float_samples)
-			samples[i] =
-			    ip_wavpack_float_to_int(ipd->buf[ipd->bufidx++]);
-		else
-			samples[i] = ipd->buf[ipd->bufidx++];
+		if (!ipd->float_samples)
+			samples[i] = ipd->buf[ipd->bufidx];
+		else {
+			/* We assume floats use IEEE 754 representation. */
+			f = *(float *)&ipd->buf[ipd->bufidx] * -INT16_MIN;
+			if (f < INT16_MIN)
+				samples[i] = INT16_MIN;
+			else if (f > INT16_MAX)
+				samples[i] = INT16_MAX;
+			else
+				samples[i] = f;
+		}
+
+		ipd->bufidx++;
 	}
 
 	return i;
