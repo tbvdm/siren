@@ -58,11 +58,16 @@ The two lines above the status line show playback-related information, such as
 the currently playing track and the volume level.
 .Pp
 The remainder of the screen is used to display a view.
-A view displays a specific type of information.
-Only one view can be displayed at a time, but each view can be selected by
-using the
+Only one view can be displayed at a time, but each view can be selected with
+the
 .Ic select-view
-command or the default key bindings.
+command
+.Po
+see
+.Sx COMMANDS
+below
+.Pc
+or the default key bindings.
 .Pp
 The available views are as follows.
 .Bl -tag -width Ds
@@ -70,13 +75,7 @@ The available views are as follows.
 The library view shows all tracks in the library.
 The
 .Ic add-path
-command
-.Po
-see
-.Sx COMMANDS
-below
-.Pc
-may be used to add tracks.
+command may be used to add tracks.
 The library view can be displayed by pressing the
 .Ic 1
 key.
@@ -245,7 +244,6 @@ Delete all entries.
 .El
 .It Sy Prompt key bindings
 The key bindings for the prompt currently cannot be changed.
-This will be fixed in a future version.
 .Pp
 .Bl -tag -width "^F, page-down" -compact
 .It enter
@@ -304,14 +302,14 @@ The
 .Sq \&? ,
 .Sq \&[ ,
 .Sq \e ,
-.Sq \(aq
+.Sq \&'
 and
 .Sq \&"
 characters and the space and tab characters are special characters.
 A special character can be escaped by prepending it with a
 .Sq \e
 character or by enclosing it by matching
-.Sq \(aq
+.Sq \&'
 or
 .Sq \&"
 characters.
@@ -339,7 +337,7 @@ Add the selected entry to the queue.
 .It Xo
 .Ic add-path
 .Op Fl l | q
-.Ar path Ar ...
+.Ar path ...
 .Xc
 Add an audio file or a directory to the library or the queue.
 The options are as follows.
@@ -462,7 +460,7 @@ as the prompt.
 The default is
 .Sq Execute Qq Ar command .
 The prompt will be followed by the string
-.Sq ? ([y]/n):\~ .
+.Sq "? ([y]/n): " .
 .El
 .It Ic delete-entry Op Fl a
 Delete the selected entry in the current view.
@@ -750,9 +748,9 @@ Valid values of number options are non-negative integers.
 The maximum value is option-specific.
 .It Sy String options
 Valid values of string options are option-specific.
-.It Sy Format options
-Format options are strings that control the formatting of information displayed
-on the screen.
+.It Sy Format-string options
+Format-string options control the formatting of information displayed on the
+screen.
 The syntax is reminiscent of that of the
 .Xr printf 3
 family of functions.
@@ -803,7 +801,7 @@ If the variable is a non-zero number or a non-empty string, the first value is
 displayed; otherwise, the second value.
 For example,
 .Sq %{?artist,yes,no}
-yields
+displays
 .Sq yes
 if
 .Em artist
@@ -841,10 +839,10 @@ Character attributes for informational messages.
 Background colour for informational messages.
 .It Cm info-fg Pq colour
 Foreground colour for informational messages.
-.It Cm library-format Pq format
+.It Cm library-format Pq format string
 The format used to display tracks in the library.
 The following variables are available.
-.Bl -column "tracknumber" "alias"
+.Bl -column tracknumber alias
 .It Sy Name Ta Sy Alias Ta Sy Description
 .It album Ta l Ta Album
 .It artist Ta a Ta Artist
@@ -887,10 +885,10 @@ Character attributes for the player area.
 Background colour for the player area.
 .It Cm player-fg Pq colour
 Foreground colour of the player area.
-.It Cm player-status-format Pq format
+.It Cm player-status-format Pq format string
 The format used to display the player status.
 The following variables are available.
-.Bl -column "repeat-track" "alias"
+.Bl -column repeat-track alias
 .It Sy Name Ta Sy Alias Ta Sy Description
 .It continue Ta c Ta
 Expands to
@@ -927,12 +925,12 @@ or
 depending on the playback state
 .It volume Ta v Ta Sound volume
 .El
-.It Cm player-track-format Pq format
+.It Cm player-track-format Pq format string
 The format used to display the currently playing track.
 See the
 .Cm library-format
 option for a list of available variables.
-.It Cm playlist-format Pq format
+.It Cm playlist-format Pq format string
 The format used to display tracks in the playlist view.
 See the
 .Cm library-format
@@ -943,7 +941,7 @@ Character attributes for the command, confirmation and search prompts.
 Background colour for the command, confirmation and search prompts.
 .It Cm prompt-fg Pq colour
 Foreground colour for the command, confirmation and search prompts.
-.It Cm queue-format Pq format
+.It Cm queue-format Pq format string
 The format used to display tracks in the queue.
 See the
 .Cm library-format
@@ -1068,7 +1066,7 @@ commands
 .Pq see Sx COMMANDS
 which are executed in sequence.
 .Sh FILES
-.Bl -tag -width "~/.siren/metadata" -compact
+.Bl -tag -width ~/.siren/metadata -compact
 .It Pa ~/.siren/config
 Configuration file.
 .It Pa ~/.siren/library
