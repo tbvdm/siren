@@ -125,7 +125,7 @@ ip_flac_get_metadata(struct track *t)
 {
 	FLAC__StreamMetadata	 streaminfo, *comments;
 	FLAC__uint32		 i;
-	char			*comment;
+	char			*s;
 
 	if (FLAC__metadata_get_tags(t->path, &comments) == false) {
 		LOG_ERRX("%s: FLAC__metadata_get_tags() failed", t->path);
@@ -134,25 +134,25 @@ ip_flac_get_metadata(struct track *t)
 	}
 
 	for (i = 0; i < comments->data.vorbis_comment.num_comments; i++) {
-		comment = comments->data.vorbis_comment.comments[i].entry;
-		if (!strncasecmp(comment, "album=", 6)) {
+		s = (char *)comments->data.vorbis_comment.comments[i].entry;
+		if (!strncasecmp(s, "album=", 6)) {
 			free(t->album);
-			t->album = xstrdup(comment + 6);
-		} else if (!strncasecmp(comment, "artist=", 7)) {
+			t->album = xstrdup(s + 6);
+		} else if (!strncasecmp(s, "artist=", 7)) {
 			free(t->artist);
-			t->artist = xstrdup(comment + 7);
-		} else if (!strncasecmp(comment, "date=", 5)) {
+			t->artist = xstrdup(s + 7);
+		} else if (!strncasecmp(s, "date=", 5)) {
 			free(t->date);
-			t->date = xstrdup(comment + 5);
-		} else if (!strncasecmp(comment, "genre=", 6)) {
+			t->date = xstrdup(s + 5);
+		} else if (!strncasecmp(s, "genre=", 6)) {
 			free(t->genre);
-			t->genre = xstrdup(comment + 6);
-		} else if (!strncasecmp(comment, "title=", 6)) {
+			t->genre = xstrdup(s + 6);
+		} else if (!strncasecmp(s, "title=", 6)) {
 			free(t->title);
-			t->title = xstrdup(comment + 6);
-		} else if (!strncasecmp(comment, "tracknumber=", 12)) {
+			t->title = xstrdup(s + 6);
+		} else if (!strncasecmp(s, "tracknumber=", 12)) {
 			free(t->tracknumber);
-			t->tracknumber = xstrdup(comment + 12);
+			t->tracknumber = xstrdup(s + 12);
 		}
 	}
 
