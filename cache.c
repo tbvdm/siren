@@ -14,6 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <errno.h>
 #include <limits.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -69,8 +70,10 @@ cache_open_read(const char *path)
 
 	cache_fp = fopen(path, "r");
 	if (cache_fp == NULL) {
-		LOG_ERR("fopen: %s", path);
-		msg_err("Cannot open metadata cache file");
+		if (errno != ENOENT) {
+			LOG_ERR("fopen: %s", path);
+			msg_err("Cannot open metadata cache file");
+		}
 		return -1;
 	}
 
