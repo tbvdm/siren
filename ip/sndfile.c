@@ -146,7 +146,7 @@ ip_sndfile_get_position(struct track *t, unsigned int *pos)
 
 	ipd = t->ipdata;
 
-	if (t->format.nchannels <= 0 || t->format.rate <= 0)
+	if (t->format.nchannels == 0 || t->format.rate == 0)
 		*pos = 0;
 	else
 		*pos = ipd->position / t->format.nchannels / t->format.rate;
