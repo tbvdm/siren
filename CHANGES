@@ -1,6 +1,15 @@
 This is a list of the most important changes only. See the repository history
 for a list of all changes.
 
+Siren 0.5 (2015-03-04):
+
+- Add 256-colour support.
+- Add the mpg123 input plug-in.
+- Add the opus input plug-in.
+- Add the source command.
+- Build on OS X.
+- Fix various minor bugs.
+
 Siren 0.4 (2014-07-16):
 
 - Add the playlist view.
