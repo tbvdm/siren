@@ -443,25 +443,6 @@ as the prompt.
 The default is
 .Sq \&: .
 .El
-.It Xo
-.Ic confirm
-.Op Fl p Ar prompt
-.Ar command
-.Xc
-Ask for confirmation before executing
-.Ar command .
-The options are as follows.
-.Pp
-.Bl -tag -width Ds -compact
-.It Fl p Ar prompt
-Use the string
-.Ar prompt
-as the prompt.
-The default is
-.Sq Execute Qq Ar command .
-The prompt will be followed by the string
-.Sq "? ([y]/n): " .
-.El
 .It Ic delete-entry Op Fl a
 Delete the selected entry in the current view.
 This command is supported in the library and queue views only.
@@ -936,11 +917,11 @@ See the
 .Cm library-format
 option for a list of available variables.
 .It Cm prompt-attr Pq attribute
-Character attributes for the command, confirmation and search prompts.
+Character attributes for the prompt.
 .It Cm prompt-bg Pq colour
-Background colour for the command, confirmation and search prompts.
+Background colour for the prompt.
 .It Cm prompt-fg Pq colour
-Foreground colour for the command, confirmation and search prompts.
+Foreground colour for the prompt.
 .It Cm queue-format Pq format string
 The format used to display tracks in the queue.
 See the

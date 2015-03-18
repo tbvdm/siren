@@ -50,13 +50,6 @@ struct command_command_prompt_data {
 	unsigned int	  nrefs;
 };
 
-struct command_confirm_data {
-	char		 *prompt;
-	struct command	 *command;
-	void		 *command_data;
-	unsigned int	  nrefs;
-};
-
 struct command_search_prompt_data {
 	char		 *prompt;
 	int		  search_backward;
@@ -117,9 +110,6 @@ COMMAND_PARSE_PROTOTYPE(cd);
 COMMAND_EXEC_PROTOTYPE(command_prompt);
 COMMAND_FREE_PROTOTYPE(command_prompt);
 COMMAND_PARSE_PROTOTYPE(command_prompt);
-COMMAND_EXEC_PROTOTYPE(confirm);
-COMMAND_FREE_PROTOTYPE(confirm);
-COMMAND_PARSE_PROTOTYPE(confirm);
 COMMAND_EXEC_PROTOTYPE(delete_entry);
 COMMAND_PARSE_PROTOTYPE(delete_entry);
 COMMAND_PARSE_PROTOTYPE(generic);
@@ -206,12 +196,6 @@ static struct command command_list[] = {
 		command_command_prompt_parse,
 		command_command_prompt_exec,
 		command_command_prompt_free
-	},
-	{
-		"confirm",
-		command_confirm_parse,
-		command_confirm_exec,
-		command_confirm_free
 	},
 	{
 		"delete-entry",
@@ -713,107 +697,35 @@ usage:
 }
 
 static void
-command_confirm_callback(char *answer, void *datap)
+command_delete_entry_callback(char *answer, void *datap)
 {
-	struct command_confirm_data *data;
+	int *delete_all;
 
-	data = datap;
-	if (*answer == 'y')
-		command_execute(data->command, data->command_data);
-
+	if (*answer == 'y') {
+		delete_all = datap;
+		if (*delete_all)
+			view_delete_all_entries();
+		else
+			view_delete_entry();
+	}
 	free(answer);
-	command_confirm_free(data);
-}
-
-static void
-command_confirm_exec(void *datap)
-{
-	struct command_confirm_data *data;
-
-	data = datap;
-	data->nrefs++;
-	prompt_get_answer(data->prompt, command_confirm_callback, data);
-}
-
-static void
-command_confirm_free(void *datap)
-{
-	struct command_confirm_data *data;
-
-	data = datap;
-	if (--data->nrefs == 0) {
-		command_free_data(data->command, data->command_data);
-		free(data->prompt);
-		free(data);
-	}
-}
-
-static int
-command_confirm_parse(int argc, char **argv, void **datap, char **error)
-{
-	struct command_confirm_data	*data;
-	int				 c;
-	char				*prompt;
-
-	data = xmalloc(sizeof *data);
-	data->nrefs = 1;
-	prompt = NULL;
-
-	while ((c = getopt(argc, argv, "p:")) != -1)
-		switch (c) {
-		case 'p':
-			prompt = optarg;
-			break;
-		default:
-			goto usage;
-		}
-	argc -= optind;
-	argv += optind;
-
-	if (argc != 1)
-		goto usage;
-
-	if (command_parse_string(argv[0], &data->command, &data->command_data,
-	    error))
-		goto error;
-
-	if (data->command == NULL) {
-		xasprintf(error, "Missing command: %s", argv[0]);
-		goto error;
-	}
-
-	if (prompt != NULL)
-		xasprintf(&data->prompt, "%s? ([y]/n): ", prompt);
-	else
-		xasprintf(&data->prompt, "Execute \"%s\"? ([y]/n): ", argv[0]);
-
-	*datap = data;
-	return 0;
-
-usage:
-	*error = xstrdup("Usage: confirm [-p prompt] command");
-
-error:
-	free(data);
-	return -1;
 }
 
 static void
 command_delete_entry_exec(void *datap)
 {
-	int delete_all;
+	int		*delete_all;
+	const char	*prompt;
 
-	delete_all = *(int *)datap;
-	if (delete_all) {
-		view_delete_all_entries();
-	} else
-		view_delete_entry();
+	delete_all = datap;
+	prompt = *delete_all ? "Delete all entries" : "Delete entry";
+	prompt_get_answer(prompt, command_delete_entry_callback, datap);
 }
 
 static int
 command_delete_entry_parse(int argc, char **argv, void **datap, char **error)
 {
-	int	c, *delete_all;
+	int c, *delete_all;
 
 	delete_all = xmalloc(sizeof *delete_all);
 	*delete_all = 0;
@@ -973,9 +885,17 @@ command_process(const char *line, char **error)
 }
 
 static void
+command_quit_callback(char *answer, UNUSED void *datap)
+{
+	if (*answer == 'y')
+		input_end();
+	free(answer);
+}
+
+static void
 command_quit_exec(UNUSED void *datap)
 {
-	input_end();
+	prompt_get_answer("Quit", command_quit_callback, NULL);
 }
 
 static void

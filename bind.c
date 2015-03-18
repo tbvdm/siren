@@ -231,30 +231,24 @@ bind_init(void)
 	bind_add(BIND_SCOPE_COMMON, 'k', "select-prev-entry");
 	bind_add(BIND_SCOPE_COMMON, 'n', "search-next");
 	bind_add(BIND_SCOPE_COMMON, 'p', "search-prev");
-	bind_add(BIND_SCOPE_COMMON, 'q', "confirm -p Quit quit");
+	bind_add(BIND_SCOPE_COMMON, 'q', "quit");
 	bind_add(BIND_SCOPE_COMMON, 'r', "set repeat-track");
 	bind_add(BIND_SCOPE_COMMON, 'v', "stop");
 	bind_add(BIND_SCOPE_COMMON, 'x', "play");
 	bind_add(BIND_SCOPE_COMMON, 'z', "play-prev");
 
-	bind_add(BIND_SCOPE_LIBRARY, K_DELETE,
-	    "confirm -p \"Delete entry\" delete-entry");
-	bind_add(BIND_SCOPE_LIBRARY, 'd',
-	    "confirm -p \"Delete entry\" delete-entry");
+	bind_add(BIND_SCOPE_LIBRARY, K_DELETE, "delete-entry");
+	bind_add(BIND_SCOPE_LIBRARY, 'd', "delete-entry");
 	bind_add(BIND_SCOPE_LIBRARY, 'a', "add-entry -q");
-	bind_add(BIND_SCOPE_LIBRARY, 'l',
-	    "confirm -p \"Delete all entries\" \"delete-entry -a\"");
+	bind_add(BIND_SCOPE_LIBRARY, 'l', "delete-entry -a");
 
 	bind_add(BIND_SCOPE_PLAYLIST, 'a', "add-entry -q");
 
-	bind_add(BIND_SCOPE_QUEUE, K_DELETE,
-	    "confirm -p \"Delete entry\" delete-entry");
+	bind_add(BIND_SCOPE_QUEUE, K_DELETE, "delete-entry");
 	bind_add(BIND_SCOPE_QUEUE, 'J', "move-entry-down");
 	bind_add(BIND_SCOPE_QUEUE, 'K', "move-entry-up");
-	bind_add(BIND_SCOPE_QUEUE, 'd',
-	    "confirm -p \"Delete entry\" delete-entry");
-	bind_add(BIND_SCOPE_QUEUE, 'l',
-	    "confirm -p \"Delete all entries\" \"delete-entry -a\"");
+	bind_add(BIND_SCOPE_QUEUE, 'd', "delete-entry");
+	bind_add(BIND_SCOPE_QUEUE, 'l', "delete-entry -a");
 
 	bind_add(BIND_SCOPE_BROWSER, K_CTRL('R'), "reread-directory");
 	bind_add(BIND_SCOPE_BROWSER, K_BACKSPACE, "cd ..");

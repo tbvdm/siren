@@ -47,7 +47,7 @@ static size_t		 prompt_linesize;
 static size_t		 prompt_scroll_offset;
 static char		*prompt_line;
 
-static const char	*prompt_prompt;
+static char		*prompt_prompt;
 static size_t		 prompt_promptlen;
 
 void			 (*prompt_callback)(char *, void *);
@@ -310,12 +310,14 @@ prompt_mode_begin(enum prompt_mode mode, const char *prompt,
 		history_rewind(prompt_history);
 
 	prompt_mode = mode;
-	if (prompt_mode == PROMPT_MODE_CHAR)
+	if (prompt_mode == PROMPT_MODE_CHAR) {
+		xasprintf(&prompt_prompt, "%s? ([y]/n): ", prompt);
 		prompt_linesize = 1;
-	else
+	} else {
+		prompt_prompt = xstrdup(prompt);
 		prompt_linesize = PROMPT_LINESIZE;
+	}
 
-	prompt_prompt = prompt;
 	prompt_promptlen = strlen(prompt_prompt);
 	prompt_callback = callback;
 	prompt_callback_data = callback_data;
@@ -335,6 +337,7 @@ prompt_mode_end(void)
 {
 	screen_prompt_end();
 	input_set_mode(INPUT_MODE_VIEW);
+	free(prompt_prompt);
 	prompt_callback(prompt_line, prompt_callback_data);
 }
 
