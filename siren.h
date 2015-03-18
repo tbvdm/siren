@@ -513,6 +513,7 @@ void		 option_toggle_boolean(const char *) NONNULL();
 void		 option_unlock(void);
 
 char		*path_get_cwd(void);
+char		*path_get_dirname(const char *);
 char		*path_get_home_dir(const char *);
 char		*path_normalise(const char *) NONNULL();
 

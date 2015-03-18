@@ -62,6 +62,31 @@ path_get_cwd(void)
 }
 
 char *
+path_get_dirname(const char *path)
+{
+	size_t i;
+
+	if (path == NULL || path[0] == '\0')
+		return xstrdup(".");
+
+	i = strlen(path) - 1;
+
+	while (path[i] == '/' && i > 0)
+		i--;
+
+	while (path[i] != '/' && i > 0)
+		i--;
+
+	if (path[i] != '/')
+		return xstrdup(".");
+
+	while (path[i] == '/' && i > 0)
+		i--;
+
+	return xstrndup(path, i + 1);
+}
+
+char *
 path_get_home_dir(const char *user)
 {
 	struct passwd	 pw, *pwp;

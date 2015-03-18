@@ -144,7 +144,7 @@ playlist_load(const char *file)
 	struct track		*t;
 	FILE			*fp;
 	size_t			 len;
-	char			*buf, *lbuf;
+	char			*buf, *dir, *lbuf, *path, *tmp;
 
 	if ((fp = fopen(file, "r")) == NULL) {
 		LOG_ERR("fopen: %s", file);
@@ -155,7 +155,8 @@ playlist_load(const char *file)
 	XPTHREAD_MUTEX_LOCK(&playlist_menu_mtx);
 
 	menu_remove_all_entries(playlist_menu);
-	playlist_file = xstrdup(file);
+	playlist_file = path_normalise(file);
+	dir = path_get_dirname(playlist_file);
 
 	lbuf = NULL;
 	while ((buf = fgetln(fp, &len)) != NULL) {
@@ -173,23 +174,29 @@ playlist_load(const char *file)
 		if (buf[0] == '#' || buf[0] == '\0')
 			continue;
 
-		if (buf[0] != '/') {
-			LOG_ERRX("%s: %s: invalid entry", file, buf);
-			continue;
+		if (buf[0] == '/')
+			path = path_normalise(buf);
+		else {
+			xasprintf(&tmp, "%s/%s", dir, buf);
+			path = path_normalise(tmp);
+			free(tmp);
 		}
 
-		if ((t = track_require(buf)) == NULL)
-			continue;
+		if ((t = track_require(path)) != NULL) {
+			menu_insert_tail(playlist_menu, t);
+			playlist_duration += t->duration;
+		}
 
-		menu_insert_tail(playlist_menu, t);
-		playlist_duration += t->duration;
+		free(path);
 	}
 
 	if (ferror(fp)) {
 		LOG_ERR("fgetln: %s", file);
 		msg_err("Cannot read playlist: %s", file);
 	}
+
 	free(lbuf);
+	free(dir);
 
 	XPTHREAD_MUTEX_UNLOCK(&playlist_menu_mtx);
 
