@@ -430,19 +430,9 @@ and open it in the browser view.
 If
 .Ar directory
 is not specified, the user's home directory is used instead.
-.It Ic command-prompt Op Fl p Ar prompt
+.It Ic command-prompt
 Enter the command prompt.
 The command prompt can be used to enter and execute commands.
-The options are as follows.
-.Pp
-.Bl -tag -width Ds -compact
-.It Fl p Ar prompt
-Use the string
-.Ar prompt
-as the prompt.
-The default is
-.Sq \&: .
-.El
 .It Ic delete-entry Op Fl a
 Delete the selected entry in the current view.
 This command is supported in the library and queue views only.
@@ -525,11 +515,7 @@ command.
 Search for the previous occurrence of the text earlier specified with the
 .Ic search-prompt
 command.
-.It Xo
-.Ic search-prompt
-.Op Fl b
-.Op Fl p Ar prompt
-.Xc
+.It Ic search-prompt Op Fl b
 Enter the search prompt.
 The search prompt can be used to search in the current view.
 The options are as follows.
@@ -538,16 +524,6 @@ The options are as follows.
 .It Fl b
 Search backward.
 The default is to search forward.
-.It Fl p Ar prompt
-Use
-.Ar prompt
-as the prompt.
-The default is
-.Sq /
-if searching forward
-and
-.Sq \&?
-if searching backward.
 .El
 .It Xo
 .Ic seek
