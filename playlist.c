@@ -159,11 +159,16 @@ playlist_load(const char *file)
 
 	lbuf = NULL;
 	while ((buf = fgetln(fp, &len)) != NULL) {
-		if (buf[len - 1] != '\n') {
+		/* Strip both \n and \r\n EOLs. */
+		if (buf[len - 1] == '\n') {
+			len--;
+			if (len > 0 && buf[len - 1] == '\r')
+				len--;
+		} else {
 			lbuf = xmalloc(len + 1);
-			buf = memcpy(lbuf, buf, len++);
+			buf = memcpy(lbuf, buf, len);
 		}
-		buf[len - 1] = '\0';
+		buf[len] = '\0';
 
 		if (buf[0] == '#' || buf[0] == '\0')
 			continue;
