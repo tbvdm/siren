@@ -66,6 +66,7 @@ void
 playlist_end(void)
 {
 	menu_free(playlist_menu);
+	free(playlist_file);
 }
 
 static void
