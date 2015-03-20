@@ -156,6 +156,7 @@ playlist_load(const char *file)
 	XPTHREAD_MUTEX_LOCK(&playlist_menu_mtx);
 
 	menu_remove_all_entries(playlist_menu);
+	free(playlist_file);
 	playlist_file = path_normalise(file);
 	dir = path_get_dirname(playlist_file);
 
