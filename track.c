@@ -45,7 +45,7 @@ static int		 track_cmp_entry(struct track_entry *,
 			    struct track_entry *);
 static int		 track_cmp_number(const char *, const char *);
 static int		 track_cmp_string(const char *, const char *);
-static struct track_entry *track_find_entry(const char *);
+static struct track_entry *track_find_entry(char *);
 static void		 track_free_entry(struct track_entry *);
 static void		 track_free_metadata(struct track_entry *);
 static void		 track_init_metadata(struct track_entry *);
@@ -155,14 +155,12 @@ track_end(void)
 }
 
 static struct track_entry *
-track_find_entry(const char *path)
+track_find_entry(char *path)
 {
-	struct track_entry *find, search;
+	struct track_entry search;
 
-	search.track.path = xstrdup(path);
-	find = RB_FIND(track_tree, &track_tree, &search);
-	free(search.track.path);
-	return find;
+	search.track.path = path;
+	return RB_FIND(track_tree, &track_tree, &search);
 }
 
 static void
@@ -185,7 +183,7 @@ track_free_metadata(struct track_entry *te)
 }
 
 struct track *
-track_get(const char *path, const struct ip *ip)
+track_get(char *path, const struct ip *ip)
 {
 	struct track_entry *te;
 
@@ -290,7 +288,7 @@ track_remove_entry(struct track_entry *te)
 }
 
 struct track *
-track_require(const char *path)
+track_require(char *path)
 {
 	struct track_entry *te;
 

@@ -626,10 +626,10 @@ void		 screen_view_title_printf_right(const char *, ...)
 int		 track_cmp(const struct track *, const struct track *)
 		    NONNULL();
 void		 track_end(void);
-struct track	*track_get(const char *, const struct ip *) NONNULL(1);
+struct track	*track_get(char *, const struct ip *) NONNULL(1);
 void		 track_init(void);
 void		 track_lock_metadata(void);
-struct track	*track_require(const char *);
+struct track	*track_require(char *);
 int		 track_search(const struct track *, const char *);
 void		 track_unlock_metadata(void);
 void		 track_update_metadata(int);
