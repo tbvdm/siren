@@ -22,7 +22,7 @@
 
 #include "../siren.h"
 
-#define OP_AO_BUFSIZE			4096
+#define OP_AO_BUFSIZE	4096
 
 static void		 op_ao_close(void);
 static size_t		 op_ao_get_buffer_size(void);

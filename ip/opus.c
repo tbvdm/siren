@@ -68,7 +68,7 @@ ip_opus_get_metadata(struct track *t)
 	}
 
 	tags = op_tags(oof, -1);
-	if (tags != NULL) {
+	if (tags != NULL)
 		for (c = tags->user_comments; *c != NULL; c++)
 			if (!strncasecmp(*c, "album=", 6)) {
 				free(t->album);
@@ -89,7 +89,6 @@ ip_opus_get_metadata(struct track *t)
 				free(t->tracknumber);
 				t->tracknumber = xstrdup(*c + 12);
 			}
-	}
 
 	t->duration = op_pcm_total(oof, -1) / IP_OPUS_RATE;
 
