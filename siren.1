@@ -820,7 +820,7 @@ The following output plug-ins may be available, depending on the compile-time
 options used.
 They are listed in descending order of priority.
 .Pp
-.Bl -tag -width Ds -compact
+.Bl -tag -width portaudio -compact
 .It sndio
 OpenBSD
 .Xr sndio 7
@@ -835,6 +835,8 @@ ALSA output plug-in
 OSS output plug-in
 .It ao
 libao output plug-in
+.It portaudio
+PortAudio output plug-in
 .El
 .It Cm player-attr Pq attribute
 Character attributes for the player area.
@@ -983,6 +985,14 @@ output plug-in.
 .Bl -tag -width Ds
 .It Cm oss-device Pq string
 The path of the audio device to use.
+.El
+.Pp
+The following options are specific to the
+.Em portaudio
+output plug-in.
+.Bl -tag -width Ds
+.It Cm portaudio-buffer-size Pq number
+The size of the output buffer, specified in bytes.
 .El
 .Pp
 The following options are specific to the

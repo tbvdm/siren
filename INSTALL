@@ -80,6 +80,12 @@ oss=yes|no (yes)
 	available only for OSS 4. For more information, see
 	<http://www.opensound.com/>.
 
+portaudio=yes|no (yes)
+	Whether to build the portaudio output plug-in. This plug-in provides
+	support for PortAudio which in turn supports a variety of audio
+	systems. It requires the libportaudio library. For more information,
+	see <http://www.portaudio.com/>.
+
 pulse=yes|no (yes)
 	Whether to build the pulse output plug-in. This plug-in provides
 	support for PulseAudio. It requires the libpulse-simple library. For

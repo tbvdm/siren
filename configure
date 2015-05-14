@@ -247,6 +247,7 @@ enable_wavpack=yes
 enable_alsa=yes
 enable_ao=yes
 enable_oss=yes
+enable_portaudio=yes
 enable_pulse=yes
 enable_sndio=yes
 enable_sun=yes
@@ -310,6 +311,9 @@ for arg; do
 		;;
 	oss=*)
 		get_option_value enable_oss "$arg"
+		;;
+	portaudio=*)
+		get_option_value enable_portaudio "$arg"
 		;;
 	pulse=*)
 		get_option_value enable_pulse "$arg"
@@ -516,6 +520,8 @@ if [ "$enable_oss" != no ]; then
 		enabled_ops="$enabled_ops oss"
 	fi
 fi
+
+check_plugin_pkgconfig portaudio op portaudio-2.0
 
 check_plugin_pkgconfig pulse op libpulse-simple
 
