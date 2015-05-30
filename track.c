@@ -50,7 +50,6 @@ static void		 track_free_entry(struct track_entry *);
 static void		 track_free_metadata(struct track_entry *);
 static void		 track_init_metadata(struct track_entry *);
 static void		 track_read_cache(void);
-static void		 track_remove_entry(struct track_entry *);
 
 RB_PROTOTYPE(track_tree, track_entry, entries, track_cmp_entry)
 
@@ -150,8 +149,10 @@ track_end(void)
 	if (track_tree_modified)
 		track_write_cache();
 
-	while ((te = RB_ROOT(&track_tree)) != NULL)
-		track_remove_entry(te);
+	while ((te = RB_ROOT(&track_tree)) != NULL) {
+		RB_REMOVE(track_tree, &track_tree, te);
+		track_free_entry(te);
+	}
 }
 
 static struct track_entry *
@@ -277,14 +278,6 @@ track_read_cache(void)
 	}
 
 	cache_close();
-}
-
-static void
-track_remove_entry(struct track_entry *te)
-{
-	RB_REMOVE(track_tree, &track_tree, te);
-	track_free_entry(te);
-	track_nentries--;
 }
 
 struct track *
