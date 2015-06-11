@@ -40,7 +40,7 @@ struct ip_wavpack_ipdata {
 };
 
 static void		 ip_wavpack_close(struct track *);
-static int		 ip_wavpack_get_metadata(struct track *);
+static void		 ip_wavpack_get_metadata(struct track *);
 static int		 ip_wavpack_get_position(struct track *,
 			    unsigned int *);
 static char		*ip_wavpack_get_tag_item_value(WavpackContext *,
@@ -73,7 +73,7 @@ ip_wavpack_close(struct track *t)
 	free(ipd);
 }
 
-static int
+static void
 ip_wavpack_get_metadata(struct track *t)
 {
 	WavpackContext	*wpc;
@@ -84,7 +84,7 @@ ip_wavpack_get_metadata(struct track *t)
 	if (wpc == NULL) {
 		LOG_ERRX("WavpackOpenFileInput: %s: %s", t->path, errstr);
 		msg_errx("%s: Cannot open track: %s", t->path, errstr);
-		return -1;
+		return;
 	}
 
 	t->album = ip_wavpack_get_tag_item_value(wpc, "album");
@@ -106,7 +106,6 @@ ip_wavpack_get_metadata(struct track *t)
 		t->duration = nframes / rate;
 
 	WavpackCloseFile(wpc);
-	return 0;
 }
 
 static int

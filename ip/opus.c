@@ -24,7 +24,7 @@
 #define IP_OPUS_RATE	48000
 
 static void		 ip_opus_close(struct track *);
-static int		 ip_opus_get_metadata(struct track *);
+static void		 ip_opus_get_metadata(struct track *);
 static int		 ip_opus_get_position(struct track *, unsigned int *);
 static int		 ip_opus_open(struct track *);
 static int		 ip_opus_read(struct track *, int16_t *, size_t);
@@ -52,7 +52,7 @@ ip_opus_close(struct track *t)
 	op_free(oof);
 }
 
-static int
+static void
 ip_opus_get_metadata(struct track *t)
 {
 	OggOpusFile	 *oof;
@@ -64,7 +64,7 @@ ip_opus_get_metadata(struct track *t)
 	if (oof == NULL) {
 		LOG_ERRX("op_open_file: %s: error %d", t->path, error);
 		msg_errx("%s: Cannot open track", t->path);
-		return -1;
+		return;
 	}
 
 	tags = op_tags(oof, -1);
@@ -93,7 +93,6 @@ ip_opus_get_metadata(struct track *t)
 	t->duration = op_pcm_total(oof, -1) / IP_OPUS_RATE;
 
 	op_free(oof);
-	return 0;
 }
 
 static int

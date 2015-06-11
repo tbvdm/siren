@@ -298,7 +298,7 @@ struct ip {
 	const char	 *name;
 	const char	**extensions;
 	void		  (*close)(struct track *) NONNULL();
-	int		  (*get_metadata)(struct track *) NONNULL();
+	void		  (*get_metadata)(struct track *) NONNULL();
 	int		  (*get_position)(struct track *, unsigned int *)
 			    NONNULL();
 	int		  (*open)(struct track *) NONNULL();

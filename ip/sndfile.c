@@ -32,7 +32,7 @@ struct ip_sndfile_ipdata {
 };
 
 static void		 ip_sndfile_close(struct track *);
-static int		 ip_sndfile_get_metadata(struct track *);
+static void		 ip_sndfile_get_metadata(struct track *);
 static int		 ip_sndfile_get_position(struct track *,
 			    unsigned int *);
 static int		 ip_sndfile_open(struct track *);
@@ -89,7 +89,7 @@ ip_sndfile_close(struct track *t)
 	free(ipd);
 }
 
-static int
+static void
 ip_sndfile_get_metadata(struct track *t)
 {
 	SNDFILE		*sffp;
@@ -100,7 +100,7 @@ ip_sndfile_get_metadata(struct track *t)
 	if ((fd = open(t->path, O_RDONLY)) == -1) {
 		LOG_ERR("open: %s", t->path);
 		msg_err("%s: Cannot open track", t->path);
-		return -1;
+		return;
 	}
 
 	sfinfo.format = 0;
@@ -109,7 +109,7 @@ ip_sndfile_get_metadata(struct track *t)
 		msg_errx("%s: Cannot open track: %s", t->path,
 		    sf_strerror(sffp));
 		close(fd);
-		return -1;
+		return;
 	}
 
 	if ((value = sf_get_string(sffp, SF_STR_ALBUM)) != NULL)
@@ -135,8 +135,6 @@ ip_sndfile_get_metadata(struct track *t)
 		t->duration = sfinfo.frames / sfinfo.samplerate;
 
 	sf_close(sffp);
-
-	return 0;
 }
 
 static int

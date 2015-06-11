@@ -31,7 +31,7 @@ struct ip_mpg123_ipdata {
 static void	 ip_mpg123_close(struct track *);
 static void	 ip_mpg123_close_fd_handle(int fd, mpg123_handle *);
 static int	 ip_mpg123_get_position(struct track *, unsigned int *);
-static int	 ip_mpg123_get_metadata(struct track *);
+static void	 ip_mpg123_get_metadata(struct track *);
 static int	 ip_mpg123_open(struct track *);
 static int	 ip_mpg123_open_fd_handle(const char *, int *fd,
 		    mpg123_handle **);
@@ -300,7 +300,7 @@ ip_mpg123_get_genre(mpg123_string *s)
 		return xstrdup(s->p);
 }
 
-static int
+static void
 ip_mpg123_get_metadata(struct track *t)
 {
 	mpg123_handle	*hdl;
@@ -312,21 +312,21 @@ ip_mpg123_get_metadata(struct track *t)
 	int		 encoding, fd, nchannels;
 
 	if (ip_mpg123_open_fd_handle(t->path, &fd, &hdl) == -1)
-		return -1;
+		return;
 
 	if (mpg123_getformat(hdl, &rate, &nchannels, &encoding) != MPG123_OK) {
 		LOG_ERRX("mpg123_getformat: %s: %s", t->path,
 		    mpg123_strerror(hdl));
 		msg_errx("%s: Cannot get format: %s", t->path,
 		    mpg123_strerror(hdl));
-		goto error;
+		goto out;
 	}
 
 	if (mpg123_scan(hdl) != MPG123_OK) {
 		LOG_ERRX("msg123_scan: %s: %s", t->path, mpg123_strerror(hdl));
 		msg_errx("%s: Cannot scan track: %s", t->path,
 		    mpg123_strerror(hdl));
-		goto error;
+		goto out;
 	}
 
 	length = mpg123_length(hdl);
@@ -336,7 +336,7 @@ ip_mpg123_get_metadata(struct track *t)
 		LOG_ERRX("mpg123_id3: %s: %s", t->path, mpg123_strerror(hdl));
 		msg_errx("%s: Cannot get metadata: %s", t->path,
 		    mpg123_strerror(hdl));
-		goto error;
+		goto out;
 	}
 
 	if (v2 != NULL) {
@@ -379,12 +379,8 @@ ip_mpg123_get_metadata(struct track *t)
 			xasprintf(&t->tracknumber, "%d", v1->comment[29]);
 	}
 
+out:
 	ip_mpg123_close_fd_handle(fd, hdl);
-	return 0;
-
-error:
-	ip_mpg123_close_fd_handle(fd, hdl);
-	return -1;
 }
 
 static int

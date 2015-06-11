@@ -31,7 +31,7 @@
 
 static void		 ip_vorbis_close(struct track *);
 static const char	*ip_vorbis_error(int);
-static int		 ip_vorbis_get_metadata(struct track *);
+static void		 ip_vorbis_get_metadata(struct track *);
 static int		 ip_vorbis_get_position(struct track *,
 			    unsigned int *);
 static int		 ip_vorbis_open(struct track *);
@@ -102,7 +102,7 @@ ip_vorbis_error(int errnum)
 	}
 }
 
-static int
+static void
 ip_vorbis_get_metadata(struct track *t)
 {
 	OggVorbis_File	  ovf;
@@ -115,7 +115,7 @@ ip_vorbis_get_metadata(struct track *t)
 	if ((fp = fopen(t->path, "r")) == NULL) {
 		LOG_ERR("fopen: %s", t->path);
 		msg_err("%s: Cannot open track", t->path);
-		return -1;
+		return;
 	}
 
 	if ((ret = ov_open(fp, &ovf, NULL, 0)) != 0) {
@@ -123,14 +123,14 @@ ip_vorbis_get_metadata(struct track *t)
 		msg_errx("%s: Cannot open track: %s", t->path,
 		    ip_vorbis_error(ret));
 		fclose(fp);
-		return -1;
+		return;
 	}
 
 	if ((vc = ov_comment(&ovf, -1)) == NULL) {
 		LOG_ERRX("%s: ov_comment() failed", t->path);
 		msg_errx("%s: Cannot get Vorbis comments", t->path);
 		ov_clear(&ovf);
-		return -1;
+		return;
 	}
 
 	/*
@@ -158,17 +158,14 @@ ip_vorbis_get_metadata(struct track *t)
 			t->tracknumber = xstrdup(*c + 12);
 		}
 
-	if ((duration = ov_time_total(&ovf, -1)) == OV_EINVAL) {
+	if ((duration = ov_time_total(&ovf, -1)) != OV_EINVAL)
+		t->duration = duration;
+	else {
 		LOG_ERRX("%s: ov_time_total() failed", t->path);
 		msg_errx("%s: Cannot get track duration", t->path);
-		ov_clear(&ovf);
-		return -1;
 	}
 
-	t->duration = duration;
-
 	ov_clear(&ovf);
-	return 0;
 }
 
 static int

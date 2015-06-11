@@ -58,7 +58,7 @@ static int		 ip_mad_decode_frame_header(FILE *,
 static int		 ip_mad_fill_stream(FILE *, struct mad_stream *,
 			    unsigned char *, size_t);
 static int		 ip_mad_get_position(struct track *, unsigned int *);
-static int		 ip_mad_get_metadata(struct track *);
+static void		 ip_mad_get_metadata(struct track *);
 static int		 ip_mad_open(struct track *);
 static int		 ip_mad_read(struct track *, int16_t *, size_t);
 static void		 ip_mad_seek(struct track *, unsigned int);
@@ -287,7 +287,7 @@ ip_mad_get_id3_genre(struct id3_tag *tag)
 	return (char *)id3_ucs4_latin1duplicate(genre);
 }
 
-static int
+static void
 ip_mad_get_metadata(struct track *t)
 {
 	struct id3_file		*file;
@@ -298,7 +298,7 @@ ip_mad_get_metadata(struct track *t)
 	if ((file = id3_file_open(t->path, ID3_FILE_MODE_READONLY)) == NULL) {
 		LOG_ERRX("%s: id3_file_open() failed", t->path);
 		msg_errx("%s: Cannot open file", t->path);
-		return IP_MAD_ERROR;
+		return;
 	}
 
 	tag = id3_file_tag(file);
@@ -310,10 +310,7 @@ ip_mad_get_metadata(struct track *t)
 	t->tracknumber = ip_mad_get_id3_frame(tag, ID3_FRAME_TRACK);
 	t->genre = ip_mad_get_id3_genre(tag);
 
-	/*
-	 * ID3 allows track numbers of the form "x/y". We ignore the slash and
-	 * everything after it.
-	 */
+	/* ID3 allows track numbers of the form "x/y". Ignore the "/y" part. */
 	if (t->tracknumber != NULL)
 		t->tracknumber[strcspn(t->tracknumber, "/")] = '\0';
 
@@ -331,8 +328,6 @@ ip_mad_get_metadata(struct track *t)
 
 	if (id3_file_close(file) == -1)
 		LOG_ERRX("%s: id3_file_close() failed", t->path);
-
-	return 0;
 }
 
 static int

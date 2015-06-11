@@ -44,7 +44,7 @@ struct ip_flac_ipdata {
 };
 
 static void		 ip_flac_close(struct track *);
-static int		 ip_flac_get_metadata(struct track *);
+static void		 ip_flac_get_metadata(struct track *);
 static int		 ip_flac_get_position(struct track *, unsigned int *);
 static int		 ip_flac_open(struct track *);
 static int		 ip_flac_read(struct track *, int16_t *, size_t);
@@ -120,7 +120,7 @@ ip_flac_fill_buffer(const char *path, struct ip_flac_ipdata *ipd)
 	}
 }
 
-static int
+static void
 ip_flac_get_metadata(struct track *t)
 {
 	FLAC__StreamMetadata	 streaminfo, *comments;
@@ -130,7 +130,7 @@ ip_flac_get_metadata(struct track *t)
 	if (FLAC__metadata_get_tags(t->path, &comments) == false) {
 		LOG_ERRX("%s: FLAC__metadata_get_tags() failed", t->path);
 		msg_errx("%s: Cannot get metadata", t->path);
-		return -1;
+		return;
 	}
 
 	for (i = 0; i < comments->data.vorbis_comment.num_comments; i++) {
@@ -162,7 +162,7 @@ ip_flac_get_metadata(struct track *t)
 		LOG_ERRX("%s: FLAC__metadata_get_streaminfo() failed",
 		    t->path);
 		msg_errx("%s: Cannot get stream information", t->path);
-		return -1;
+		return;
 	}
 
 	if (streaminfo.data.stream_info.sample_rate == 0)
@@ -170,8 +170,6 @@ ip_flac_get_metadata(struct track *t)
 	else
 		t->duration = streaminfo.data.stream_info.total_samples /
 		    streaminfo.data.stream_info.sample_rate;
-
-	return 0;
 }
 
 static int
