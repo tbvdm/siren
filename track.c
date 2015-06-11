@@ -122,11 +122,11 @@ track_cmp_number(const char *s1, const char *s2)
 		 * Numerical comparison failed; fall back to a lexicographical
 		 * comparison.
 		 */
-		return track_cmp_string(s1, s2);
+		return strcasecmp(s1, s2);
 
 	i2 = strtonum(s2, 0, INT_MAX, &errstr);
 	if (errstr != NULL)
-		return track_cmp_string(s1, s2);
+		return strcasecmp(s1, s2);
 
 	return i1 < i2 ? -1 : i1 > i2;
 }
