@@ -299,15 +299,15 @@ track_require(char *path)
 	te->track.ipdata = NULL;
 	track_init_metadata(te);
 
-	if (te->track.ip != NULL &&
-	    te->track.ip->get_metadata(&te->track) == 0)
-		track_tree_modified = 1;
+	if (te->track.ip != NULL)
+		te->track.ip->get_metadata(&te->track);
 
 	if (track_add_entry(te) == -1) {
 		track_free_entry(te);
 		return NULL;
 	}
 
+	track_tree_modified = 1;
 	return &te->track;
 }
 
