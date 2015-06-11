@@ -219,11 +219,7 @@ track_get(char *path, const struct ip *ip)
 	te->track.ip = ip;
 	te->track.ipdata = NULL;
 	track_init_metadata(te);
-
-	if (te->track.ip->get_metadata(&te->track)) {
-		track_free_entry(te);
-		return NULL;
-	}
+	te->track.ip->get_metadata(&te->track);
 
 	if (track_add_entry(te) == -1) {
 		track_free_entry(te);
