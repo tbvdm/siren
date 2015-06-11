@@ -83,19 +83,14 @@ track_cmp(const struct track *t1, const struct track *t2)
 
 	if ((ret = track_cmp_string(t1->artist, t2->artist)))
 		return ret;
-
 	if ((ret = track_cmp_number(t1->date, t2->date)))
 		return ret;
-
 	if ((ret = track_cmp_string(t1->album, t2->album)))
 		return ret;
-
 	if ((ret = track_cmp_number(t1->tracknumber, t2->tracknumber)))
 		return ret;
-
 	if ((ret = track_cmp_string(t1->title, t2->title)))
 		return ret;
-
 	return strcmp(t1->path, t2->path);
 }
 
@@ -118,10 +113,6 @@ track_cmp_number(const char *s1, const char *s2)
 
 	i1 = strtonum(s1, 0, INT_MAX, &errstr);
 	if (errstr != NULL)
-		/*
-		 * Numerical comparison failed; fall back to a lexicographical
-		 * comparison.
-		 */
 		return strcasecmp(s1, s2);
 
 	i2 = strtonum(s2, 0, INT_MAX, &errstr);
