@@ -40,12 +40,11 @@ struct track_entry {
 
 RB_HEAD(track_tree, track_entry);
 
-static int		 track_add_entry(struct track_entry *);
 static int		 track_cmp_entry(struct track_entry *,
 			    struct track_entry *);
 static int		 track_cmp_number(const char *, const char *);
 static int		 track_cmp_string(const char *, const char *);
-static struct track_entry *track_find_entry(char *);
+static struct track_entry *track_find_entry(char *, const struct ip *);
 static void		 track_free_entry(struct track_entry *);
 static void		 track_free_metadata(struct track_entry *);
 static void		 track_init_metadata(struct track_entry *);
@@ -74,6 +73,30 @@ track_add_entry(struct track_entry *te)
 
 	track_nentries++;
 	return 0;
+}
+
+static struct track *
+track_add_new_entry(char *path, const struct ip *ip)
+{
+	struct track_entry *te;
+
+	te = xmalloc(sizeof *te);
+	te->delete = 0;
+	te->track.path = xstrdup(path);
+	te->track.ip = (ip != NULL) ? ip : plugin_find_ip(path);
+	te->track.ipdata = NULL;
+	track_init_metadata(te);
+
+	if (te->track.ip != NULL)
+		te->track.ip->get_metadata(&te->track);
+
+	if (track_add_entry(te) == -1) {
+		track_free_entry(te);
+		return NULL;
+	}
+
+	track_tree_modified = 1;
+	return &te->track;
 }
 
 int
@@ -147,12 +170,15 @@ track_end(void)
 }
 
 static struct track_entry *
-track_find_entry(char *path)
+track_find_entry(char *path, const struct ip *ip)
 {
-	struct track_entry search;
+	struct track_entry search, *te;
 
 	search.track.path = path;
-	return RB_FIND(track_tree, &track_tree, &search);
+	te = RB_FIND(track_tree, &track_tree, &search);
+	if (te != NULL && te->track.ip == NULL)
+		te->track.ip = (ip != NULL) ? ip : plugin_find_ip(path);
+	return te;
 }
 
 static void
@@ -179,21 +205,14 @@ track_get(char *path, const struct ip *ip)
 {
 	struct track_entry *te;
 
-	te = track_find_entry(path);
+	te = track_find_entry(path, ip);
 	if (te != NULL) {
-		if (te->track.ip == NULL) {
-			if (ip != NULL)
-				te->track.ip = ip;
-			else {
-				te->track.ip = plugin_find_ip(te->track.path);
-				if (te->track.ip == NULL) {
-					msg_errx("%s: Unsupported file format",
-					    te->track.path);
-					return NULL;
-				}
-			}
+		if (te->track.ip != NULL)
+			return &te->track;
+		else {
+			msg_errx("%s: Unsupported file format", path);
+			return NULL;
 		}
-		return &te->track;
 	}
 
 	if (ip == NULL) {
@@ -204,21 +223,7 @@ track_get(char *path, const struct ip *ip)
 		}
 	}
 
-	te = xmalloc(sizeof *te);
-	te->delete = 0;
-	te->track.path = xstrdup(path);
-	te->track.ip = ip;
-	te->track.ipdata = NULL;
-	track_init_metadata(te);
-	te->track.ip->get_metadata(&te->track);
-
-	if (track_add_entry(te) == -1) {
-		track_free_entry(te);
-		return NULL;
-	}
-
-	track_tree_modified = 1;
-	return &te->track;
+	return track_add_new_entry(path, ip);
 }
 
 void
@@ -272,30 +277,8 @@ track_require(char *path)
 {
 	struct track_entry *te;
 
-	te = track_find_entry(path);
-	if (te != NULL) {
-		if (te->track.ip == NULL)
-			te->track.ip = plugin_find_ip(path);
-		return &te->track;
-	}
-
-	te = xmalloc(sizeof *te);
-	te->delete = 0;
-	te->track.path = xstrdup(path);
-	te->track.ip = plugin_find_ip(path);
-	te->track.ipdata = NULL;
-	track_init_metadata(te);
-
-	if (te->track.ip != NULL)
-		te->track.ip->get_metadata(&te->track);
-
-	if (track_add_entry(te) == -1) {
-		track_free_entry(te);
-		return NULL;
-	}
-
-	track_tree_modified = 1;
-	return &te->track;
+	te = track_find_entry(path, NULL);
+	return (te != NULL) ? &te->track : track_add_new_entry(path, NULL);
 }
 
 int
@@ -345,8 +328,7 @@ track_update_metadata(int delete)
 		if (te->track.ip == NULL) {
 			te->track.ip = plugin_find_ip(te->track.path);
 			if (te->track.ip == NULL) {
-				LOG_ERRX("%s: no input plug-in found",
-				    te->track.path);
+				LOG_ERRX("%s: no ip found", te->track.path);
 				continue;
 			}
 		}
