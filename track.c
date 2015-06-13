@@ -44,7 +44,6 @@ static int		 track_cmp_entry(struct track_entry *,
 			    struct track_entry *);
 static int		 track_cmp_number(const char *, const char *);
 static int		 track_cmp_string(const char *, const char *);
-static struct track_entry *track_find_entry(char *, const struct ip *);
 static void		 track_free_entry(struct track_entry *);
 static void		 track_free_metadata(struct track_entry *);
 static void		 track_init_metadata(struct track_entry *);
