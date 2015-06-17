@@ -43,7 +43,7 @@ static void		 ip_wavpack_close(struct track *);
 static void		 ip_wavpack_get_metadata(struct track *);
 static int		 ip_wavpack_get_position(struct track *,
 			    unsigned int *);
-static char		*ip_wavpack_get_tag_item_value(WavpackContext *,
+static char		*ip_wavpack_get_tag_item(WavpackContext *,
 			    const char *);
 static int		 ip_wavpack_open(struct track *);
 static int		 ip_wavpack_read(struct track *, int16_t *, size_t);
@@ -87,12 +87,12 @@ ip_wavpack_get_metadata(struct track *t)
 		return;
 	}
 
-	t->album = ip_wavpack_get_tag_item_value(wpc, "album");
-	t->artist = ip_wavpack_get_tag_item_value(wpc, "artist");
-	t->date = ip_wavpack_get_tag_item_value(wpc, "year");
-	t->genre = ip_wavpack_get_tag_item_value(wpc, "genre");
-	t->title = ip_wavpack_get_tag_item_value(wpc, "title");
-	t->tracknumber = ip_wavpack_get_tag_item_value(wpc, "track");
+	t->album = ip_wavpack_get_tag_item(wpc, "album");
+	t->artist = ip_wavpack_get_tag_item(wpc, "artist");
+	t->date = ip_wavpack_get_tag_item(wpc, "year");
+	t->genre = ip_wavpack_get_tag_item(wpc, "genre");
+	t->title = ip_wavpack_get_tag_item(wpc, "title");
+	t->tracknumber = ip_wavpack_get_tag_item(wpc, "track");
 
 	/* The track number may be of the form "x/y". Ignore the "/y" part. */
 	if (t->tracknumber != NULL)
@@ -125,7 +125,7 @@ ip_wavpack_get_position(struct track *t, unsigned int *pos)
  * Return the value of the APEv2 or ID3v1 tag item with the specified key.
  */
 static char *
-ip_wavpack_get_tag_item_value(WavpackContext *wpc, const char *key)
+ip_wavpack_get_tag_item(WavpackContext *wpc, const char *key)
 {
 	int	 len;
 	char	*value;
