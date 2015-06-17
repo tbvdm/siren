@@ -306,11 +306,17 @@ ip_mad_get_metadata(struct track *t)
 	t->album = ip_mad_get_id3_frame(tag, ID3_FRAME_ALBUM);
 	t->artist = ip_mad_get_id3_frame(tag, ID3_FRAME_ARTIST);
 	t->date = ip_mad_get_id3_frame(tag, ID3_FRAME_YEAR);
+	t->discnumber = ip_mad_get_id3_frame(tag, "TPOS");
 	t->title = ip_mad_get_id3_frame(tag, ID3_FRAME_TITLE);
 	t->tracknumber = ip_mad_get_id3_frame(tag, ID3_FRAME_TRACK);
 	t->genre = ip_mad_get_id3_genre(tag);
 
-	/* ID3 allows track numbers of the form "x/y". Ignore the "/y" part. */
+	/*
+	 * ID3v2 allows disc and track numbers of the form "x/y". Ignore the
+	 * "/y" part.
+	 */
+	if (t->discnumber != NULL)
+		t->discnumber[strcspn(t->discnumber, "/")] = '\0';
 	if (t->tracknumber != NULL)
 		t->tracknumber[strcspn(t->tracknumber, "/")] = '\0';
 

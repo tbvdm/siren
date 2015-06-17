@@ -348,20 +348,24 @@ ip_mpg123_get_metadata(struct track *t)
 			else if (!strncmp(v2->text[i].id, "TDRC", 4) ||
 			    !strncmp(v2->text[i].id, "TYER", 4))
 				t->date = xstrdup(v2->text[i].text.p);
+			else if (!strncmp(v2->text[i].id, "TPOS", 4))
+				t->discnumber = xstrdup(v2->text[i].text.p);
 			else if (!strncmp(v2->text[i].id, "TCON", 4))
 				t->genre =
 				    ip_mpg123_get_genre(&v2->text[i].text);
 			else if (!strncmp(v2->text[i].id, "TIT2", 4))
 				t->title = xstrdup(v2->text[i].text.p);
-			else if (!strncmp(v2->text[i].id, "TRCK", 4)) {
-				/*
-				 * ID3v2 allows track numbers of the form
-				 * "x/y". Ignore the "/y" part.
-				 */
-				v2->text[i].text.p[strcspn(v2->text[i].text.p,
-				    "/")] = '\0';
+			else if (!strncmp(v2->text[i].id, "TRCK", 4))
 				t->tracknumber = xstrdup(v2->text[i].text.p);
-			}
+
+		/*
+		 * ID3v2 allows disc and track numbers of the form "x/y".
+		 * Ignore the "/y" part.
+		 */
+		if (t->discnumber != NULL)
+			t->discnumber[strcspn(t->discnumber, "/")] = '\0';
+		if (t->tracknumber != NULL)
+			t->tracknumber[strcspn(t->tracknumber, "/")] = '\0';
 	} else if (v1 != NULL) {
 		t->album = xstrndup(v1->album, sizeof v1->album);
 		t->artist = xstrndup(v1->artist, sizeof v1->artist);

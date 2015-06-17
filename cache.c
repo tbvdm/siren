@@ -24,7 +24,7 @@
 #include "siren.h"
 
 #define CACHE_BUFSIZE	4096
-#define CACHE_VERSION	0
+#define CACHE_VERSION	1
 
 static int		 cache_open_read(const char *);
 static int		 cache_open_write(const char *);
@@ -33,6 +33,7 @@ static int		 cache_read_string(char **);
 static void		 cache_write_number(unsigned int);
 static void		 cache_write_string(const char *);
 
+static unsigned int	 cache_version;
 static FILE		*cache_fp;
 static size_t		 cache_bufidx;
 static size_t		 cache_buflen;
@@ -66,8 +67,6 @@ cache_open(enum cache_mode mode)
 static int
 cache_open_read(const char *path)
 {
-	unsigned int version;
-
 	cache_fp = fopen(path, "r");
 	if (cache_fp == NULL) {
 		if (errno != ENOENT) {
@@ -82,13 +81,15 @@ cache_open_read(const char *path)
 	cache_bufsize = CACHE_BUFSIZE;
 	cache_buf = xmalloc(cache_bufsize);
 
-	if (cache_read_number(&version) == -1) {
+	if (cache_read_number(&cache_version) == -1) {
 		msg_errx("Cannot read metadata cache file");
 		goto error;
 	}
 
-	if (version != CACHE_VERSION) {
-		LOG_ERRX("%u: unsupported metadata cache version", version);
+	LOG_INFO("reading version %u", cache_version);
+
+	if (cache_version > CACHE_VERSION) {
+		LOG_ERRX("unsupported metadata cache version");
 		msg_errx("Unsupported metadata cache version");
 		goto error;
 	}
@@ -111,6 +112,8 @@ cache_open_write(const char *path)
 		return -1;
 	}
 
+	LOG_INFO("writing version %u", CACHE_VERSION);
+
 	cache_buf = NULL;
 	cache_write_number(CACHE_VERSION);
 	return 0;
@@ -129,6 +132,10 @@ cache_read_entry(struct track *t)
 	ret |= cache_read_string(&t->artist);
 	ret |= cache_read_string(&t->album);
 	ret |= cache_read_string(&t->date);
+	if (cache_version == 0)
+		t->discnumber = NULL;
+	else
+		ret |= cache_read_string(&t->discnumber);
 	ret |= cache_read_string(&t->tracknumber);
 	ret |= cache_read_string(&t->title);
 	ret |= cache_read_number(&t->duration);
@@ -233,6 +240,7 @@ cache_write_entry(const struct track *t)
 	cache_write_string(t->artist);
 	cache_write_string(t->album);
 	cache_write_string(t->date);
+	cache_write_string(t->discnumber);
 	cache_write_string(t->tracknumber);
 	cache_write_string(t->title);
 	cache_write_number(t->duration);

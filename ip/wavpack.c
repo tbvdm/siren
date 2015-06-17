@@ -98,6 +98,17 @@ ip_wavpack_get_metadata(struct track *t)
 	if (t->tracknumber != NULL)
 		t->tracknumber[strcspn(t->tracknumber, "/")] = '\0';
 
+	/*
+	 * APEv2 doesn't have a standard key for the disc number. Try the
+	 * "disc" and "part" keys. Furthermore, if the disc number is of the
+	 * form "x/y", then ignore the "/y" part.
+	 */
+	t->discnumber = ip_wavpack_get_tag_item(wpc, "disc");
+	if (t->discnumber == NULL)
+		t->discnumber = ip_wavpack_get_tag_item(wpc, "part");
+	if (t->discnumber != NULL)
+		t->discnumber[strcspn(t->discnumber, "/")] = '\0';
+
 	nframes = WavpackGetNumSamples(wpc);
 	rate = WavpackGetSampleRate(wpc);
 	if (nframes == (uint32_t)-1 || rate == 0)

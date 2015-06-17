@@ -144,6 +144,9 @@ ip_flac_get_metadata(struct track *t)
 		} else if (!strncasecmp(s, "date=", 5)) {
 			free(t->date);
 			t->date = xstrdup(s + 5);
+		} else if (!strncasecmp(s, "discnumber=", 11)) {
+			free(t->discnumber);
+			t->discnumber = xstrdup(s + 11);
 		} else if (!strncasecmp(s, "genre=", 6)) {
 			free(t->genre);
 			t->genre = xstrdup(s + 6);

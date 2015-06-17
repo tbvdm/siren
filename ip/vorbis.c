@@ -147,6 +147,9 @@ ip_vorbis_get_metadata(struct track *t)
 		} else if (!strncasecmp(*c, "date=", 5)) {
 			free(t->date);
 			t->date = xstrdup(*c + 5);
+		} else if (!strncasecmp(*c, "discnumber=", 11)) {
+			free(t->discnumber);
+			t->discnumber = xstrdup(*c + 11);
 		} else if (!strncasecmp(*c, "genre=", 6)) {
 			free(t->genre);
 			t->genre = xstrdup(*c + 6);

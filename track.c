@@ -109,6 +109,8 @@ track_cmp(const struct track *t1, const struct track *t2)
 		return ret;
 	if ((ret = track_cmp_string(t1->album, t2->album)))
 		return ret;
+	if ((ret = track_cmp_number(t1->discnumber, t2->discnumber)))
+		return ret;
 	if ((ret = track_cmp_number(t1->tracknumber, t2->tracknumber)))
 		return ret;
 	if ((ret = track_cmp_string(t1->title, t2->title)))
@@ -237,6 +239,7 @@ track_init_metadata(struct track_entry *te)
 	te->track.album = NULL;
 	te->track.artist = NULL;
 	te->track.date = NULL;
+	te->track.discnumber = NULL;
 	te->track.genre = NULL;
 	te->track.title = NULL;
 	te->track.tracknumber = NULL;

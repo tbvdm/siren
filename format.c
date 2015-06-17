@@ -414,40 +414,44 @@ void
 format_track_snprintf(char *buf, size_t bufsize, const struct format *f,
     const struct track *t)
 {
-	struct format_variable vars[8];
+	struct format_variable vars[9];
 
 	vars[0].lname = "artist";
 	vars[0].sname = 'a';
 	vars[0].type = FORMAT_VARIABLE_STRING;
 	vars[0].value.string = t->artist ? t->artist : "";
-	vars[1].lname = "duration";
-	vars[1].sname = 'd';
-	vars[1].type = FORMAT_VARIABLE_TIME;
-	vars[1].value.time = t->duration;
-	vars[2].lname = "path";
-	vars[2].sname = 'f';
-	vars[2].type = FORMAT_VARIABLE_STRING;
-	vars[2].value.string = t->path;
-	vars[3].lname = "genre";
-	vars[3].sname = 'g';
+	vars[1].lname = "discnumber";
+	vars[1].sname = 'c';
+	vars[1].type = FORMAT_VARIABLE_STRING;
+	vars[1].value.string = t->discnumber ? t->discnumber : "";
+	vars[2].lname = "duration";
+	vars[2].sname = 'd';
+	vars[2].type = FORMAT_VARIABLE_TIME;
+	vars[2].value.time = t->duration;
+	vars[3].lname = "path";
+	vars[3].sname = 'f';
 	vars[3].type = FORMAT_VARIABLE_STRING;
-	vars[3].value.string = t->genre ? t->genre : "";
-	vars[4].lname = "album";
-	vars[4].sname = 'l';
+	vars[3].value.string = t->path;
+	vars[4].lname = "genre";
+	vars[4].sname = 'g';
 	vars[4].type = FORMAT_VARIABLE_STRING;
-	vars[4].value.string = t->album ? t->album : "";
-	vars[5].lname = "tracknumber";
-	vars[5].sname = 'n';
+	vars[4].value.string = t->genre ? t->genre : "";
+	vars[5].lname = "album";
+	vars[5].sname = 'l';
 	vars[5].type = FORMAT_VARIABLE_STRING;
-	vars[5].value.string = t->tracknumber ? t->tracknumber : "";
-	vars[6].lname = "title";
-	vars[6].sname = 't';
+	vars[5].value.string = t->album ? t->album : "";
+	vars[6].lname = "tracknumber";
+	vars[6].sname = 'n';
 	vars[6].type = FORMAT_VARIABLE_STRING;
-	vars[6].value.string = t->title ? t->title : "";
-	vars[7].lname = "date";
-	vars[7].sname = 'y';
+	vars[6].value.string = t->tracknumber ? t->tracknumber : "";
+	vars[7].lname = "title";
+	vars[7].sname = 't';
 	vars[7].type = FORMAT_VARIABLE_STRING;
-	vars[7].value.string = t->date ? t->date : "";
+	vars[7].value.string = t->title ? t->title : "";
+	vars[8].lname = "date";
+	vars[8].sname = 'y';
+	vars[8].type = FORMAT_VARIABLE_STRING;
+	vars[8].value.string = t->date ? t->date : "";
 
 	format_snprintf(buf, bufsize, f, vars, NELEMENTS(vars));
 }
