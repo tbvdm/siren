@@ -1487,6 +1487,7 @@ command_update_metadata_exec(void *datap)
 	delete = *(int *)datap;
 	track_update_metadata(delete);
 	library_update();
+	playlist_update();
 	queue_update();
 	screen_print();
 }

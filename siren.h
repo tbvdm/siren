@@ -552,6 +552,7 @@ void		 playlist_select_first_entry(void);
 void		 playlist_select_last_entry(void);
 void		 playlist_select_next_entry(void);
 void		 playlist_select_prev_entry(void);
+void		 playlist_update(void);
 
 void		 plugin_end(void);
 void		 plugin_init(void);

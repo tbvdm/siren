@@ -317,3 +317,19 @@ playlist_select_prev_entry(void)
 	XPTHREAD_MUTEX_UNLOCK(&playlist_menu_mtx);
 	playlist_print();
 }
+
+/* Recalculate the duration. */
+void
+playlist_update(void)
+{
+	struct menu_entry	*e;
+	struct track		*t;
+
+	XPTHREAD_MUTEX_LOCK(&playlist_menu_mtx);
+	playlist_duration = 0;
+	MENU_FOR_EACH_ENTRY(playlist_menu, e) {
+		t = menu_get_entry_data(e);
+		playlist_duration += t->duration;
+	}
+	XPTHREAD_MUTEX_UNLOCK(&playlist_menu_mtx);
+}
