@@ -1,4 +1,4 @@
-# Copyright (c) 2011 Tim van der Molen <tbvdm@xs4all.nl>
+# Copyright (c) 2011 Tim van der Molen <tim@kariliq.nl>
 #
 # Permission to use, copy, modify, and distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
