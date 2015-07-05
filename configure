@@ -531,9 +531,8 @@ if [ "$enable_sndio" != no ] && check_header sndio.h; then
 	enabled_ops="$enabled_ops sndio"
 fi
 
-if [ "$enable_sun" != no ]; then
-	# Check for <sys/audioio.h> (NetBSD and OpenBSD) first, then for
-	# <sys/audio.h> (Solaris).
+if [ "$enable_sun" != no -a "$(uname)" != OpenBSD ]; then
+	# NetBSD has <sys/audioio.h>, Solaris has <sys/audio.h>.
 	if ! check_header sys/audioio.h sys/types.h; then
 		if check_header sys/audio.h; then
 			header_define HAVE_SYS_AUDIO_H
