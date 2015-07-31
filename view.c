@@ -39,7 +39,7 @@ struct view_entry {
 	void		 (*scroll_up)(enum menu_scroll);
 };
 
-struct view_entry	view_list[] = {
+static struct view_entry view_list[] = {
 	{
 		VIEW_ID_LIBRARY,
 		BIND_SCOPE_LIBRARY,
