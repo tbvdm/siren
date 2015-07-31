@@ -18,7 +18,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <strings.h>
 
 #include <mp4ff.h>
 #include <neaacdec.h>
@@ -188,39 +187,19 @@ ip_aac_get_metadata(struct track *t)
 	struct ip_aac_config	 c;
 	int64_t			 duration;
 	int32_t			 scale;
-	int			 i, nitems;
-	char			*name, *value;
 
 	if (ip_aac_open_file(t->path, &f, &c) == -1)
 		return;
 
 	free(c.buf);
 
-	nitems = mp4ff_meta_get_num_items(f.mf);
-	for (i = 0; i < nitems; i++) {
-		mp4ff_meta_get_by_index(f.mf, i, &name, &value);
-		if (name == NULL)
-			free(value);
-		else {
-			if (!strcasecmp(name, "album"))
-				t->album = value;
-			else if (!strcasecmp(name, "artist"))
-				t->artist = value;
-			else if (!strcasecmp(name, "date"))
-				t->date = value;
-			else if (!strcasecmp(name, "disc"))
-				t->discnumber = value;
-			else if (!strcasecmp(name, "genre"))
-				t->genre = value;
-			else if (!strcasecmp(name, "title"))
-				t->title = value;
-			else if (!strcasecmp(name, "track"))
-				t->tracknumber = value;
-			else
-				free(value);
-			free(name);
-		}
-	}
+	mp4ff_meta_get_album(f.mf, &t->album);
+	mp4ff_meta_get_artist(f.mf, &t->artist);
+	mp4ff_meta_get_date(f.mf, &t->date);
+	mp4ff_meta_get_disc(f.mf, &t->discnumber);
+	mp4ff_meta_get_genre(f.mf, &t->genre);
+	mp4ff_meta_get_title(f.mf, &t->title);
+	mp4ff_meta_get_track(f.mf, &t->tracknumber);
 
 	duration = mp4ff_get_track_duration(f.mf, f.track);
 	scale = mp4ff_time_scale(f.mf, f.track);
