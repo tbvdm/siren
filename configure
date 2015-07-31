@@ -237,6 +237,7 @@ mandir_suffix=man
 plugindir_suffix=lib/siren
 
 enable_debug=no
+enable_aac=yes
 enable_flac=yes
 enable_mad=yes
 enable_mpg123=no
@@ -281,6 +282,9 @@ for arg; do
 		;;
 	debug=*)
 		get_option_value enable_debug "$arg"
+		;;
+	aac=*)
+		get_option_value enable_aac "$arg"
 		;;
 	flac=*)
 		get_option_value enable_flac "$arg"
@@ -467,6 +471,13 @@ if compile "" unistd.h "optreset = 0"; then
 else
 	print_result no
 	makefile_append SRCS compat/getopt.c
+fi
+
+if [ "$enable_aac" != no ] && check_header mp4ff.h &&
+    check_header neaacdec.h && check_library faad && check_library mp4ff; then
+	makefile_append IP aac
+	makefile_assign LDFLAGS_aac "-lfaad -lmp4ff"
+	enabled_ips="$enabled_ips aac"
 fi
 
 if check_plugin_pkgconfig flac ip flac; then

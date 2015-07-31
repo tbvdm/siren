@@ -26,6 +26,12 @@ plugindir=path (<prefix>/lib/siren)
 debug=yes|no (no)
 	Whether to build a debug version of Siren.
 
+aac=yes|no (yes)
+	Whether to build the aac input plug-in. This plug-in provides support
+	for the MPEG-2/4 AAC audio format. It requires the libfaad and libmp4ff
+	libraries (which are part of the faad2 distribution). For more
+	information, see <http://www.audiocoding.com>.
+
 flac=yes|no (yes)
 	Whether to build the flac input plug-in. This plug-in provides support
 	for the FLAC audio format. It requires the libFLAC library. For more
@@ -33,8 +39,8 @@ flac=yes|no (yes)
 
 mad=yes|no (yes)
 	Whether to build the mad input plug-in. This plug-in provides support
-	for MPEG audio formats such as MP3. It requires the libmad and
-	libid3tag libraries. For more information, see
+	for the MPEG-1/2/2.5 audio layer I/II/III formats such as MP3. It
+	requires the libmad and libid3tag libraries. For more information, see
 	<http://www.underbit.com/products/mad/>.
 
 mpg123=yes|no (no)
