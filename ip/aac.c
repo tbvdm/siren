@@ -178,6 +178,7 @@ ip_aac_close(struct track *t)
 	ipd = t->ipdata;
 	NeAACDecClose(ipd->dec);
 	ip_aac_close_file(&ipd->f);
+	free(ipd);
 }
 
 static void
