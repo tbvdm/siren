@@ -473,10 +473,10 @@ else
 	makefile_append SRCS compat/getopt.c
 fi
 
-if [ "$enable_aac" != no ] && check_header mp4ff.h &&
-    check_header neaacdec.h && check_library faad && check_library mp4ff; then
+if [ "$enable_aac" != no ] && check_header neaacdec.h && check_library faad &&
+    check_header mp4v2/mp4v2.h && check_library mp4v2; then
 	makefile_append IP aac
-	makefile_assign LDFLAGS_aac "-lfaad -lmp4ff"
+	makefile_assign LDFLAGS_aac "-lfaad -lmp4v2"
 	enabled_ips="$enabled_ips aac"
 fi
 
