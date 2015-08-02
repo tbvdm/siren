@@ -28,9 +28,9 @@ debug=yes|no (no)
 
 aac=yes|no (yes)
 	Whether to build the aac input plug-in. This plug-in provides support
-	for the MPEG-2/4 AAC audio format. It requires the libfaad and libmp4ff
-	libraries (which are part of the faad2 distribution). For more
-	information, see <http://www.audiocoding.com>.
+	for the MPEG-2/4 AAC audio format. It requires the libfaad and libmp4v2
+	libraries. For more information, see <http://www.audiocoding.com/> and
+	<https://code.google.com/p/mp4v2/>.
 
 flac=yes|no (yes)
 	Whether to build the flac input plug-in. This plug-in provides support

@@ -14,34 +14,35 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 
-#include <mp4ff.h>
+#include <mp4v2/mp4v2.h>
 #include <neaacdec.h>
 
 #include "../siren.h"
 
-struct ip_aac_config {
-	unsigned int		 bufsize;
-	unsigned char		*buf;
-};
+#if MP4V2_PROJECT_version_hex < 0x00020000
+#define IP_AAC_OLD_MP4V2_API
+#endif
 
-struct ip_aac_file {
-	FILE			*fp;
-	mp4ff_t			*mf;
-	mp4ff_callback_t	 cb;
-	int			 track;
-};
+#ifdef IP_AAC_OLD_MP4V2_API
+#define IP_AAC_MP4CLOSE(hdl)	MP4Close(hdl)
+#else
+#define IP_AAC_MP4CLOSE(hdl)	MP4Close(hdl, 0)
+#endif
 
 struct ip_aac_ipdata {
-	struct ip_aac_file	 f;
+	MP4FileHandle		 hdl;
+	MP4TrackId		 track;
+	MP4SampleId		 nsamples;
+	MP4SampleId		 sample;
+	MP4Duration		 pos;
 	NeAACDecHandle		 dec;
-	int			 nsamples;
-	int			 sample;
-	int32_t			 timescale;
 	unsigned long		 bufsize;
 	char			*buf;
 };
@@ -66,72 +67,73 @@ const struct ip		 ip = {
 	ip_aac_seek
 };
 
-static uint32_t
-ip_aac_read_cb(void *fp, void *buf, uint32_t bufsize)
-{
-	return fread(buf, 1, bufsize, (FILE *)fp);
-}
-
-static uint32_t
-ip_aac_seek_cb(void *fp, uint64_t pos)
-{
-	fseek((FILE *)fp, pos, SEEK_SET);
-	return 0; /* libmp4ff doesn't check the return value */
-}
-
-static int
-ip_aac_get_aac_track(mp4ff_t *mf, struct ip_aac_config *c)
-{
-	mp4AudioSpecificConfig	asc;
-	int			i, ntracks;
-
-	ntracks = mp4ff_total_tracks(mf);
-	if (ntracks <= 0)
-		return -1;
-
-	for (i = 0; i < ntracks; i++) {
-		mp4ff_get_decoder_config(mf, i, &c->buf, &c->bufsize);
-		if (c->buf != NULL && NeAACDecAudioSpecificConfig(c->buf,
-		    c->bufsize, &asc) == 0)
-			return i;
-	}
-
-	free(c->buf);
-	return -1;
-}
-
+#ifdef IP_AAC_OLD_MP4V2_API
 static void
-ip_aac_close_file(struct ip_aac_file *f)
+ip_aac_log(UNUSED int loglevel, UNUSED const char *lib, const char *fmt, ...)
 {
-	mp4ff_close(f->mf);
-	fclose(f->fp);
+	va_list	 ap;
+	char	*msg;
+
+	va_start(ap, fmt);
+	xvasprintf(&msg, fmt, ap);
+	LOG_ERRX("%s", msg);
+	free(msg);
+	va_end(ap);
+}
+#else
+static void
+ip_aac_log(UNUSED MP4LogLevel loglevel, const char *fmt, va_list ap)
+{
+	char *msg;
+
+	xvasprintf(&msg, fmt, ap);
+	LOG_ERRX("%s", msg);
+	free(msg);
+}
+#endif
+
+static MP4TrackId
+ip_aac_get_aac_track(MP4FileHandle hdl)
+{
+	MP4TrackId	 i, ntracks;
+	const char	*trktype;
+	uint8_t		 objtype;
+
+	ntracks = MP4GetNumberOfTracks(hdl, NULL, 0);
+	for (i = 1; i <= ntracks; i++) {
+		trktype = MP4GetTrackType(hdl, i);
+		if (trktype != NULL && MP4_IS_AUDIO_TRACK_TYPE(trktype)) {
+			objtype = MP4GetTrackEsdsObjectTypeId(hdl, i);
+			if (MP4_IS_AAC_AUDIO_TYPE(objtype))
+				return i;
+		}
+	}
+
+	return MP4_INVALID_TRACK_ID;
 }
 
 static int
-ip_aac_open_file(const char *path, struct ip_aac_file *f,
-    struct ip_aac_config *c)
+ip_aac_open_file(const char *path, MP4FileHandle *hdl, MP4TrackId *trk)
 {
-	f->fp = fopen(path, "r");
-	if (f->fp == NULL) {
-		LOG_ERR("fopen: %s", path);
-		msg_err("%s: Cannot open file", path);
+#ifdef IP_AAC_OLD_MP4V2_API
+	MP4SetLibFunc(ip_aac_log);
+	*hdl = MP4Read(path, MP4_DETAILS_ERROR);
+#else
+	MP4SetLogCallback(ip_aac_log);
+	*hdl = MP4Read(path);
+#endif
+
+	if (*hdl == MP4_INVALID_FILE_HANDLE) {
+		LOG_ERRX("%s: MP4Read() failed", path);
+		msg_errx("%s: Cannot open file", path);
 		return -1;
 	}
 
-	f->cb.read = ip_aac_read_cb;
-	f->cb.seek = ip_aac_seek_cb;
-	f->cb.user_data = f->fp;
-	f->cb.write = NULL;
-	f->cb.truncate = NULL;
-
-	/* No need to check return value; see mp4ff_open_read() code. */
-	f->mf = mp4ff_open_read(&f->cb);
-
-	f->track = ip_aac_get_aac_track(f->mf, c);
-	if (f->track == -1) {
+	*trk = ip_aac_get_aac_track(*hdl);
+	if (*trk == MP4_INVALID_TRACK_ID) {
 		LOG_ERRX("%s: cannot find AAC track", path);
 		msg_errx("%s: Cannot find AAC track", path);
-		ip_aac_close_file(f);
+		IP_AAC_MP4CLOSE(*hdl);
 		return -1;
 	}
 
@@ -142,20 +144,26 @@ static int
 ip_aac_fill_buffer(struct track *t, struct ip_aac_ipdata *ipd)
 {
 	NeAACDecFrameInfo	 frame;
-	unsigned int		 bufsize;
-	unsigned char		*buf;
+	uint32_t		 bufsize;
+	uint8_t			*buf;
 	char			*errmsg;
 
-	if (ipd->sample == ipd->nsamples)
+	if (ipd->sample > ipd->nsamples)
 		return 0; /* EOF reached */
 
 	do {
-		if (mp4ff_read_sample(ipd->f.mf, ipd->f.track, ipd->sample++,
-		    &buf, &bufsize) == 0) {
-			LOG_ERRX("%s: mp4ff_read_sample() failed", t->path);
+		buf = NULL;
+		bufsize = 0;
+		if (!MP4ReadSample(ipd->hdl, ipd->track, ipd->sample, &buf,
+		    &bufsize, NULL, NULL, NULL, NULL)) {
+			LOG_ERRX("%s: MP4ReadSample() failed", t->path);
 			msg_errx("Cannot read from file");
 			return -1;
 		}
+
+		ipd->pos += MP4GetSampleDuration(ipd->hdl, ipd->track,
+		    ipd->sample);
+
 		ipd->buf = NeAACDecDecode(ipd->dec, &frame, buf, bufsize);
 		free(buf);
 		if (frame.error) {
@@ -164,6 +172,8 @@ ip_aac_fill_buffer(struct track *t, struct ip_aac_ipdata *ipd)
 			msg_errx("Cannot read from file: %s", errmsg);
 			return -1;
 		}
+
+		ipd->sample++;
 	} while (ipd->buf == NULL || frame.samples == 0);
 
 	ipd->bufsize = frame.samples * 2; /* 16-bit samples */
@@ -177,86 +187,98 @@ ip_aac_close(struct track *t)
 
 	ipd = t->ipdata;
 	NeAACDecClose(ipd->dec);
-	ip_aac_close_file(&ipd->f);
+	IP_AAC_MP4CLOSE(ipd->hdl);
 	free(ipd);
 }
 
 static void
 ip_aac_get_metadata(struct track *t)
 {
-	struct ip_aac_file	 f;
-	struct ip_aac_config	 c;
-	int64_t			 duration;
-	int32_t			 scale;
+	MP4FileHandle		 hdl;
+	MP4TrackId		 trk;
+	const MP4Tags		*tag;
 
-	if (ip_aac_open_file(t->path, &f, &c) == -1)
+	if (ip_aac_open_file(t->path, &hdl, &trk) == -1)
 		return;
 
-	free(c.buf);
+	tag = MP4TagsAlloc();
+	if (tag == NULL) {
+		LOG_ERRX("%s: MP4TagsAlloc() failed", t->path);
+		msg_errx("%s: Cannot get metadata", t->path);
+		IP_AAC_MP4CLOSE(hdl);
+		return;
+	}
 
-	mp4ff_meta_get_album(f.mf, &t->album);
-	mp4ff_meta_get_artist(f.mf, &t->artist);
-	mp4ff_meta_get_date(f.mf, &t->date);
-	mp4ff_meta_get_disc(f.mf, &t->discnumber);
-	mp4ff_meta_get_genre(f.mf, &t->genre);
-	mp4ff_meta_get_title(f.mf, &t->title);
-	mp4ff_meta_get_track(f.mf, &t->tracknumber);
+#ifdef IP_AAC_OLD_MP4V2_API
+	MP4TagsFetch(tag, hdl);
+#else
+	if (!MP4TagsFetch(tag, hdl)) {
+		LOG_ERRX("%s: MP4TagsFetch failed", t->path);
+		msg_errx("%s: Cannot get metadata", t->path);
+		MP4TagsFree(tag);
+		IP_AAC_MP4CLOSE(hdl);
+		return;
+	}
+#endif
 
-	duration = mp4ff_get_track_duration(f.mf, f.track);
-	scale = mp4ff_time_scale(f.mf, f.track);
-	t->duration = (duration <= 0 || scale <= 0) ? 0 : duration / scale;
+	if (tag->album != NULL)
+		t->album = xstrdup(tag->album);
+	if (tag->artist != NULL)
+		t->artist = xstrdup(tag->artist);
+	if (tag->releaseDate != NULL)
+		t->date = xstrdup(tag->releaseDate);
+	if (tag->disk != NULL)
+		xasprintf(&t->discnumber, "%u", tag->disk->index);
+	if (tag->genre != NULL)
+		t->genre = xstrdup(tag->genre);
+	if (tag->name != NULL)
+		t->title = xstrdup(tag->name);
+	if (tag->track != NULL)
+		xasprintf(&t->tracknumber, "%u", tag->track->index);
 
-	ip_aac_close_file(&f);
+	t->duration = MP4ConvertFromTrackDuration(hdl, trk,
+	    MP4GetTrackDuration(hdl, trk), MP4_SECS_TIME_SCALE);
+
+	MP4TagsFree(tag);
+	IP_AAC_MP4CLOSE(hdl);
 }
 
 static int
 ip_aac_get_position(struct track *t, unsigned int *pos)
 {
-	struct ip_aac_ipdata	*ipd;
-	int64_t			 sp;
+	struct ip_aac_ipdata *ipd;
 
 	ipd = t->ipdata;
-	sp = mp4ff_get_sample_position(ipd->f.mf, ipd->f.track, ipd->sample);
-	if (sp < 0) {
-		LOG_ERRX("mp4ff_get_sample_position() failed");
-		return -1;
-	} else {
-		*pos = sp / ipd->timescale;
-		return 0;
-	}
+	*pos = MP4ConvertFromTrackDuration(ipd->hdl, ipd->track, ipd->pos,
+	    MP4_SECS_TIME_SCALE);
+	return 0;
 }
 
 static int
 ip_aac_open(struct track *t)
 {
 	struct ip_aac_ipdata		*ipd;
-	struct ip_aac_config		 c;
 	NeAACDecConfigurationPtr	 cfg;
+	uint8_t				*esc;
+	uint32_t			 escsize;
 	unsigned long			 rate;
 	unsigned char			 nchan;
 
 	ipd = xmalloc(sizeof *ipd);
 
-	if (ip_aac_open_file(t->path, &ipd->f, &c) == -1) {
-		free(ipd);
-		return -1;
-	}
+	if (ip_aac_open_file(t->path, &ipd->hdl, &ipd->track) == -1)
+		goto error1;
 
-	ipd->nsamples = mp4ff_num_samples(ipd->f.mf, ipd->f.track);
-	ipd->sample = 0;
+	ipd->nsamples = MP4GetTrackNumberOfSamples(ipd->hdl, ipd->track);
+	ipd->sample = 1;
+	ipd->pos = 0;
 	ipd->buf = NULL;
 	ipd->bufsize = 0;
-
-	ipd->timescale = mp4ff_time_scale(ipd->f.mf, ipd->f.track);
-	if (ipd->timescale <= 0) {
-		LOG_ERRX("%d: invalid timescale", ipd->timescale);
-		goto error1;
-	}
 
 	ipd->dec = NeAACDecOpen();
 	if (ipd->dec == NULL) {
 		LOG_ERRX("%s: NeAACDecOpen() failed", t->path);
-		goto error1;
+		goto error2;
 	}
 
 	cfg = NeAACDecGetCurrentConfiguration(ipd->dec);
@@ -264,14 +286,19 @@ ip_aac_open(struct track *t)
 	cfg->downMatrix = 1; /* Down-matrix 5.1 channels to 2 */
 	if (NeAACDecSetConfiguration(ipd->dec, cfg) != 1) {
 		LOG_ERRX("%s: NeAACDecSetConfiguration() failed", t->path);
-		goto error2;
+		goto error3;
 	}
 
-	if (NeAACDecInit2(ipd->dec, c.buf, c.bufsize, &rate, &nchan) != 0) {
-		LOG_ERRX("%s: NeAACDecInit2() failed", t->path);
-		goto error2;
+	if (!MP4GetTrackESConfiguration(ipd->hdl, ipd->track, &esc,
+	    &escsize)) {
+		LOG_ERRX("%s: MP4GetTrackESConfiguration() failed", t->path);
+		goto error3;
 	}
-	free (c.buf);
+
+	if (NeAACDecInit2(ipd->dec, esc, escsize, &rate, &nchan) != 0) {
+		LOG_ERRX("%s: NeAACDecInit2() failed", t->path);
+		goto error3;
+	}
 
 	t->format.nbits = 16;
 	t->format.nchannels = nchan;
@@ -279,14 +306,13 @@ ip_aac_open(struct track *t)
 	t->ipdata = ipd;
 	return 0;
 
-error2:
+error3:
 	NeAACDecClose(ipd->dec);
-
+error2:
+	IP_AAC_MP4CLOSE(ipd->hdl);
 error1:
-	msg_errx("%s: Cannot open file", t->path);
-	ip_aac_close_file(&ipd->f);
 	free(ipd);
-	free(c.buf);
+	msg_errx("%s: Cannot open file", t->path);
 	return -1;
 }
 
@@ -324,13 +350,15 @@ static void
 ip_aac_seek(struct track *t, unsigned int pos)
 {
 	struct ip_aac_ipdata	*ipd;
-	int			 s;
+	MP4SampleId		 sample;
+	MP4Timestamp		 tim;
 
 	ipd = t->ipdata;
-	s = mp4ff_find_sample(ipd->f.mf, ipd->f.track, pos * ipd->timescale,
-	    NULL);
-	if (s < 0)
-		LOG_ERRX("mp4ff_find_sample() failed");
-	else
-		ipd->sample = s;
+	tim = MP4ConvertToTrackTimestamp(ipd->hdl, ipd->track, pos,
+	    MP4_SECS_TIME_SCALE);
+	sample = MP4GetSampleIdFromTime(ipd->hdl, ipd->track, tim, true);
+	if (sample != MP4_INVALID_SAMPLE_ID) {
+		ipd->sample = sample;
+		ipd->pos = MP4GetSampleTime(ipd->hdl, ipd->track, sample);
+	}
 }
