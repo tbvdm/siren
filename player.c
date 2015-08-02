@@ -565,16 +565,16 @@ player_print_status(void)
 	/* Set the position variable. */
 	if (player_state == PLAYER_STATE_STOPPED || player_track->ip == NULL ||
 	    player_track->ip->get_position(player_track, &pos) == -1)
-		vars[PLAYER_FMT_POSITION].value.number = 0;
+		vars[PLAYER_FMT_POSITION].value.time = 0;
 	else
-		vars[PLAYER_FMT_POSITION].value.number = pos;
+		vars[PLAYER_FMT_POSITION].value.time = pos;
 
 	/* Set the duration variable. */
 	if (player_track == NULL)
-		vars[PLAYER_FMT_DURATION].value.number = 0;
+		vars[PLAYER_FMT_DURATION].value.time = 0;
 	else {
 		track_lock_metadata();
-		vars[PLAYER_FMT_DURATION].value.number =
+		vars[PLAYER_FMT_DURATION].value.time =
 		    player_track->duration;
 		track_unlock_metadata();
 	}
