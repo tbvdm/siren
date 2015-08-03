@@ -37,14 +37,16 @@
 #endif
 
 struct ip_aac_ipdata {
-	MP4FileHandle		 hdl;
-	MP4TrackId		 track;
-	MP4SampleId		 nsamples;
-	MP4SampleId		 sample;
-	MP4Duration		 pos;
-	NeAACDecHandle		 dec;
-	unsigned long		 bufsize;
-	char			*buf;
+	MP4FileHandle	 hdl;
+	MP4TrackId	 track;
+	MP4SampleId	 nsamples;
+	MP4SampleId	 sample;
+	MP4Duration	 pos;
+	NeAACDecHandle	 dec;
+	uint32_t	 aacbufsize;
+	uint8_t		*aacbuf;
+	unsigned long	 pcmbuflen;
+	char		*pcmbuf;
 };
 
 static void		 ip_aac_close(struct track *);
@@ -144,18 +146,16 @@ static int
 ip_aac_fill_buffer(struct track *t, struct ip_aac_ipdata *ipd)
 {
 	NeAACDecFrameInfo	 frame;
-	uint32_t		 bufsize;
-	uint8_t			*buf;
+	uint32_t		 buflen;
 	char			*errmsg;
 
 	for (;;) {
 		if (ipd->sample > ipd->nsamples)
 			return 0; /* EOF reached */
 
-		buf = NULL;
-		bufsize = 0;
-		if (!MP4ReadSample(ipd->hdl, ipd->track, ipd->sample, &buf,
-		    &bufsize, NULL, NULL, NULL, NULL)) {
+		buflen = ipd->aacbufsize;
+		if (!MP4ReadSample(ipd->hdl, ipd->track, ipd->sample,
+		    &ipd->aacbuf, &buflen, NULL, NULL, NULL, NULL)) {
 			LOG_ERRX("%s: MP4ReadSample() failed", t->path);
 			msg_errx("Cannot read from file");
 			return -1;
@@ -165,8 +165,8 @@ ip_aac_fill_buffer(struct track *t, struct ip_aac_ipdata *ipd)
 		    ipd->sample);
 		ipd->sample++;
 
-		ipd->buf = NeAACDecDecode(ipd->dec, &frame, buf, bufsize);
-		free(buf);
+		ipd->pcmbuf = NeAACDecDecode(ipd->dec, &frame, ipd->aacbuf,
+		    buflen);
 		if (frame.error) {
 			errmsg = NeAACDecGetErrorMessage(frame.error);
 			LOG_ERRX("NeAACDecDecode: %s: %s", t->path, errmsg);
@@ -174,7 +174,8 @@ ip_aac_fill_buffer(struct track *t, struct ip_aac_ipdata *ipd)
 			return -1;
 		}
 		if (frame.samples > 0) {
-			ipd->bufsize = frame.samples * 2; /* 16-bit samples */
+			/* 16-bit samples */
+			ipd->pcmbuflen = frame.samples * 2;
 			return 1;
 		}
 	}
@@ -188,6 +189,7 @@ ip_aac_close(struct track *t)
 	ipd = t->ipdata;
 	NeAACDecClose(ipd->dec);
 	IP_AAC_MP4CLOSE(ipd->hdl);
+	free(ipd->aacbuf);
 	free(ipd);
 }
 
@@ -269,11 +271,12 @@ ip_aac_open(struct track *t)
 	if (ip_aac_open_file(t->path, &ipd->hdl, &ipd->track) == -1)
 		goto error1;
 
-	ipd->nsamples = MP4GetTrackNumberOfSamples(ipd->hdl, ipd->track);
-	ipd->sample = 1;
-	ipd->pos = 0;
-	ipd->buf = NULL;
-	ipd->bufsize = 0;
+	ipd->aacbufsize = MP4GetTrackMaxSampleSize(ipd->hdl, ipd->track);
+	if (ipd->aacbufsize == 0) {
+		/* Avoid zero-size allocation. */
+		LOG_ERRX("%s: MP4GetTrackMaxSampleSize() returned 0", t->path);
+		goto error1;
+	}
 
 	ipd->dec = NeAACDecOpen();
 	if (ipd->dec == NULL) {
@@ -300,10 +303,17 @@ ip_aac_open(struct track *t)
 		goto error3;
 	}
 
+	ipd->nsamples = MP4GetTrackNumberOfSamples(ipd->hdl, ipd->track);
+	ipd->sample = 1;
+	ipd->pos = 0;
+	ipd->aacbuf = xmalloc(ipd->aacbufsize);
+	ipd->pcmbuflen = 0;
+
 	t->format.nbits = 16;
 	t->format.nchannels = nchan;
 	t->format.rate = rate;
 	t->ipdata = ipd;
+
 	return 0;
 
 error3:
@@ -320,30 +330,30 @@ static int
 ip_aac_read(struct track *t, int16_t *samples, size_t maxsamples)
 {
 	struct ip_aac_ipdata	*ipd;
-	char			*obuf;
-	size_t			 len, obufsize;
+	char			*buf;
+	size_t			 len, bufsize;
 	int			 ret;
 
 	ipd = t->ipdata;
-	obuf = (char *)samples;
-	obufsize = maxsamples * 2; /* 16-bit samples */
+	buf = (char *)samples;
+	bufsize = maxsamples * 2; /* 16-bit samples */
 
-	while (obufsize) {
-		if (ipd->bufsize == 0) {
+	while (bufsize > 0) {
+		if (ipd->pcmbuflen == 0) {
 			ret = ip_aac_fill_buffer(t, ipd);
 			if (ret <= 0)
 				return ret; /* EOF or error */
 		}
-		len = (obufsize < ipd->bufsize) ? obufsize : ipd->bufsize;
-		memcpy(obuf, ipd->buf, len);
-		obuf += len;
-		obufsize -= len;
-		ipd->buf += len;
-		ipd->bufsize -= len;
+		len = (bufsize < ipd->pcmbuflen) ? bufsize : ipd->pcmbuflen;
+		memcpy(buf, ipd->pcmbuf, len);
+		buf += len;
+		bufsize -= len;
+		ipd->pcmbuf += len;
+		ipd->pcmbuflen -= len;
 	}
 
 	/* Return number of (16-bit) samples read. */
-	return maxsamples - (obufsize / 2);
+	return maxsamples - (bufsize / 2);
 }
 
 static void
