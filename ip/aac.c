@@ -148,10 +148,10 @@ ip_aac_fill_buffer(struct track *t, struct ip_aac_ipdata *ipd)
 	uint8_t			*buf;
 	char			*errmsg;
 
-	if (ipd->sample > ipd->nsamples)
-		return 0; /* EOF reached */
+	for (;;) {
+		if (ipd->sample > ipd->nsamples)
+			return 0; /* EOF reached */
 
-	do {
 		buf = NULL;
 		bufsize = 0;
 		if (!MP4ReadSample(ipd->hdl, ipd->track, ipd->sample, &buf,
@@ -163,6 +163,7 @@ ip_aac_fill_buffer(struct track *t, struct ip_aac_ipdata *ipd)
 
 		ipd->pos += MP4GetSampleDuration(ipd->hdl, ipd->track,
 		    ipd->sample);
+		ipd->sample++;
 
 		ipd->buf = NeAACDecDecode(ipd->dec, &frame, buf, bufsize);
 		free(buf);
@@ -172,12 +173,11 @@ ip_aac_fill_buffer(struct track *t, struct ip_aac_ipdata *ipd)
 			msg_errx("Cannot read from file: %s", errmsg);
 			return -1;
 		}
-
-		ipd->sample++;
-	} while (ipd->buf == NULL || frame.samples == 0);
-
-	ipd->bufsize = frame.samples * 2; /* 16-bit samples */
-	return 1;
+		if (frame.samples > 0) {
+			ipd->bufsize = frame.samples * 2; /* 16-bit samples */
+			return 1;
+		}
+	}
 }
 
 static void
