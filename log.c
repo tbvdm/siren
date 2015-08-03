@@ -146,6 +146,12 @@ log_verr(const char *func, const char *fmt, va_list ap)
 	errno = oerrno;
 }
 
+void
+log_verrx(const char *func, const char *fmt, va_list ap)
+{
+	log_vprintf(func, fmt, ap);
+}
+
 static void
 log_vprintf(const char *func, const char *fmt, va_list ap)
 {

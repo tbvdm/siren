@@ -132,6 +132,7 @@
 #define LOG_FATAL(...)		log_fatal(__func__, __VA_ARGS__)
 #define LOG_FATALX(...)		log_fatalx(__func__, __VA_ARGS__)
 #define LOG_INFO(...)		log_info(__func__, __VA_ARGS__)
+#define LOG_VERRX(...)		log_verrx(__func__, __VA_ARGS__)
 
 #ifndef DEBUG
 #define LOG_DEBUG(...)
@@ -432,6 +433,8 @@ void		 log_fatalx(const char *, const char *, ...) NORETURN
 		    PRINTFLIKE(2, 3);
 void		 log_info(const char *, const char *, ...) PRINTFLIKE(2, 3);
 void		 log_init(int);
+void		 log_verrx(const char *, const char *, va_list)
+		    PRINTFLIKE(2, 0);
 
 void		 menu_activate_entry(struct menu *, struct menu_entry *)
 		    NONNULL();

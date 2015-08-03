@@ -73,24 +73,17 @@ const struct ip		 ip = {
 static void
 ip_aac_log(UNUSED int loglevel, UNUSED const char *lib, const char *fmt, ...)
 {
-	va_list	 ap;
-	char	*msg;
+	va_list ap;
 
 	va_start(ap, fmt);
-	xvasprintf(&msg, fmt, ap);
-	LOG_ERRX("%s", msg);
-	free(msg);
+	LOG_VERRX(fmt, ap);
 	va_end(ap);
 }
 #else
 static void
 ip_aac_log(UNUSED MP4LogLevel loglevel, const char *fmt, va_list ap)
 {
-	char *msg;
-
-	xvasprintf(&msg, fmt, ap);
-	LOG_ERRX("%s", msg);
-	free(msg);
+	LOG_VERRX(fmt, ap);
 }
 #endif
 
