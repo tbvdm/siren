@@ -90,18 +90,17 @@ ip_aac_log(UNUSED MP4LogLevel loglevel, const char *fmt, va_list ap)
 static MP4TrackId
 ip_aac_get_aac_track(MP4FileHandle hdl)
 {
-	MP4TrackId	 i, ntracks;
-	const char	*trktype;
-	uint8_t		 objtype;
+	uint32_t	 i, ntracks;
+	MP4TrackId	 trk;
+	uint8_t		 obj;
 
-	ntracks = MP4GetNumberOfTracks(hdl, NULL, 0);
-	for (i = 1; i <= ntracks; i++) {
-		trktype = MP4GetTrackType(hdl, i);
-		if (trktype != NULL && MP4_IS_AUDIO_TRACK_TYPE(trktype)) {
-			objtype = MP4GetTrackEsdsObjectTypeId(hdl, i);
-			if (MP4_IS_AAC_AUDIO_TYPE(objtype))
-				return i;
-		}
+	/* Look for an audio track with AAC audio. */
+	ntracks = MP4GetNumberOfTracks(hdl, MP4_AUDIO_TRACK_TYPE, 0);
+	for (i = 0; i < ntracks; i++) {
+		trk = MP4FindTrackId(hdl, i, MP4_AUDIO_TRACK_TYPE, 0);
+		obj = MP4GetTrackEsdsObjectTypeId(hdl, trk);
+		if (MP4_IS_AAC_AUDIO_TYPE(obj))
+			return trk;
 	}
 
 	return MP4_INVALID_TRACK_ID;
