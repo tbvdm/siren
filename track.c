@@ -304,6 +304,37 @@ track_search(const struct track *t, const char *search)
 }
 
 void
+track_set_vorbis_comment(struct track *t, const char *com)
+{
+	/*
+	 * A comment field may appear more than once, so free the old value
+	 * before setting a new one.
+	 */
+	if (!strncasecmp(com, "album=", 6)) {
+		free(t->album);
+		t->album = xstrdup(com + 6);
+	} else if (!strncasecmp(com, "artist=", 7)) {
+		free(t->artist);
+		t->artist = xstrdup(com + 7);
+	} else if (!strncasecmp(com, "date=", 5)) {
+		free(t->date);
+		t->date = xstrdup(com + 5);
+	} else if (!strncasecmp(com, "discnumber=", 11)) {
+		free(t->discnumber);
+		t->discnumber = xstrdup(com + 11);
+	} else if (!strncasecmp(com, "genre=", 6)) {
+		free(t->genre);
+		t->genre = xstrdup(com + 6);
+	} else if (!strncasecmp(com, "title=", 6)) {
+		free(t->title);
+		t->title = xstrdup(com + 6);
+	} else if (!strncasecmp(com, "tracknumber=", 12)) {
+		free(t->tracknumber);
+		t->tracknumber = xstrdup(com + 12);
+	}
+}
+
+void
 track_unlock_metadata(void)
 {
 	XPTHREAD_MUTEX_UNLOCK(&track_metadata_mtx);

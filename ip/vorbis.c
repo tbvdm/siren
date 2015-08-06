@@ -133,33 +133,8 @@ ip_vorbis_get_metadata(struct track *t)
 		return;
 	}
 
-	/*
-	 * A comment field may appear more than once, so we always have to free
-	 * the previous field value before setting a new one.
-	 */
 	for (c = vc->user_comments; *c != NULL; c++)
-		if (!strncasecmp(*c, "album=", 6)) {
-			free(t->album);
-			t->album = xstrdup(*c + 6);
-		} else if (!strncasecmp(*c, "artist=", 7)) {
-			free(t->artist);
-			t->artist = xstrdup(*c + 7);
-		} else if (!strncasecmp(*c, "date=", 5)) {
-			free(t->date);
-			t->date = xstrdup(*c + 5);
-		} else if (!strncasecmp(*c, "discnumber=", 11)) {
-			free(t->discnumber);
-			t->discnumber = xstrdup(*c + 11);
-		} else if (!strncasecmp(*c, "genre=", 6)) {
-			free(t->genre);
-			t->genre = xstrdup(*c + 6);
-		} else if (!strncasecmp(*c, "title=", 6)) {
-			free(t->title);
-			t->title = xstrdup(*c + 6);
-		} else if (!strncasecmp(*c, "tracknumber=", 12)) {
-			free(t->tracknumber);
-			t->tracknumber = xstrdup(*c + 12);
-		}
+		track_set_vorbis_comment(t, *c);
 
 	if ((duration = ov_time_total(&ovf, -1)) != OV_EINVAL)
 		t->duration = duration;

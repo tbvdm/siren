@@ -637,6 +637,7 @@ void		 track_init(void);
 void		 track_lock_metadata(void);
 struct track	*track_require(char *);
 int		 track_search(const struct track *, const char *);
+void		 track_set_vorbis_comment(struct track *, const char *);
 void		 track_unlock_metadata(void);
 void		 track_update_metadata(int);
 int		 track_write_cache(void);
