@@ -347,6 +347,8 @@ ip_mpg123_get_metadata(struct track *t)
 				t->albumartist = xstrdup(v2->text[i].text.p);
 			else if (!strncmp(v2->text[i].id, "TPE1", 4))
 				t->artist = xstrdup(v2->text[i].text.p);
+			else if (!strncmp(v2->text[i].id, "COMM", 4))
+				t->comment = xstrdup(v2->text[i].text.p);
 			else if (!strncmp(v2->text[i].id, "TDRC", 4) ||
 			    !strncmp(v2->text[i].id, "TYER", 4))
 				t->date = xstrdup(v2->text[i].text.p);

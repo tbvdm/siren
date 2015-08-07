@@ -89,6 +89,7 @@ ip_wavpack_get_metadata(struct track *t)
 
 	t->album = ip_wavpack_get_tag_item(wpc, "album");
 	t->artist = ip_wavpack_get_tag_item(wpc, "artist");
+	t->comment = ip_wavpack_get_tag_item(wpc, "comment");
 	t->date = ip_wavpack_get_tag_item(wpc, "year");
 	t->genre = ip_wavpack_get_tag_item(wpc, "genre");
 	t->title = ip_wavpack_get_tag_item(wpc, "title");

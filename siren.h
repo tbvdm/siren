@@ -286,6 +286,7 @@ struct track {
 	char		*album;
 	char		*albumartist;
 	char		*artist;
+	char		*comment;
 	char		*date;
 	char		*discnumber;
 	char		*genre;

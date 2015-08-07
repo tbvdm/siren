@@ -116,6 +116,8 @@ ip_sndfile_get_metadata(struct track *t)
 		t->album = xstrdup(value);
 	if ((value = sf_get_string(sffp, SF_STR_ARTIST)) != NULL)
 		t->artist = xstrdup(value);
+	if ((value = sf_get_string(sffp, SF_STR_COMMENT)) != NULL)
+		t->comment = xstrdup(value);
 	if ((value = sf_get_string(sffp, SF_STR_DATE)) != NULL)
 		t->date = xstrdup(value);
 #ifdef HAVE_SF_STR_GENRE

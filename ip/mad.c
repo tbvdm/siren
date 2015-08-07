@@ -306,6 +306,7 @@ ip_mad_get_metadata(struct track *t)
 	t->album = ip_mad_get_id3_frame(tag, ID3_FRAME_ALBUM);
 	t->albumartist = ip_mad_get_id3_frame(tag, "TPE2");
 	t->artist = ip_mad_get_id3_frame(tag, ID3_FRAME_ARTIST);
+	t->comment = ip_mad_get_id3_frame(tag, ID3_FRAME_COMMENT);
 	t->date = ip_mad_get_id3_frame(tag, ID3_FRAME_YEAR);
 	t->discnumber = ip_mad_get_id3_frame(tag, "TPOS");
 	t->title = ip_mad_get_id3_frame(tag, ID3_FRAME_TITLE);

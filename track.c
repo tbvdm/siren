@@ -200,6 +200,7 @@ track_free_metadata(struct track_entry *te)
 	free(te->track.album);
 	free(te->track.albumartist);
 	free(te->track.artist);
+	free(te->track.comment);
 	free(te->track.date);
 	free(te->track.discnumber);
 	free(te->track.genre);
@@ -245,6 +246,7 @@ track_init_metadata(struct track_entry *te)
 	te->track.album = NULL;
 	te->track.albumartist = NULL;
 	te->track.artist = NULL;
+	te->track.comment = NULL;
 	te->track.date = NULL;
 	te->track.discnumber = NULL;
 	te->track.genre = NULL;
@@ -330,6 +332,9 @@ track_set_vorbis_comment(struct track *t, const char *com)
 	} else if (!strncasecmp(com, "artist=", 7)) {
 		free(t->artist);
 		t->artist = xstrdup(com + 7);
+	} else if (!strncasecmp(com, "comment=", 8)) {
+		free(t->comment);
+		t->comment = xstrdup(com + 8);
 	} else if (!strncasecmp(com, "date=", 5)) {
 		free(t->date);
 		t->date = xstrdup(com + 5);

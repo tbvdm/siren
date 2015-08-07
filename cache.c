@@ -144,6 +144,10 @@ cache_read_entry(struct track *t)
 	ret |= cache_read_string(&t->title);
 	ret |= cache_read_number(&t->duration);
 	ret |= cache_read_string(&t->genre);
+	if (cache_version < 2)
+		t->comment = NULL;
+	else
+		ret |= cache_read_string(&t->comment);
 	return ret;
 }
 

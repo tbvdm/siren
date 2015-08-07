@@ -414,7 +414,7 @@ void
 format_track_snprintf(char *buf, size_t bufsize, const struct format *f,
     const struct track *t)
 {
-	struct format_variable vars[10];
+	struct format_variable vars[11];
 
 	vars[0].lname = "albumartist";
 	vars[0].sname = 'A';
@@ -424,38 +424,42 @@ format_track_snprintf(char *buf, size_t bufsize, const struct format *f,
 	vars[1].sname = 'a';
 	vars[1].type = FORMAT_VARIABLE_STRING;
 	vars[1].value.string = t->artist ? t->artist : "";
-	vars[2].lname = "discnumber";
+	vars[2].lname = "comment";
 	vars[2].sname = 'c';
 	vars[2].type = FORMAT_VARIABLE_STRING;
-	vars[2].value.string = t->discnumber ? t->discnumber : "";
-	vars[3].lname = "duration";
-	vars[3].sname = 'd';
-	vars[3].type = FORMAT_VARIABLE_TIME;
-	vars[3].value.time = t->duration;
-	vars[4].lname = "path";
-	vars[4].sname = 'f';
-	vars[4].type = FORMAT_VARIABLE_STRING;
-	vars[4].value.string = t->path;
-	vars[5].lname = "genre";
-	vars[5].sname = 'g';
+	vars[2].value.string = t->comment ? t->comment : "";
+	vars[3].lname = "discnumber";
+	vars[3].sname = 's';
+	vars[3].type = FORMAT_VARIABLE_STRING;
+	vars[3].value.string = t->discnumber ? t->discnumber : "";
+	vars[4].lname = "duration";
+	vars[4].sname = 'd';
+	vars[4].type = FORMAT_VARIABLE_TIME;
+	vars[4].value.time = t->duration;
+	vars[5].lname = "path";
+	vars[5].sname = 'f';
 	vars[5].type = FORMAT_VARIABLE_STRING;
-	vars[5].value.string = t->genre ? t->genre : "";
-	vars[6].lname = "album";
-	vars[6].sname = 'l';
+	vars[5].value.string = t->path;
+	vars[6].lname = "genre";
+	vars[6].sname = 'g';
 	vars[6].type = FORMAT_VARIABLE_STRING;
-	vars[6].value.string = t->album ? t->album : "";
-	vars[7].lname = "tracknumber";
-	vars[7].sname = 'n';
+	vars[6].value.string = t->genre ? t->genre : "";
+	vars[7].lname = "album";
+	vars[7].sname = 'l';
 	vars[7].type = FORMAT_VARIABLE_STRING;
-	vars[7].value.string = t->tracknumber ? t->tracknumber : "";
-	vars[8].lname = "title";
-	vars[8].sname = 't';
+	vars[7].value.string = t->album ? t->album : "";
+	vars[8].lname = "tracknumber";
+	vars[8].sname = 'n';
 	vars[8].type = FORMAT_VARIABLE_STRING;
-	vars[8].value.string = t->title ? t->title : "";
-	vars[9].lname = "date";
-	vars[9].sname = 'y';
+	vars[8].value.string = t->tracknumber ? t->tracknumber : "";
+	vars[9].lname = "title";
+	vars[9].sname = 't';
 	vars[9].type = FORMAT_VARIABLE_STRING;
-	vars[9].value.string = t->date ? t->date : "";
+	vars[9].value.string = t->title ? t->title : "";
+	vars[10].lname = "date";
+	vars[10].sname = 'y';
+	vars[10].type = FORMAT_VARIABLE_STRING;
+	vars[10].value.string = t->date ? t->date : "";
 
 	format_snprintf(buf, bufsize, f, vars, NELEMENTS(vars));
 }
