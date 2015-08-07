@@ -250,6 +250,13 @@ cache_read_string(char **str)
 }
 
 void
+cache_update(void)
+{
+	if (cache_fp != NULL && cache_version < CACHE_VERSION)
+		track_update_metadata(1);
+}
+
+void
 cache_write_entry(const struct track *t)
 {
 	cache_write_string(t->path);

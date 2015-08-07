@@ -99,6 +99,7 @@ main(int argc, char **argv)
 	screen_print();
 	conf_read_file();
 	library_read_file();
+	cache_update();
 	input_handle_key();
 
 	prompt_end();

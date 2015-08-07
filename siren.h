@@ -365,6 +365,7 @@ void		 browser_select_prev_entry(void);
 void		 cache_close(void);
 int		 cache_open(enum cache_mode);
 int		 cache_read_entry(struct track *) NONNULL();
+void		 cache_update(void);
 void		 cache_write_entry(const struct track *) NONNULL();
 
 void		 command_execute(struct command *, void *) NONNULL(1);

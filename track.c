@@ -414,6 +414,7 @@ track_update_metadata(int delete)
 		track_unlock_metadata();
 	}
 
+	msg_clear();
 	track_tree_modified = 1;
 }
 
