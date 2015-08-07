@@ -140,7 +140,15 @@ cache_read_entry(struct track *t)
 		t->discnumber = NULL;
 	else
 		ret |= cache_read_string(&t->discnumber);
+	if (cache_version < 2)
+		t->disctotal = NULL;
+	else
+		ret |= cache_read_string(&t->disctotal);
 	ret |= cache_read_string(&t->tracknumber);
+	if (cache_version < 2)
+		t->tracktotal = NULL;
+	else
+		ret |= cache_read_string(&t->tracktotal);
 	ret |= cache_read_string(&t->title);
 	ret |= cache_read_number(&t->duration);
 	ret |= cache_read_string(&t->genre);

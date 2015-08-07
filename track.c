@@ -203,9 +203,11 @@ track_free_metadata(struct track_entry *te)
 	free(te->track.comment);
 	free(te->track.date);
 	free(te->track.discnumber);
+	free(te->track.disctotal);
 	free(te->track.genre);
 	free(te->track.title);
 	free(te->track.tracknumber);
+	free(te->track.tracktotal);
 }
 
 struct track *
@@ -249,9 +251,11 @@ track_init_metadata(struct track_entry *te)
 	te->track.comment = NULL;
 	te->track.date = NULL;
 	te->track.discnumber = NULL;
+	te->track.disctotal = NULL;
 	te->track.genre = NULL;
 	te->track.title = NULL;
 	te->track.tracknumber = NULL;
+	te->track.tracktotal = NULL;
 	te->track.duration = 0;
 }
 
@@ -341,6 +345,9 @@ track_set_vorbis_comment(struct track *t, const char *com)
 	} else if (!strncasecmp(com, "discnumber=", 11)) {
 		free(t->discnumber);
 		t->discnumber = xstrdup(com + 11);
+	} else if (!strncasecmp(com, "disctotal=", 10)) {
+		free(t->disctotal);
+		t->disctotal = xstrdup(com + 10);
 	} else if (!strncasecmp(com, "genre=", 6)) {
 		free(t->genre);
 		t->genre = xstrdup(com + 6);
@@ -350,7 +357,22 @@ track_set_vorbis_comment(struct track *t, const char *com)
 	} else if (!strncasecmp(com, "tracknumber=", 12)) {
 		free(t->tracknumber);
 		t->tracknumber = xstrdup(com + 12);
+	} else if (!strncasecmp(com, "tracktotal=", 11)) {
+		free(t->tracktotal);
+		t->tracktotal = xstrdup(com + 11);
 	}
+}
+
+void
+track_split_tag(const char *tag, char **fld1, char **fld2)
+{
+	size_t pos;
+
+	pos = strcspn(tag, "/");
+	if (pos > 0)
+		*fld1 = xstrndup(tag, pos);
+	if (tag[pos] != '\0' && tag[pos + 1] != '\0')
+		*fld2 = xstrdup(tag + pos + 1);
 }
 
 void

@@ -78,7 +78,7 @@ ip_wavpack_get_metadata(struct track *t)
 {
 	WavpackContext	*wpc;
 	uint32_t	 nframes, rate;
-	char		 errstr[IP_WAVPACK_ERRSTRLEN];
+	char		 errstr[IP_WAVPACK_ERRSTRLEN], *val;
 
 	wpc = WavpackOpenFileInput(t->path, errstr, OPEN_TAGS, 0);
 	if (wpc == NULL) {
@@ -93,7 +93,24 @@ ip_wavpack_get_metadata(struct track *t)
 	t->date = ip_wavpack_get_tag_item(wpc, "year");
 	t->genre = ip_wavpack_get_tag_item(wpc, "genre");
 	t->title = ip_wavpack_get_tag_item(wpc, "title");
-	t->tracknumber = ip_wavpack_get_tag_item(wpc, "track");
+
+	val = ip_wavpack_get_tag_item(wpc, "track");
+	if (val != NULL) {
+		track_split_tag(val, &t->tracknumber, &t->tracktotal);
+		free(val);
+	}
+
+	/*
+	 * APEv2 doesn't have a standard key for the disc number. Try the
+	 * "disc" and "part" keys.
+	 */
+	val = ip_wavpack_get_tag_item(wpc, "disc");
+	if (val == NULL)
+		val = ip_wavpack_get_tag_item(wpc, "part");
+	if (val != NULL) {
+		track_split_tag(val, &t->discnumber, &t->disctotal);
+		free(val);
+	}
 
 	/*
 	 * APEv2 doesn't have a standard key for the album artist. Try the
@@ -102,21 +119,6 @@ ip_wavpack_get_metadata(struct track *t)
 	t->albumartist = ip_wavpack_get_tag_item(wpc, "albumartist");
 	if (t->albumartist == NULL)
 		t->albumartist = ip_wavpack_get_tag_item(wpc, "album artist");
-
-	/* The track number may be of the form "x/y". Ignore the "/y" part. */
-	if (t->tracknumber != NULL)
-		t->tracknumber[strcspn(t->tracknumber, "/")] = '\0';
-
-	/*
-	 * APEv2 doesn't have a standard key for the disc number. Try the
-	 * "disc" and "part" keys. Furthermore, if the disc number is of the
-	 * form "x/y", then ignore the "/y" part.
-	 */
-	t->discnumber = ip_wavpack_get_tag_item(wpc, "disc");
-	if (t->discnumber == NULL)
-		t->discnumber = ip_wavpack_get_tag_item(wpc, "part");
-	if (t->discnumber != NULL)
-		t->discnumber[strcspn(t->discnumber, "/")] = '\0';
 
 	nframes = WavpackGetNumSamples(wpc);
 	rate = WavpackGetSampleRate(wpc);

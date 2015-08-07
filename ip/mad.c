@@ -292,7 +292,7 @@ ip_mad_get_metadata(struct track *t)
 {
 	struct id3_file		*file;
 	struct id3_tag		*tag;
-	char			*tlen;
+	char			*tlen, *val;
 	const char		*errstr;
 
 	if ((file = id3_file_open(t->path, ID3_FILE_MODE_READONLY)) == NULL) {
@@ -308,19 +308,18 @@ ip_mad_get_metadata(struct track *t)
 	t->artist = ip_mad_get_id3_frame(tag, ID3_FRAME_ARTIST);
 	t->comment = ip_mad_get_id3_frame(tag, ID3_FRAME_COMMENT);
 	t->date = ip_mad_get_id3_frame(tag, ID3_FRAME_YEAR);
-	t->discnumber = ip_mad_get_id3_frame(tag, "TPOS");
 	t->title = ip_mad_get_id3_frame(tag, ID3_FRAME_TITLE);
-	t->tracknumber = ip_mad_get_id3_frame(tag, ID3_FRAME_TRACK);
 	t->genre = ip_mad_get_id3_genre(tag);
 
-	/*
-	 * ID3v2 allows disc and track numbers of the form "x/y". Ignore the
-	 * "/y" part.
-	 */
-	if (t->discnumber != NULL)
-		t->discnumber[strcspn(t->discnumber, "/")] = '\0';
-	if (t->tracknumber != NULL)
-		t->tracknumber[strcspn(t->tracknumber, "/")] = '\0';
+	if ((val = ip_mad_get_id3_frame(tag, "TPOS")) != NULL) {
+		track_split_tag(val, &t->discnumber, &t->disctotal);
+		free(val);
+	}
+
+	if ((val = ip_mad_get_id3_frame(tag, ID3_FRAME_TRACK)) != NULL) {
+		track_split_tag(val, &t->tracknumber, &t->tracktotal);
+		free(val);
+	}
 
 	if ((tlen = ip_mad_get_id3_frame(tag, "TLEN")) == NULL)
 		t->duration = ip_mad_calculate_duration(t->path);

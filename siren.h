@@ -289,9 +289,11 @@ struct track {
 	char		*comment;
 	char		*date;
 	char		*discnumber;
+	char		*disctotal;
 	char		*genre;
 	char		*title;
 	char		*tracknumber;
+	char		*tracktotal;
 	unsigned int	 duration;
 
 	struct sample_format format;
@@ -640,6 +642,7 @@ void		 track_lock_metadata(void);
 struct track	*track_require(char *);
 int		 track_search(const struct track *, const char *);
 void		 track_set_vorbis_comment(struct track *, const char *);
+void		 track_split_tag(const char *, char **, char **);
 void		 track_unlock_metadata(void);
 void		 track_update_metadata(int);
 int		 track_write_cache(void);

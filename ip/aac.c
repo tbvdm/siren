@@ -225,14 +225,18 @@ ip_aac_get_metadata(struct track *t)
 		t->comment = xstrdup(tag->comments);
 	if (tag->releaseDate != NULL)
 		t->date = xstrdup(tag->releaseDate);
-	if (tag->disk != NULL)
-		xasprintf(&t->discnumber, "%u", tag->disk->index);
 	if (tag->genre != NULL)
 		t->genre = xstrdup(tag->genre);
 	if (tag->name != NULL)
 		t->title = xstrdup(tag->name);
-	if (tag->track != NULL)
+	if (tag->disk != NULL) {
+		xasprintf(&t->discnumber, "%u", tag->disk->index);
+		xasprintf(&t->disctotal, "%u", tag->disk->total);
+	}
+	if (tag->track != NULL) {
 		xasprintf(&t->tracknumber, "%u", tag->track->index);
+		xasprintf(&t->tracktotal, "%u", tag->track->total);
+	}
 
 	t->duration = MP4ConvertFromTrackDuration(hdl, trk,
 	    MP4GetTrackDuration(hdl, trk), MP4_SECS_TIME_SCALE);
