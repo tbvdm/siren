@@ -196,6 +196,7 @@ track_free_metadata(struct track_entry *te)
 	free(te->track.album);
 	free(te->track.artist);
 	free(te->track.date);
+	free(te->track.discnumber);
 	free(te->track.genre);
 	free(te->track.title);
 	free(te->track.tracknumber);
