@@ -130,6 +130,10 @@ cache_read_entry(struct track *t)
 	ret = 0;
 	ret |= cache_read_string(&t->path);
 	ret |= cache_read_string(&t->artist);
+	if (cache_version < 2)
+		t->albumartist = NULL;
+	else
+		ret |= cache_read_string(&t->albumartist);
 	ret |= cache_read_string(&t->album);
 	ret |= cache_read_string(&t->date);
 	if (cache_version == 0)

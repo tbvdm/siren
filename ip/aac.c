@@ -217,6 +217,8 @@ ip_aac_get_metadata(struct track *t)
 
 	if (tag->album != NULL)
 		t->album = xstrdup(tag->album);
+	if (tag->albumArtist != NULL)
+		t->albumartist = xstrdup(tag->albumArtist);
 	if (tag->artist != NULL)
 		t->artist = xstrdup(tag->artist);
 	if (tag->releaseDate != NULL)

@@ -101,9 +101,13 @@ track_add_new_entry(char *path, const struct ip *ip)
 int
 track_cmp(const struct track *t1, const struct track *t2)
 {
-	int ret;
+	int		 ret;
+	const char	*artist1, *artist2;
 
-	if ((ret = track_cmp_string(t1->artist, t2->artist)))
+	artist1 = (t1->albumartist != NULL) ? t1->albumartist : t1->artist;
+	artist2 = (t2->albumartist != NULL) ? t2->albumartist : t2->artist;
+
+	if ((ret = track_cmp_string(artist1, artist2)))
 		return ret;
 	if ((ret = track_cmp_number(t1->date, t2->date)))
 		return ret;
@@ -194,6 +198,7 @@ static void
 track_free_metadata(struct track_entry *te)
 {
 	free(te->track.album);
+	free(te->track.albumartist);
 	free(te->track.artist);
 	free(te->track.date);
 	free(te->track.discnumber);
@@ -238,6 +243,7 @@ static void
 track_init_metadata(struct track_entry *te)
 {
 	te->track.album = NULL;
+	te->track.albumartist = NULL;
 	te->track.artist = NULL;
 	te->track.date = NULL;
 	te->track.discnumber = NULL;
@@ -314,6 +320,13 @@ track_set_vorbis_comment(struct track *t, const char *com)
 	if (!strncasecmp(com, "album=", 6)) {
 		free(t->album);
 		t->album = xstrdup(com + 6);
+	} else if (!strncasecmp(com, "albumartist=", 12)) {
+		free(t->albumartist);
+		t->albumartist = xstrdup(com + 12);
+	} else if (!strncasecmp(com, "album artist=", 13) ||
+	    !strncasecmp(com, "album_artist=", 13)) {
+		free(t->albumartist);
+		t->albumartist = xstrdup(com + 13);
 	} else if (!strncasecmp(com, "artist=", 7)) {
 		free(t->artist);
 		t->artist = xstrdup(com + 7);

@@ -94,6 +94,14 @@ ip_wavpack_get_metadata(struct track *t)
 	t->title = ip_wavpack_get_tag_item(wpc, "title");
 	t->tracknumber = ip_wavpack_get_tag_item(wpc, "track");
 
+	/*
+	 * APEv2 doesn't have a standard key for the album artist. Try the
+	 * "albumartist" and "album artist" keys.
+	 */
+	t->albumartist = ip_wavpack_get_tag_item(wpc, "albumartist");
+	if (t->albumartist == NULL)
+		t->albumartist = ip_wavpack_get_tag_item(wpc, "album artist");
+
 	/* The track number may be of the form "x/y". Ignore the "/y" part. */
 	if (t->tracknumber != NULL)
 		t->tracknumber[strcspn(t->tracknumber, "/")] = '\0';

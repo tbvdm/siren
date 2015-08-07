@@ -343,6 +343,8 @@ ip_mpg123_get_metadata(struct track *t)
 		for (i = 0; i < v2->texts; i++)
 			if (!strncmp(v2->text[i].id, "TALB", 4))
 				t->album = xstrdup(v2->text[i].text.p);
+			else if (!strncmp(v2->text[i].id, "TPE2", 4))
+				t->albumartist = xstrdup(v2->text[i].text.p);
 			else if (!strncmp(v2->text[i].id, "TPE1", 4))
 				t->artist = xstrdup(v2->text[i].text.p);
 			else if (!strncmp(v2->text[i].id, "TDRC", 4) ||

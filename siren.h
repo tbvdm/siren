@@ -284,6 +284,7 @@ struct track {
 	void		*ipdata;
 
 	char		*album;
+	char		*albumartist;
 	char		*artist;
 	char		*date;
 	char		*discnumber;
