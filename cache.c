@@ -24,7 +24,7 @@
 #include "siren.h"
 
 #define CACHE_BUFSIZE	4096
-#define CACHE_VERSION	1
+#define CACHE_VERSION	2
 
 static int		 cache_open_read(const char *);
 static int		 cache_open_write(const char *);
@@ -129,11 +129,11 @@ cache_read_entry(struct track *t)
 
 	ret = 0;
 	ret |= cache_read_string(&t->path);
-	ret |= cache_read_string(&t->artist);
 	if (cache_version < 2)
 		t->albumartist = NULL;
 	else
 		ret |= cache_read_string(&t->albumartist);
+	ret |= cache_read_string(&t->artist);
 	ret |= cache_read_string(&t->album);
 	ret |= cache_read_string(&t->date);
 	if (cache_version == 0)
@@ -253,14 +253,18 @@ void
 cache_write_entry(const struct track *t)
 {
 	cache_write_string(t->path);
+	cache_write_string(t->albumartist);
 	cache_write_string(t->artist);
 	cache_write_string(t->album);
 	cache_write_string(t->date);
 	cache_write_string(t->discnumber);
+	cache_write_string(t->disctotal);
 	cache_write_string(t->tracknumber);
+	cache_write_string(t->tracktotal);
 	cache_write_string(t->title);
 	cache_write_number(t->duration);
 	cache_write_string(t->genre);
+	cache_write_string(t->comment);
 }
 
 static void
