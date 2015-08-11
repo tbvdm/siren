@@ -24,7 +24,7 @@
 
 #include "../siren.h"
 
-/* NetBSD and OpenBSD have <sys/audioio.h>; Solaris has <sys/audio.h>. */
+/* NetBSD has <sys/audioio.h>; Solaris has <sys/audio.h>. */
 #ifdef HAVE_SYS_AUDIO_H
 #include <sys/audio.h>
 #else
