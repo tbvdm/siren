@@ -110,25 +110,21 @@ player_begin_playback(struct player_sample_buffer *buf)
 	XPTHREAD_MUTEX_LOCK(&player_op_mtx);
 
 	if (player_track == NULL)
-		goto error;
+		goto error1;
 
 	if (player_track->ip == NULL) {
 		msg_errx("%s: Unsupported file format", player_track->path);
-		goto error;
+		goto error1;
 	}
 
 	if (player_track->ip->open(player_track))
-		goto error;
+		goto error1;
 
-	if (player_open_op() == -1) {
-		player_track->ip->close(player_track);
-		goto error;
-	}
+	if (player_open_op() == -1)
+		goto error2;
 
-	if (player_op->start(&player_track->format) == -1) {
-		player_track->ip->close(player_track);
-		goto error;
-	}
+	if (player_op->start(&player_track->format) == -1)
+		goto error2;
 
 	/*
 	 * The buffer size is returned in bytes. Only 16-bit samples are
@@ -138,8 +134,7 @@ player_begin_playback(struct player_sample_buffer *buf)
 	buf->maxsamples = player_op->get_buffer_size() / 2;
 	if (buf->maxsamples == 0) {
 		msg_errx("Output buffer too small");
-		player_track->ip->close(player_track);
-		goto error;
+		goto error2;
 	}
 
 	buf->samples = xreallocarray(NULL, buf->maxsamples,
@@ -150,7 +145,9 @@ player_begin_playback(struct player_sample_buffer *buf)
 	XPTHREAD_MUTEX_UNLOCK(&player_track_mtx);
 	return 0;
 
-error:
+error2:
+	player_track->ip->close(player_track);
+error1:
 	XPTHREAD_MUTEX_UNLOCK(&player_op_mtx);
 	XPTHREAD_MUTEX_UNLOCK(&player_track_mtx);
 	return -1;
