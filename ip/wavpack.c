@@ -235,12 +235,6 @@ ip_wavpack_read(struct track *t, int16_t *samples, size_t maxsamples)
 			if (ret == 0)
 				/* EOF reached. */
 				break;
-
-			/*
-			 * WavpackUnpackSamples() returns the number of frames
-			 * read. We need the number of samples read, so
-			 * multiply by the number of channels.
-			 */
 			ipd->buflen = ret * t->format.nchannels;
 			ipd->bufidx = 0;
 		}
