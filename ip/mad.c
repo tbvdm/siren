@@ -60,7 +60,7 @@ static int		 ip_mad_fill_stream(FILE *, struct mad_stream *,
 static int		 ip_mad_get_position(struct track *, unsigned int *);
 static void		 ip_mad_get_metadata(struct track *);
 static int		 ip_mad_open(struct track *);
-static int		 ip_mad_read(struct track *, int16_t *, size_t);
+static int		 ip_mad_read(struct track *, struct sample_buffer *);
 static void		 ip_mad_seek(struct track *, unsigned int);
 
 static const char	*ip_mad_extensions[] = { "mp1", "mp2", "mp3", NULL };
@@ -415,17 +415,16 @@ ip_mad_open(struct track *t)
 }
 
 static int
-ip_mad_read(struct track *t, int16_t *samples, size_t maxsamples)
+ip_mad_read(struct track *t, struct sample_buffer *sb)
 {
 	struct ip_mad_ipdata	*ipd;
-	size_t			 nsamples;
 	int			 ret;
 	unsigned short		 i;
 
 	ipd = t->ipdata;
 
-	nsamples = 0;
-	while (nsamples + t->format.nchannels <= maxsamples) {
+	sb->len_s = 0;
+	while (sb->len_s + t->format.nchannels <= sb->size_s) {
 		if (ipd->sampleidx == ipd->synth.pcm.length) {
 			mad_timer_add(&ipd->timer, ipd->frame.header.duration);
 			ret = ip_mad_decode_frame(ipd);
@@ -436,13 +435,14 @@ ip_mad_read(struct track *t, int16_t *samples, size_t maxsamples)
 		}
 
 		for (i = 0; i < ipd->synth.pcm.channels; i++)
-			samples[nsamples++] = ip_mad_fixed_to_int(
-			    ipd->synth.pcm.samples[i][ipd->sampleidx]);
+			sb->data2[sb->len_s++] = ip_mad_fixed_to_int(
+			    ipd->synth.pcm.samples[1][ipd->sampleidx]);
 
 		ipd->sampleidx++;
 	}
 
-	return nsamples;
+	sb->len_b = sb->len_s * sb->nbytes;
+	return sb->len_s != 0;
 }
 
 static void

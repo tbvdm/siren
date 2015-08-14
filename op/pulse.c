@@ -30,7 +30,7 @@ static void		 op_pulse_init(void);
 static int		 op_pulse_open(void);
 static int		 op_pulse_start(struct sample_format *);
 static int		 op_pulse_stop(void);
-static int		 op_pulse_write(void *, size_t);
+static int		 op_pulse_write(struct sample_buffer *);
 
 const struct op		 op = {
 	"pulse",
@@ -86,9 +86,18 @@ op_pulse_start(struct sample_format *sf)
 	pa_sample_spec	spec;
 	int		error;
 
-	sf->byte_order = player_get_byte_order();
-	spec.format = sf->byte_order == BYTE_ORDER_BIG ? PA_SAMPLE_S16BE :
-	    PA_SAMPLE_S16LE;
+	if (sf->nbits <= 8) {
+		/* PulseAudio doesn't support signed 8-bit samples. */
+		LOG_ERRX("8 bits or less per sample not supported");
+		msg_errx("8 bits or less per sample not supported");
+		return -1;
+	} else if (sf->nbits <= 16)
+		spec.format = PA_SAMPLE_S16NE;
+	else if (sf->nbits <= 24)
+		spec.format = PA_SAMPLE_S24_32NE;
+	else
+		spec.format = PA_SAMPLE_S32NE;
+
 	spec.channels = sf->nchannels;
 	spec.rate = sf->rate;
 
@@ -98,6 +107,8 @@ op_pulse_start(struct sample_format *sf)
 		msg_errx("Cannot connect to server: %s", pa_strerror(error));
 		return -1;
 	}
+
+	sf->byte_order = player_get_byte_order();
 
 	LOG_INFO("format=%s, rate=%u, channels=%u",
 	    pa_sample_format_to_string(spec.format), spec.rate,
@@ -122,11 +133,11 @@ op_pulse_stop(void)
 }
 
 static int
-op_pulse_write(void *buf, size_t bufsize)
+op_pulse_write(struct sample_buffer *sb)
 {
 	int error;
 
-	if (pa_simple_write(op_pulse_conn, buf, bufsize, &error) < 0) {
+	if (pa_simple_write(op_pulse_conn, sb->data, sb->len_b, &error) < 0) {
 		LOG_ERRX("pa_simple_write: %s", pa_strerror(error));
 		msg_errx("Playback error: %s", pa_strerror(error));
 		return -1;

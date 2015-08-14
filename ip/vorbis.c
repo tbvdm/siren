@@ -20,7 +20,6 @@
  */
 #define OV_EXCLUDE_STATIC_CALLBACKS
 
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <strings.h>
@@ -35,7 +34,8 @@ static void		 ip_vorbis_get_metadata(struct track *);
 static int		 ip_vorbis_get_position(struct track *,
 			    unsigned int *);
 static int		 ip_vorbis_open(struct track *);
-static int		 ip_vorbis_read(struct track *, int16_t *, size_t);
+static int		 ip_vorbis_read(struct track *,
+			    struct sample_buffer *);
 static void		 ip_vorbis_seek(struct track *, unsigned int);
 
 static const char	*ip_vorbis_extensions[] = { "oga", "ogg", NULL };
@@ -208,20 +208,19 @@ ip_vorbis_open(struct track *t)
 }
 
 static int
-ip_vorbis_read(struct track *t, int16_t *samples, size_t maxsamples)
+ip_vorbis_read(struct track *t, struct sample_buffer *sb)
 {
 	OggVorbis_File	*ovf;
-	int		 endian, len, ret, size, stream;
+	int		 endian, ret, stream;
 
 	ovf = t->ipdata;
 	endian = t->format.byte_order == BYTE_ORDER_BIG;
-	len = 0;
-	size = maxsamples * 2;
+	sb->len_b = 0;
 
 	do
-		ret = ov_read(ovf, (char *)samples + len, size - len, endian,
-		    2, 1, &stream);
-	while (ret > 0 && (len += ret) < size);
+		ret = ov_read(ovf, (char *)sb->data + sb->len_b,
+		    sb->size_b - sb->len_b, endian, 2, 1, &stream);
+	while (ret > 0 && (sb->len_b += ret) < sb->size_b);
 
 	if (ret < 0) {
 		LOG_ERRX("ov_read: %s: %s", t->path, ip_vorbis_error(ret));
@@ -229,7 +228,8 @@ ip_vorbis_read(struct track *t, int16_t *samples, size_t maxsamples)
 		return -1;
 	}
 
-	return len / 2;
+	sb->len_s = sb->len_b / sb->nbytes;
+	return sb->len_b != 0;
 }
 
 static void

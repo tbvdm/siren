@@ -33,7 +33,7 @@ static void		 op_sndio_set_volume(unsigned int);
 static int		 op_sndio_start(struct sample_format *);
 static int		 op_sndio_stop(void);
 static void		 op_sndio_volume_cb(void *, unsigned int);
-static int		 op_sndio_write(void *, size_t);
+static int		 op_sndio_write(struct sample_buffer *);
 
 struct op		 op = {
 	"sndio",
@@ -132,7 +132,6 @@ op_sndio_start(struct sample_format *sf)
 	op_sndio_par.pchan = sf->nchannels;
 	op_sndio_par.rate = sf->rate;
 	op_sndio_par.sig = 1U;
-	op_sndio_par.bps = 2U;
 
 	if (!sio_setpar(op_sndio_handle, &op_sndio_par)) {
 		LOG_ERRX("sio_setpar() failed");
@@ -147,7 +146,6 @@ op_sndio_start(struct sample_format *sf)
 	}
 
 	if (op_sndio_par.bits != sf->nbits ||
-	    op_sndio_par.bps != 2U ||
 	    op_sndio_par.pchan != sf->nchannels ||
 	    op_sndio_par.sig != 1U) {
 		LOG_ERRX("cannot negotiate stream parameters");
@@ -165,9 +163,11 @@ op_sndio_start(struct sample_format *sf)
 
 	sf->byte_order = op_sndio_par.le ? BYTE_ORDER_LITTLE : BYTE_ORDER_BIG;
 
-	LOG_INFO("bits=%u, sig=%u, le=%u, pchan=%u, rate=%u, appbufsz=%u",
-	    op_sndio_par.bits, op_sndio_par.sig, op_sndio_par.le,
-	    op_sndio_par.pchan, op_sndio_par.rate, op_sndio_par.appbufsz);
+	LOG_INFO("bits=%u, bps=%u, sig=%u, le=%u, pchan=%u, rate=%u, "
+	    "appbufsz=%u",
+	    op_sndio_par.bits, op_sndio_par.bps, op_sndio_par.sig,
+	    op_sndio_par.le, op_sndio_par.pchan, op_sndio_par.rate,
+	    op_sndio_par.appbufsz);
 
 	if (!sio_start(op_sndio_handle)) {
 		LOG_ERRX("sio_start() failed");
@@ -197,11 +197,12 @@ op_sndio_volume_cb(UNUSED void *p, unsigned int volume)
 }
 
 static int
-op_sndio_write(void *buf, size_t bufsize)
+op_sndio_write(struct sample_buffer *sb)
 {
 	size_t nwritten;
 
-	if ((nwritten = sio_write(op_sndio_handle, buf, bufsize)) != bufsize)
-		LOG_ERRX("only %zu of %zu bytes written", nwritten, bufsize);
+	nwritten = sio_write(op_sndio_handle, sb->data, sb->len_b);
+	if (nwritten != sb->len_b)
+		LOG_ERRX("only %zu of %zu bytes written", nwritten, sb->len_b);
 	return 0;
 }

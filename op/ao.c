@@ -31,7 +31,7 @@ static void		 op_ao_init(void);
 static int		 op_ao_open(void);
 static int		 op_ao_start(struct sample_format *);
 static int		 op_ao_stop(void);
-static int		 op_ao_write(void *, size_t);
+static int		 op_ao_write(struct sample_buffer *);
 
 const struct op		 op = {
 	"ao",
@@ -137,7 +137,7 @@ op_ao_start(struct sample_format *sf)
 	int			 error;
 	char			*file;
 
-	aosf.bits = 16;
+	aosf.bits = sf->nbits;
 	aosf.byte_format = op_ao_byte_format;
 	aosf.channels = sf->nchannels;
 	aosf.rate = sf->rate;
@@ -229,9 +229,9 @@ op_ao_stop(void)
 }
 
 static int
-op_ao_write(void *buf, size_t bufsize)
+op_ao_write(struct sample_buffer *sb)
 {
-	if (ao_play(op_ao_device, buf, bufsize) == 0) {
+	if (ao_play(op_ao_device, sb->data, sb->len_b) == 0) {
 		LOG_ERRX("ao_play() failed");
 		msg_errx("Playback error");
 		return -1;

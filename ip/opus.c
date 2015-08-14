@@ -27,7 +27,7 @@ static void		 ip_opus_close(struct track *);
 static void		 ip_opus_get_metadata(struct track *);
 static int		 ip_opus_get_position(struct track *, unsigned int *);
 static int		 ip_opus_open(struct track *);
-static int		 ip_opus_read(struct track *, int16_t *, size_t);
+static int		 ip_opus_read(struct track *, struct sample_buffer *);
 static void		 ip_opus_seek(struct track *, unsigned int);
 
 static const char	*ip_opus_extensions[] = { "opus", NULL };
@@ -117,29 +117,29 @@ ip_opus_open(struct track *t)
 }
 
 static int
-ip_opus_read(struct track *t, int16_t *samples, size_t maxsamples)
+ip_opus_read(struct track *t, struct sample_buffer *sb)
 {
 	OggOpusFile	*oof;
-	size_t		 n;
 	int		 ret;
 
 	oof = t->ipdata;
-	n = 0;
+	sb->len_s = 0;
 
 	for (;;) {
-		ret = op_read(oof, samples + n, maxsamples - n, NULL);
-		if (ret == OP_HOLE) {
+		ret = op_read(oof, sb->data2 + sb->len_s,
+		    sb->size_s - sb->len_s, NULL);
+		if (ret == OP_HOLE)
 			LOG_ERRX("op_read: %s: hole in data", t->path);
-		} else if (ret < 0) {
+		else if (ret < 0) {
 			LOG_ERRX("op_read: %s: error %d", t->path, ret);
 			msg_errx("Cannot read from track");
 			return -1;
-		} else if (ret == 0) {
-			return n;
 		} else {
-			n += ret * op_channel_count(oof, -1);
-			if (n == maxsamples)
-				return n;
+			sb->len_s += ret * op_channel_count(oof, -1);
+			if (ret == 0 || sb->len_s == sb->size_s) {
+				sb->len_b = sb->len_s * 2;
+				return sb->len_s != 0;
+			}
 		}
 	}
 }

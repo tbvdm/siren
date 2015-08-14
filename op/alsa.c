@@ -35,7 +35,7 @@ static int		 op_alsa_open(void);
 static void		 op_alsa_set_volume(unsigned int);
 static int		 op_alsa_start(struct sample_format *);
 static int		 op_alsa_stop(void);
-static int		 op_alsa_write(void *, size_t);
+static int		 op_alsa_write(struct sample_buffer *);
 
 const struct op		 op = {
 	"alsa",
@@ -316,11 +316,14 @@ op_alsa_start(struct sample_format *sf)
 	}
 
 	/* Determine format. */
-	sf->byte_order = player_get_byte_order();
-	if (sf->byte_order == BYTE_ORDER_BIG)
-		format = SND_PCM_FORMAT_S16_BE;
+	if (sf->nbits <= 8)
+		format = SND_PCM_FORMAT_S8;
+	else if (sf->nbits <= 16)
+		format = SND_PCM_FORMAT_S16;
+	else if (sf->nbits <= 24)
+		format = SND_PCM_FORMAT_S24;
 	else
-		format = SND_PCM_FORMAT_S16_LE;
+		format = SND_PCM_FORMAT_S32;
 
 	/* Set format. */
 	ret = snd_pcm_hw_params_set_format(op_alsa_pcm_handle, params, format);
@@ -361,10 +364,12 @@ op_alsa_start(struct sample_format *sf)
 	 * size of 1 period and use that as the size of our buffer.
 	 */
 	snd_pcm_hw_params_get_period_size(params, &nframes, &dir);
-	op_alsa_framesize = (sf->nbits / 8) * sf->nchannels;
+	op_alsa_framesize = ((sf->nbits + 7) / 8) * sf->nchannels;
 	op_alsa_bufsize = nframes * op_alsa_framesize;
 
 	snd_pcm_hw_params_free(params);
+
+	sf->byte_order = player_get_byte_order();
 
 	LOG_INFO("format=%s, channels=%u, rate=%u, bufsize=%zu",
 	    snd_pcm_format_name(format), sf->nchannels, rate, op_alsa_bufsize);
@@ -384,12 +389,12 @@ op_alsa_stop(void)
 }
 
 static int
-op_alsa_write(void *buf, size_t bufsize)
+op_alsa_write(struct sample_buffer *sb)
 {
 	snd_pcm_sframes_t ret;
 
-	ret = snd_pcm_writei(op_alsa_pcm_handle, buf, bufsize /
-	    op_alsa_framesize);
+	ret = snd_pcm_writei(op_alsa_pcm_handle, sb->data,
+	    sb->len_b / op_alsa_framesize);
 	if (ret == -EPIPE) {
 		/* An underrun occurred; attempt to recover. */
 		LOG_ERRX("snd_pcm_writei: %s", snd_strerror(ret));

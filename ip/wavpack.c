@@ -46,7 +46,7 @@ static int		 ip_wavpack_get_position(struct track *,
 static char		*ip_wavpack_get_tag_item(WavpackContext *,
 			    const char *);
 static int		 ip_wavpack_open(struct track *);
-static int		 ip_wavpack_read(struct track *, int16_t *, size_t);
+static int		 ip_wavpack_read(struct track *, struct sample_buffer *);
 static void		 ip_wavpack_seek(struct track *, unsigned int);
 
 static const char	*ip_wavpack_extensions[] = { "wv", NULL };
@@ -184,24 +184,13 @@ ip_wavpack_open(struct track *t)
 	float_samples = WavpackGetMode(wpc) & MODE_FLOAT;
 	if (float_samples)
 		t->format.nbits = 16;
-	else {
+	else
 		/*
 		 * WavPack aligns samples whose bit depth is not a multiple of
 		 * 8 on the MSB rather than the LSB. Therefore, determine the
 		 * bit depth from the number of bytes per sample.
 		 */
 		t->format.nbits = 8 * WavpackGetBytesPerSample(wpc);
-
-		/* Only 16-bit samples or less are supported at the moment. */
-		if (t->format.nbits > 16) {
-			LOG_ERRX("%s: %d bits per sample not supported",
-			    t->path, t->format.nbits);
-			msg_errx("%s: %d bits per sample not supported",
-			    t->path, t->format.nbits);
-			WavpackCloseFile(wpc);
-			return -1;
-		}
-	}
 
 	t->format.nchannels = WavpackGetNumChannels(wpc);
 	t->format.rate = WavpackGetSampleRate(wpc);
@@ -219,16 +208,15 @@ ip_wavpack_open(struct track *t)
 }
 
 static int
-ip_wavpack_read(struct track *t, int16_t *samples, size_t maxsamples)
+ip_wavpack_read(struct track *t, struct sample_buffer *sb)
 {
 	struct ip_wavpack_ipdata	*ipd;
 	uint32_t			 ret;
 	float				 f;
-	size_t				 i;
 
 	ipd = t->ipdata;
 
-	for (i = 0; i < maxsamples; i++) {
+	for (sb->len_s = 0; sb->len_s < sb->size_s; sb->len_s++) {
 		if (ipd->bufidx == ipd->buflen) {
 			ret = WavpackUnpackSamples(ipd->wpc, ipd->buf,
 			    IP_WAVPACK_BUFSIZE);
@@ -240,22 +228,33 @@ ip_wavpack_read(struct track *t, int16_t *samples, size_t maxsamples)
 		}
 
 		if (!ipd->float_samples)
-			samples[i] = ipd->buf[ipd->bufidx];
+			switch (sb->nbytes) {
+			case 1:
+				sb->data1[sb->len_s] = ipd->buf[ipd->bufidx];
+				break;
+			case 2:
+				sb->data2[sb->len_s] = ipd->buf[ipd->bufidx];
+				break;
+			case 4:
+				sb->data4[sb->len_s] = ipd->buf[ipd->bufidx];
+				break;
+			}
 		else {
 			/* We assume floats use IEEE 754 representation. */
 			f = *(float *)&ipd->buf[ipd->bufidx] * -INT16_MIN;
 			if (f < INT16_MIN)
-				samples[i] = INT16_MIN;
+				sb->data2[sb->len_s] = INT16_MIN;
 			else if (f > INT16_MAX)
-				samples[i] = INT16_MAX;
+				sb->data2[sb->len_s] = INT16_MAX;
 			else
-				samples[i] = f;
+				sb->data2[sb->len_s] = f;
 		}
 
 		ipd->bufidx++;
 	}
 
-	return i;
+	sb->len_b = sb->len_s * sb->nbytes;
+	return sb->len_s != 0;
 }
 
 static void

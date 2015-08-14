@@ -53,7 +53,7 @@ static void		 ip_aac_close(struct track *);
 static void		 ip_aac_get_metadata(struct track *);
 static int		 ip_aac_get_position(struct track *, unsigned int *);
 static int		 ip_aac_open(struct track *);
-static int		 ip_aac_read(struct track *, int16_t *, size_t);
+static int		 ip_aac_read(struct track *, struct sample_buffer *);
 static void		 ip_aac_seek(struct track *, unsigned int);
 
 static const char	*ip_aac_extensions[] = { "aac", "m4a", "mp4", NULL };
@@ -327,7 +327,7 @@ error1:
 }
 
 static int
-ip_aac_read(struct track *t, int16_t *samples, size_t maxsamples)
+ip_aac_read(struct track *t, struct sample_buffer *sb)
 {
 	struct ip_aac_ipdata	*ipd;
 	char			*buf;
@@ -335,8 +335,8 @@ ip_aac_read(struct track *t, int16_t *samples, size_t maxsamples)
 	int			 ret;
 
 	ipd = t->ipdata;
-	buf = (char *)samples;
-	bufsize = maxsamples * 2; /* 16-bit samples */
+	buf = (char *)sb->data;
+	bufsize = sb->size_b;
 
 	while (bufsize > 0) {
 		if (ipd->pcmbuflen == 0) {
@@ -352,8 +352,9 @@ ip_aac_read(struct track *t, int16_t *samples, size_t maxsamples)
 		ipd->pcmbuflen -= len;
 	}
 
-	/* Return number of (16-bit) samples read. */
-	return maxsamples - (bufsize / 2);
+	sb->len_b = sb->size_b - bufsize;
+	sb->len_s = sb->len_b / sb->nbytes;
+	return 1;
 }
 
 static void

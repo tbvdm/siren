@@ -35,7 +35,7 @@ static void	 ip_mpg123_get_metadata(struct track *);
 static int	 ip_mpg123_open(struct track *);
 static int	 ip_mpg123_open_fd_handle(const char *, int *fd,
 		    mpg123_handle **);
-static int	 ip_mpg123_read(struct track *, int16_t *, size_t);
+static int	 ip_mpg123_read(struct track *, struct sample_buffer *);
 static void	 ip_mpg123_seek(struct track *, unsigned int);
 
 static const char *ip_mpg123_extensions[] = { "mp1", "mp2", "mp3", NULL };
@@ -416,8 +416,21 @@ ip_mpg123_open(struct track *t)
 		goto error;
 	}
 
-	if (encoding != MPG123_ENC_SIGNED_16) {
-		LOG_ERRX("%s: %d: unsupported encoding", t->path, encoding);
+	switch (encoding) {
+	case MPG123_ENC_SIGNED_8:
+		t->format.nbits = 8;
+		break;
+	case MPG123_ENC_SIGNED_16:
+		t->format.nbits = 16;
+		break;
+	case MPG123_ENC_SIGNED_24:
+		t->format.nbits = 24;
+		break;
+	case MPG123_ENC_SIGNED_32:
+		t->format.nbits = 32;
+		break;
+	default:
+		LOG_ERRX("%s: %#x: unsupported encoding", t->path, encoding);
 		msg_errx("%s: Unsupported encoding", t->path);
 		goto error;
 	}
@@ -426,7 +439,6 @@ ip_mpg123_open(struct track *t)
 	mpg123_format_none(hdl);
 	mpg123_format(hdl, rate, nchannels, encoding);
 
-	t->format.nbits = 16;
 	t->format.nchannels = nchannels;
 	t->format.rate = rate;
 
@@ -493,16 +505,15 @@ ip_mpg123_open_fd_handle(const char *path, int *fd, mpg123_handle **hdl)
 }
 
 static int
-ip_mpg123_read(struct track *t, int16_t *samples, size_t maxsamples)
+ip_mpg123_read(struct track *t, struct sample_buffer *sb)
 {
 	struct ip_mpg123_ipdata	*ipd;
-	size_t			 nbytes;
 	int			 ret;
 
 	ipd = t->ipdata;
 
-	ret = mpg123_read(ipd->hdl, (unsigned char *)samples, maxsamples * 2,
-	    &nbytes);
+	ret = mpg123_read(ipd->hdl, (unsigned char *)sb->data, sb->size_b,
+	    &sb->len_b);
 	if (ret != MPG123_OK && ret != MPG123_DONE) {
 		LOG_ERRX("%s: mpg123_read: %s", t->path,
 		    mpg123_strerror(ipd->hdl));
@@ -511,7 +522,8 @@ ip_mpg123_read(struct track *t, int16_t *samples, size_t maxsamples)
 		return -1;
 	}
 
-	return nbytes / 2;
+	sb->len_s = sb->len_b / sb->nbytes;
+	return sb->len_s != 0;
 }
 
 static void

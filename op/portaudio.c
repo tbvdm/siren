@@ -29,7 +29,7 @@ static void	 op_portaudio_init(void);
 static int	 op_portaudio_open(void);
 static int	 op_portaudio_start(struct sample_format *);
 static int	 op_portaudio_stop(void);
-static int	 op_portaudio_write(void *, size_t);
+static int	 op_portaudio_write(struct sample_buffer *);
 
 const struct op	 op = {
 	"portaudio",
@@ -101,6 +101,7 @@ op_portaudio_start(struct sample_format *sf)
 {
 	const PaDeviceInfo	*devinfo;
 	const PaHostApiInfo	*hostinfo;
+	PaSampleFormat		 sfmt;
 	PaError			 error;
 
 	devinfo = Pa_GetDeviceInfo(Pa_GetDefaultOutputDevice());
@@ -120,8 +121,19 @@ op_portaudio_start(struct sample_format *sf)
 	LOG_INFO("using %s device on %s host API", devinfo->name,
 	    hostinfo->name);
 
+	if (sf->nbits <= 8) {
+		sfmt = paInt8;
+		op_portaudio_framesize = sf->nchannels;
+	} else if (sf->nbits <= 16) {
+		sfmt = paInt16;
+		op_portaudio_framesize = sf->nchannels * 2;
+	} else {
+		sfmt = paInt32;
+		op_portaudio_framesize = sf->nchannels * 4;
+	}
+
 	error = Pa_OpenDefaultStream(&op_portaudio_stream, 0, sf->nchannels,
-	    paInt16, sf->rate, paFramesPerBufferUnspecified, NULL, NULL);
+	    sfmt, sf->rate, paFramesPerBufferUnspecified, NULL, NULL);
 	if (error != paNoError) {
 		LOG_ERRX("Pa_OpenDefaultStream: %s", Pa_GetErrorText(error));
 		msg_errx("Cannot open stream: %s", Pa_GetErrorText(error));
@@ -142,7 +154,6 @@ op_portaudio_start(struct sample_format *sf)
 	}
 
 	sf->byte_order = player_get_byte_order();
-	op_portaudio_framesize = sf->nchannels * 2;
 	return 0;
 }
 
@@ -169,12 +180,12 @@ op_portaudio_stop(void)
 }
 
 static int
-op_portaudio_write(void *buf, size_t bufsize)
+op_portaudio_write(struct sample_buffer *sb)
 {
 	PaError error;
 
-	error = Pa_WriteStream(op_portaudio_stream, buf,
-	    bufsize / op_portaudio_framesize);
+	error = Pa_WriteStream(op_portaudio_stream, sb->data,
+	    sb->len_b / op_portaudio_framesize);
 	if (error != paNoError && error != paOutputUnderflowed) {
 		LOG_ERRX("Pa_WriteStream: %s", Pa_GetErrorText(error));
 		msg_errx("Playback error: %s", Pa_GetErrorText(error));

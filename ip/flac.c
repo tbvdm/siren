@@ -14,7 +14,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <strings.h>
@@ -47,7 +46,7 @@ static void		 ip_flac_close(struct track *);
 static void		 ip_flac_get_metadata(struct track *);
 static int		 ip_flac_get_position(struct track *, unsigned int *);
 static int		 ip_flac_open(struct track *);
-static int		 ip_flac_read(struct track *, int16_t *, size_t);
+static int		 ip_flac_read(struct track *, struct sample_buffer *);
 static void		 ip_flac_seek(struct track *, unsigned int);
 static FLAC__StreamDecoderWriteStatus ip_flac_write_cb(
 			    const FLAC__StreamDecoder *, const FLAC__Frame *,
@@ -209,14 +208,7 @@ ip_flac_open(struct track *t)
 		goto error3;
 	}
 
-	if (metadata.data.stream_info.bits_per_sample != 16) {
-		LOG_ERRX("%s: %u: unsupported bit depth", t->path,
-		    metadata.data.stream_info.bits_per_sample);
-		msg_errx("%s: Unsupported bit depth", t->path);
-		goto error3;
-	}
-
-	t->format.nbits = 16;
+	t->format.nbits = metadata.data.stream_info.bits_per_sample;
 	t->format.nchannels = metadata.data.stream_info.channels;
 	t->format.rate = metadata.data.stream_info.sample_rate;
 
@@ -237,17 +229,17 @@ error1:
 }
 
 static int
-ip_flac_read(struct track *t, int16_t *samples, size_t maxsamples)
+ip_flac_read(struct track *t, struct sample_buffer *sb)
 {
 	struct ip_flac_ipdata	*ipd;
-	size_t			 nsamples;
+	size_t			 i;
+	unsigned int		 j;
 	int			 ret;
-	unsigned int		 i;
 
 	ipd = t->ipdata;
 
-	nsamples = 0;
-	while (nsamples + t->format.nchannels <= maxsamples) {
+	i = 0;
+	while (i + t->format.nchannels <= sb->size_s) {
 		if (ipd->bufidx == ipd->buflen) {
 			ret = ip_flac_fill_buffer(t->path, ipd);
 			if (ret == IP_FLAC_EOF)
@@ -256,13 +248,27 @@ ip_flac_read(struct track *t, int16_t *samples, size_t maxsamples)
 				return -1;
 		}
 
-		for (i = 0; i < t->format.nchannels; i++)
-			samples[nsamples++] = ipd->buf[i][ipd->bufidx];
+		switch (sb->nbytes) {
+		case 1:
+			for (j = 0; j < t->format.nchannels; j++)
+				sb->data1[i++] = ipd->buf[j][ipd->bufidx];
+			break;
+		case 2:
+			for (j = 0; j < t->format.nchannels; j++)
+				sb->data2[i++] = ipd->buf[j][ipd->bufidx];
+			break;
+		case 4:
+			for (j = 0; j < t->format.nchannels; j++)
+				sb->data4[i++] = ipd->buf[j][ipd->bufidx];
+			break;
+		}
 
 		ipd->bufidx++;
 	}
 
-	return nsamples;
+	sb->len_s = i;
+	sb->len_b = sb->len_s * sb->nbytes;
+	return 1;
 }
 
 static void

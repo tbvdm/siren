@@ -43,7 +43,7 @@ static void		 op_oss_init(void);
 static int		 op_oss_open(void);
 static int		 op_oss_start(struct sample_format *);
 static int		 op_oss_stop(void);
-static int		 op_oss_write(void *, size_t);
+static int		 op_oss_write(struct sample_buffer *);
 #ifdef OP_OSS_HAVE_VOLUME_SUPPORT
 static int		 op_oss_get_volume(void);
 static void		 op_oss_set_volume(unsigned int);
@@ -180,7 +180,7 @@ op_oss_set_volume(unsigned int volume)
 static int
 op_oss_start(struct sample_format *sf)
 {
-	int arg;
+	int arg, want_arg;
 
 	op_oss_fd = open(op_oss_device, O_WRONLY);
 	if (op_oss_fd == -1) {
@@ -208,14 +208,32 @@ op_oss_start(struct sample_format *sf)
 	}
 
 	/* Set format. */
-	arg = AFMT_S16_NE;
+	if (sf->nbits <= 8)
+		arg = AFMT_S8;
+	else if (sf->nbits <= 16)
+		arg = AFMT_S16_NE;
+#ifdef AFMT_S24_NE
+	else if (sf->nbits <= 24)
+		arg = AFMT_S24_NE;
+#endif
+	else {
+#ifdef AFMT_S32_NE
+		arg = AFMT_S32_NE;
+#else
+		LOG_ERRX("%u bits per sample not supported", sf->nbits);
+		msg_errx("%u bits per sample not supported", sf->nbits);
+		goto error;
+#endif
+	}
+
+	want_arg = arg;
 	if (ioctl(op_oss_fd, SNDCTL_DSP_SETFMT, &arg) == -1) {
 		LOG_ERR("ioctl: SNDCTL_DSP_SETFMT");
 		msg_err("Cannot set audio format");
 		goto error;
 	}
-	if (arg != AFMT_S16_NE) {
-		LOG_ERRX("AFMT_S16_NE not supported");
+	if (arg != want_arg) {
+		LOG_ERRX("%d: audio format not supported", want_arg);
 		msg_errx("Audio format not supported");
 		goto error;
 	}
@@ -280,9 +298,9 @@ op_oss_stop(void)
 }
 
 static int
-op_oss_write(void *buf, size_t bufsize)
+op_oss_write(struct sample_buffer *sb)
 {
-	if (write(op_oss_fd, buf, bufsize) == -1) {
+	if (write(op_oss_fd, sb->data, sb->len_b) == -1) {
 		LOG_ERR("write: %s", op_oss_device);
 		msg_err("Playback error");
 		return -1;

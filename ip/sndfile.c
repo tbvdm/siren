@@ -18,7 +18,6 @@
 #define ENABLE_SNDFILE_WINDOWS_PROTOTYPES 0
 
 #include <fcntl.h>
-#include <stdint.h>
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -36,7 +35,7 @@ static void		 ip_sndfile_get_metadata(struct track *);
 static int		 ip_sndfile_get_position(struct track *,
 			    unsigned int *);
 static int		 ip_sndfile_open(struct track *);
-static int		 ip_sndfile_read(struct track *, int16_t *, size_t);
+static int		 ip_sndfile_read(struct track *, struct sample_buffer *);
 static void		 ip_sndfile_seek(struct track *, unsigned int);
 
 /*
@@ -181,7 +180,21 @@ ip_sndfile_open(struct track *t)
 		return -1;
 	}
 
-	t->format.nbits = 16;
+	switch (sfinfo.format & SF_FORMAT_SUBMASK) {
+	case SF_FORMAT_DPCM_8:
+	case SF_FORMAT_PCM_S8:
+	case SF_FORMAT_PCM_U8:
+	case SF_FORMAT_DPCM_16:
+	case SF_FORMAT_DWVW_12:
+	case SF_FORMAT_DWVW_16:
+	case SF_FORMAT_PCM_16:
+		t->format.nbits = 16;
+		break;
+	default:
+		t->format.nbits = 32;
+		break;
+	}
+
 	t->format.nchannels = sfinfo.channels;
 	t->format.rate = sfinfo.samplerate;
 
@@ -190,25 +203,32 @@ ip_sndfile_open(struct track *t)
 }
 
 static int
-ip_sndfile_read(struct track *t, int16_t *samples, size_t maxsamples)
+ip_sndfile_read(struct track *t, struct sample_buffer *sb)
 {
 	struct ip_sndfile_ipdata *ipd;
-	size_t n;
 
 	ipd = t->ipdata;
 
-	/* Assume, like libsndfile, that short ints always are 2 bytes long. */
-	n = sf_read_short(ipd->sffp, (short int *)samples, maxsamples);
+	/*
+	 * Assume, like libsndfile does, that short ints and ints always are 2
+	 * and 4 bytes long, respectively.
+	 */
+	if (sb->nbytes == 2)
+		sb->len_s = sf_read_short(ipd->sffp, (short int *)sb->data2,
+		    sb->size_s);
+	else
+		sb->len_s = sf_read_int(ipd->sffp, (int *)sb->data4,
+		    sb->size_s);
 
 	if (sf_error(ipd->sffp) != SF_ERR_NO_ERROR) {
-		LOG_ERRX("sf_read_short: %s: %s", t->path,
-		    sf_strerror(ipd->sffp));
+		LOG_ERRX("sf_read_*: %s: %s", t->path, sf_strerror(ipd->sffp));
 		msg_errx("Cannot read from track: %s", sf_strerror(ipd->sffp));
 		return -1;
 	}
 
-	ipd->position += n;
-	return n;
+	ipd->position += sb->len_s;
+	sb->len_b = sb->len_s * sb->nbytes;
+	return sb->len_s != 0;
 }
 
 static void

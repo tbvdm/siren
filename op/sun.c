@@ -50,7 +50,7 @@ static int		 op_sun_open(void);
 static void		 op_sun_set_volume(unsigned int);
 static int		 op_sun_start(struct sample_format *);
 static int		 op_sun_stop(void);
-static int		 op_sun_write(void *, size_t);
+static int		 op_sun_write(struct sample_buffer *);
 
 struct op		 op = {
 	"sun",
@@ -175,7 +175,7 @@ op_sun_start(struct sample_format *sf)
 
 	AUDIO_INITINFO(&info);
 	info.play.channels = sf->nchannels;
-	info.play.precision = 16;
+	info.play.precision = sf->nbits;
 	info.play.sample_rate = sf->rate;
 #ifdef AUDIO_ENCODING_SLINEAR
 	info.play.encoding = AUDIO_ENCODING_SLINEAR;
@@ -205,9 +205,9 @@ op_sun_start(struct sample_format *sf)
 		goto error;
 	}
 
-	if (info.play.precision != 16) {
-		LOG_ERRX("16 bits per sample not supported");
-		msg_errx("16 bits per sample not supported");
+	if (info.play.precision != sf->nbits) {
+		LOG_ERRX("%u bits per sample not supported", precision);
+		msg_errx("%u bits per sample not supported", precision);
 		goto error;
 	}
 
@@ -257,9 +257,9 @@ op_sun_stop(void)
 }
 
 static int
-op_sun_write(void *buf, size_t bufsize)
+op_sun_write(struct sample_buffer *sb)
 {
-	if (write(op_sun_fd, buf, bufsize) == -1) {
+	if (write(op_sun_fd, sb->data, sb->len_b) < 0) {
 		LOG_ERR("write: %s", op_sun_device);
 		msg_err("Playback error");
 		return -1;

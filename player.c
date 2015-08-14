@@ -36,10 +36,14 @@
 
 #if defined(HAVE_FREEBSD_BSWAP16) || defined(HAVE_NETBSD_BSWAP16)
 #define PLAYER_SWAP16(i)	bswap16(i)
+#define PLAYER_SWAP32(i)	bswap32(i)
 #elif defined(HAVE_OPENBSD_SWAP16)
 #define PLAYER_SWAP16(i)	swap16(i)
+#define PLAYER_SWAP32(i)	swap32(i)
 #else
 #define PLAYER_SWAP16(i)	((uint16_t)(i) >> 8 | (uint16_t)(i) << 8)
+#define PLAYER_SWAP32(i)	\
+	((i) >> 24 | ((i) & 0xff0000) >> 16 | ((i) & 0xff00) << 8 | (i) << 24)
 #endif
 
 #define PLAYER_FMT_CONTINUE	0
@@ -63,13 +67,6 @@ enum player_state {
 	PLAYER_STATE_PAUSED,
 	PLAYER_STATE_PLAYING,
 	PLAYER_STATE_STOPPED
-};
-
-struct player_sample_buffer {
-	int16_t			*samples;
-	size_t			 maxsamples;
-	size_t			 nsamples;
-	int			 swap;
 };
 
 static void			 player_close_op(void);
@@ -104,7 +101,7 @@ static enum byte_order		 player_byte_order;
  * The player_state_mtx mutex must be locked before calling this function.
  */
 static int
-player_begin_playback(struct player_sample_buffer *buf)
+player_begin_playback(struct sample_buffer *sb)
 {
 	XPTHREAD_MUTEX_LOCK(&player_track_mtx);
 	XPTHREAD_MUTEX_LOCK(&player_op_mtx);
@@ -120,26 +117,43 @@ player_begin_playback(struct player_sample_buffer *buf)
 	if (player_track->ip->open(player_track))
 		goto error1;
 
+	LOG_DEBUG("rate=%u, nchannels=%u, nbits=%u", player_track->format.rate,
+	    player_track->format.nchannels, player_track->format.nbits);
+
 	if (player_open_op() == -1)
 		goto error2;
 
 	if (player_op->start(&player_track->format) == -1)
 		goto error2;
 
-	/*
-	 * The buffer size is returned in bytes. Only 16-bit samples are
-	 * supported at the moment, so divide by 2 to get the maximum number of
-	 * samples that fit in the buffer.
-	 */
-	buf->maxsamples = player_op->get_buffer_size() / 2;
-	if (buf->maxsamples == 0) {
+	if (player_track->format.nbits <= 8)
+		sb->nbytes = 1;
+	else if (player_track->format.nbits <= 16)
+		sb->nbytes = 2;
+	else
+		sb->nbytes = 4;
+
+	sb->size_b = player_op->get_buffer_size();
+	sb->size_s = sb->size_b / sb->nbytes;
+
+	if (sb->size_s == 0) {
 		msg_errx("Output buffer too small");
 		goto error2;
 	}
 
-	buf->samples = xreallocarray(NULL, buf->maxsamples,
-	    sizeof *buf->samples);
-	buf->swap = player_track->format.byte_order != player_byte_order;
+	sb->data = xmalloc(sb->size_b);
+	sb->data1 = sb->data;
+	sb->data2 = sb->data;
+	sb->data4 = sb->data;
+
+	if (player_track->format.byte_order == player_byte_order ||
+	    sb->nbytes == 1)
+		sb->swap = 0;
+	else
+		sb->swap = 1;
+
+	LOG_DEBUG("size_b=%zu, size_s=%zu, nbytes=%u, swap=%d", sb->size_b,
+	    sb->size_s, sb->nbytes, sb->swap);
 
 	XPTHREAD_MUTEX_UNLOCK(&player_op_mtx);
 	XPTHREAD_MUTEX_UNLOCK(&player_track_mtx);
@@ -202,7 +216,7 @@ player_end(void)
 }
 
 static void
-player_end_playback(struct player_sample_buffer *buf)
+player_end_playback(struct sample_buffer *sb)
 {
 	XPTHREAD_MUTEX_LOCK(&player_track_mtx);
 	player_track->ip->close(player_track);
@@ -213,7 +227,7 @@ player_end_playback(struct player_sample_buffer *buf)
 		player_close_op();
 	XPTHREAD_MUTEX_UNLOCK(&player_op_mtx);
 
-	free(buf->samples);
+	free(sb->data);
 }
 
 enum byte_order
@@ -373,14 +387,13 @@ player_play_prev(void)
 }
 
 static int
-player_play_sample_buffer(struct player_sample_buffer *buf)
+player_play_sample_buffer(struct sample_buffer *sb)
 {
 	size_t	i;
 	int	ret;
 
 	XPTHREAD_MUTEX_LOCK(&player_track_mtx);
-	ret = player_track->ip->read(player_track, buf->samples,
-	    buf->maxsamples);
+	ret = player_track->ip->read(player_track, sb);
 	XPTHREAD_MUTEX_UNLOCK(&player_track_mtx);
 
 	if (ret == 0)
@@ -391,18 +404,17 @@ player_play_sample_buffer(struct player_sample_buffer *buf)
 		/* Error encountered. */
 		goto error;
 
-	buf->nsamples = ret;
-
-	if (buf->swap)
-		for (i = 0; i < buf->nsamples; i++)
-			buf->samples[i] = PLAYER_SWAP16(buf->samples[i]);
+	if (sb->swap) {
+		if (sb->nbytes == 2)
+			for (i = 0; i < sb->len_s; i++)
+				sb->data2[i] = PLAYER_SWAP16(sb->data2[i]);
+		else
+			for (i = 0; i < sb->len_s; i++)
+				sb->data4[i] = PLAYER_SWAP32(sb->data4[i]);
+	}
 
 	XPTHREAD_MUTEX_LOCK(&player_op_mtx);
-	/*
-	 * Only 16-bit samples are supported at the moment, so multiply by 2 to
-	 * get the size in bytes.
-	 */
-	ret = player_op->write(buf->samples, buf->nsamples * 2);
+	ret = player_op->write(sb);
 	XPTHREAD_MUTEX_UNLOCK(&player_op_mtx);
 
 	if (ret == -1)
@@ -430,7 +442,7 @@ player_play_track(struct track *t)
 static void *
 player_playback_handler(UNUSED void *p)
 {
-	struct player_sample_buffer buf;
+	struct sample_buffer sb;
 
 	/*
 	 * Block all signals in this thread so that they can be handled in the
@@ -454,7 +466,7 @@ player_playback_handler(UNUSED void *p)
 			player_print_track();
 		}
 
-		if (player_begin_playback(&buf) == -1) {
+		if (player_begin_playback(&sb) == -1) {
 			player_command = PLAYER_COMMAND_STOP;
 			continue;
 		}
@@ -463,7 +475,7 @@ player_playback_handler(UNUSED void *p)
 		XPTHREAD_MUTEX_UNLOCK(&player_state_mtx);
 
 		for (;;) {
-			if (player_play_sample_buffer(&buf) == -1) {
+			if (player_play_sample_buffer(&sb) == -1) {
 				XPTHREAD_MUTEX_LOCK(&player_state_mtx);
 				break;
 			}
@@ -487,7 +499,7 @@ player_playback_handler(UNUSED void *p)
 			XPTHREAD_MUTEX_UNLOCK(&player_state_mtx);
 		}
 
-		player_end_playback(&buf);
+		player_end_playback(&sb);
 		player_state = PLAYER_STATE_STOPPED;
 		player_print_status();
 

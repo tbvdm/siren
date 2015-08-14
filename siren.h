@@ -270,6 +270,21 @@ struct format_variable {
 	} value;
 };
 
+struct sample_buffer {
+	void		*data;
+	int8_t		*data1;
+	int16_t		*data2;
+	int32_t		*data4;
+
+	size_t		 size_b;
+	size_t		 size_s;
+	size_t		 len_b;
+	size_t		 len_s;
+
+	unsigned int	 nbytes;
+	int		 swap;
+};
+
 struct sample_format {
 	enum byte_order	 byte_order;
 	unsigned int	 nbits;
@@ -308,7 +323,8 @@ struct ip {
 	int		  (*get_position)(struct track *, unsigned int *)
 			    NONNULL();
 	int		  (*open)(struct track *) NONNULL();
-	int		  (*read)(struct track *, int16_t *, size_t) NONNULL();
+	int		  (*read)(struct track *, struct sample_buffer *)
+			    NONNULL();
 	void		  (*seek)(struct track *, unsigned int) NONNULL();
 };
 
@@ -325,7 +341,7 @@ struct op {
 	void		 (*set_volume)(unsigned int);
 	int		 (*start)(struct sample_format *) NONNULL();
 	int		 (*stop)(void);
-	int		 (*write)(void *, size_t) NONNULL();
+	int		 (*write)(struct sample_buffer *) NONNULL();
 };
 
 const char	*argv_error(int);
