@@ -206,8 +206,8 @@ op_sun_start(struct sample_format *sf)
 	}
 
 	if (info.play.precision != sf->nbits) {
-		LOG_ERRX("%u bits per sample not supported", precision);
-		msg_errx("%u bits per sample not supported", precision);
+		LOG_ERRX("%u bits per sample not supported", sf->nbits);
+		msg_errx("%u bits per sample not supported", sf->nbits);
 		goto error;
 	}
 
