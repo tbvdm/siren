@@ -341,8 +341,10 @@ ip_aac_read(struct track *t, struct sample_buffer *sb)
 	while (bufsize > 0) {
 		if (ipd->pcmbuflen == 0) {
 			ret = ip_aac_fill_buffer(t, ipd);
-			if (ret <= 0)
-				return ret; /* EOF or error */
+			if (ret == 0)
+				break;		/* EOF */
+			if (ret == -1)
+				return -1;	/* Error */
 		}
 		len = (bufsize < ipd->pcmbuflen) ? bufsize : ipd->pcmbuflen;
 		memcpy(buf, ipd->pcmbuf, len);
@@ -354,7 +356,7 @@ ip_aac_read(struct track *t, struct sample_buffer *sb)
 
 	sb->len_b = sb->size_b - bufsize;
 	sb->len_s = sb->len_b / sb->nbytes;
-	return 1;
+	return sb->len_s != 0;
 }
 
 static void
