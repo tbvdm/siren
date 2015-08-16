@@ -436,7 +436,7 @@ ip_mad_read(struct track *t, struct sample_buffer *sb)
 
 		for (i = 0; i < ipd->synth.pcm.channels; i++)
 			sb->data2[sb->len_s++] = ip_mad_fixed_to_int(
-			    ipd->synth.pcm.samples[1][ipd->sampleidx]);
+			    ipd->synth.pcm.samples[i][ipd->sampleidx]);
 
 		ipd->sampleidx++;
 	}
