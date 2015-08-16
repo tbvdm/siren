@@ -268,7 +268,7 @@ ip_flac_read(struct track *t, struct sample_buffer *sb)
 
 	sb->len_s = i;
 	sb->len_b = sb->len_s * sb->nbytes;
-	return 1;
+	return sb->len_s != 0;
 }
 
 static void
