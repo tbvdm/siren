@@ -133,7 +133,7 @@ ip_flac_get_metadata(struct track *t)
 
 	for (i = 0; i < comments->data.vorbis_comment.num_comments; i++)
 		track_set_vorbis_comment(t,
-		    comments->data.vorbis_comment.comments[i].entry);
+		    (char *)comments->data.vorbis_comment.comments[i].entry);
 
 	FLAC__metadata_object_delete(comments);
 
