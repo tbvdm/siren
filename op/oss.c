@@ -212,10 +212,6 @@ op_oss_start(struct sample_format *sf)
 		arg = AFMT_S8;
 	else if (sf->nbits <= 16)
 		arg = AFMT_S16_NE;
-#ifdef AFMT_S24_NE
-	else if (sf->nbits <= 24)
-		arg = AFMT_S24_NE;
-#endif
 	else {
 #ifdef AFMT_S32_NE
 		arg = AFMT_S32_NE;
