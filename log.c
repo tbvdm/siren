@@ -122,7 +122,7 @@ log_init(int enable)
 	}
 }
 
-PRINTFLIKE(2, 0) static void
+PRINTFLIKE(2, 3) static void
 log_printf(const char *func, const char *fmt, ...)
 {
 	va_list ap;
