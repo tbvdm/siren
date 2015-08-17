@@ -371,7 +371,7 @@ track_split_tag(const char *tag, char **fld1, char **fld2)
 	pos = strcspn(tag, "/");
 	if (pos > 0)
 		*fld1 = xstrndup(tag, pos);
-	if (tag[pos] != '\0' && tag[pos + 1] != '\0')
+	if (tag[pos] == '/' && tag[pos + 1] != '\0')
 		*fld2 = xstrdup(tag + pos + 1);
 }
 
