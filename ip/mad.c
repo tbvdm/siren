@@ -348,40 +348,6 @@ ip_mad_get_position(struct track *t, unsigned int *pos)
 }
 
 static int
-ip_mad_get_sample_format(const char *file, struct sample_format *sf,
-    unsigned char *buf, size_t bufsize)
-{
-	FILE			*fp;
-	struct mad_stream	 stream;
-	struct mad_header	 header;
-	int			 ret;
-
-	if ((fp = fopen(file, "r")) == NULL) {
-		LOG_ERR("fopen: %s", file);
-		msg_err("%s: Cannot open track", file);
-		return IP_MAD_ERROR;
-	}
-
-	mad_stream_init(&stream);
-	mad_header_init(&header);
-
-	ret = ip_mad_decode_frame_header(fp, &stream, &header, buf, bufsize);
-	if (ret == IP_MAD_EOF)
-		msg_errx("File is empty");
-	else if (ret == IP_MAD_OK) {
-		sf->nbits = 16;
-		sf->nchannels = MAD_NCHANNELS(&header);
-		sf->rate = header.samplerate;
-	}
-
-	mad_header_finish(&header);
-	mad_stream_finish(&stream);
-	fclose(fp);
-
-	return ret == IP_MAD_OK ? 0 : -1;
-}
-
-static int
 ip_mad_open(struct track *t)
 {
 	struct ip_mad_ipdata	*ipd;
@@ -405,11 +371,13 @@ ip_mad_open(struct track *t)
 	mad_synth_init(&ipd->synth);
 	mad_timer_reset(&ipd->timer);
 
-	if ((ret = ip_mad_get_sample_format(t->path, &t->format, ipd->buf,
-	    IP_MAD_BUFSIZE))) {
+	if ((ret = ip_mad_decode_frame(ipd)) != IP_MAD_OK) {
 		ip_mad_close(t);
-		return ret;
+		return -1;
 	}
+	t->format.nbits = 16;
+	t->format.nchannels = MAD_NCHANNELS(&ipd->frame.header);
+	t->format.rate = ipd->frame.header.samplerate;
 
 	return 0;
 }
