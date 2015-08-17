@@ -54,9 +54,9 @@ struct ip_mad_ipdata {
 static void		 ip_mad_close(struct track *);
 static int		 ip_mad_decode_frame_header(FILE *,
 			    struct mad_stream *, struct mad_header *,
-			    unsigned char *, size_t);
+			    unsigned char *);
 static int		 ip_mad_fill_stream(FILE *, struct mad_stream *,
-			    unsigned char *, size_t);
+			    unsigned char *);
 static int		 ip_mad_get_position(struct track *, unsigned int *);
 static void		 ip_mad_get_metadata(struct track *);
 static int		 ip_mad_open(struct track *);
@@ -103,8 +103,8 @@ ip_mad_calculate_duration(const char *file)
 	buf = xmalloc(IP_MAD_BUFSIZE + MAD_BUFFER_GUARD);
 
 	/* Read the whole file and sum the duration of all frames. */
-	while ((ret = ip_mad_decode_frame_header(fp, &stream, &header, buf,
-	    IP_MAD_BUFSIZE)) == IP_MAD_OK)
+	while ((ret = ip_mad_decode_frame_header(fp, &stream, &header, buf)) ==
+	    IP_MAD_OK)
 		mad_timer_add(&timer, header.duration);
 
 	free(buf);
@@ -148,7 +148,7 @@ ip_mad_decode_frame(struct ip_mad_ipdata *ipd)
 		}
 		if (IP_MAD_NEED_REFILL(ipd->stream.error)) {
 			ret = ip_mad_fill_stream(ipd->fp, &ipd->stream,
-			    ipd->buf, IP_MAD_BUFSIZE);
+			    ipd->buf);
 			if (ret == IP_MAD_EOF || ret == IP_MAD_ERROR)
 				return ret;
 		} else if (!MAD_RECOVERABLE(ipd->stream.error)) {
@@ -162,7 +162,7 @@ ip_mad_decode_frame(struct ip_mad_ipdata *ipd)
 
 static int
 ip_mad_decode_frame_header(FILE *fp, struct mad_stream *stream,
-    struct mad_header *header, unsigned char *buf, size_t bufsize)
+    struct mad_header *header, unsigned char *buf)
 {
 	int		 ret;
 	const char	*errstr;
@@ -171,7 +171,7 @@ ip_mad_decode_frame_header(FILE *fp, struct mad_stream *stream,
 		if (mad_header_decode(header, stream) == 0)
 			return IP_MAD_OK;
 		if (IP_MAD_NEED_REFILL(stream->error)) {
-			ret = ip_mad_fill_stream(fp, stream, buf, bufsize);
+			ret = ip_mad_fill_stream(fp, stream, buf);
 			if (ret == IP_MAD_EOF || ret == IP_MAD_ERROR)
 				return ret;
 		} else if (!MAD_RECOVERABLE(stream->error)) {
@@ -184,8 +184,7 @@ ip_mad_decode_frame_header(FILE *fp, struct mad_stream *stream,
 }
 
 static int
-ip_mad_fill_stream(FILE *fp, struct mad_stream *stream, unsigned char *buf,
-    size_t bufsize)
+ip_mad_fill_stream(FILE *fp, struct mad_stream *stream, unsigned char *buf)
 {
 	size_t buffree, buflen, nread;
 
@@ -195,7 +194,7 @@ ip_mad_fill_stream(FILE *fp, struct mad_stream *stream, unsigned char *buf,
 		buflen = stream->bufend - stream->next_frame;
 		memmove(buf, stream->next_frame, buflen);
 	}
-	buffree = bufsize - buflen;
+	buffree = IP_MAD_BUFSIZE - buflen;
 
 	if ((nread = fread(buf + buflen, 1, buffree, fp)) < buffree) {
 		if (ferror(fp)) {
@@ -439,7 +438,7 @@ ip_mad_seek(struct track *t, unsigned int seekpos)
 		if (pos >= seekpos)
 			break;
 		if (ip_mad_decode_frame_header(ipd->fp, &ipd->stream, &header,
-		    ipd->buf, IP_MAD_BUFSIZE) != IP_MAD_OK)
+		    ipd->buf) != IP_MAD_OK)
 			break;
 		mad_timer_add(&ipd->timer, header.duration);
 		pos = mad_timer_count(ipd->timer, MAD_UNITS_SECONDS);
