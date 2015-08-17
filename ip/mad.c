@@ -137,7 +137,8 @@ ip_mad_close(struct track *t)
 static int
 ip_mad_decode_frame(struct ip_mad_ipdata *ipd)
 {
-	int ret;
+	int		 ret;
+	const char	*errstr;
 
 	for (;;) {
 		if (mad_frame_decode(&ipd->frame, &ipd->stream) == 0) {
@@ -151,10 +152,9 @@ ip_mad_decode_frame(struct ip_mad_ipdata *ipd)
 			if (ret == IP_MAD_EOF || ret == IP_MAD_ERROR)
 				return ret;
 		} else if (!MAD_RECOVERABLE(ipd->stream.error)) {
-			LOG_ERRX("mad_frame_decode: %s",
-			    mad_stream_errorstr(&ipd->stream));
-			msg_errx("Cannot decode frame: %s",
-			    mad_stream_errorstr(&ipd->stream));
+			errstr = mad_stream_errorstr(&ipd->stream);
+			LOG_ERRX("mad_frame_decode: %s", errstr);
+			msg_errx("Cannot decode frame: %s", errstr);
 			return IP_MAD_ERROR;
 		}
 	}
@@ -164,7 +164,8 @@ static int
 ip_mad_decode_frame_header(FILE *fp, struct mad_stream *stream,
     struct mad_header *header, unsigned char *buf, size_t bufsize)
 {
-	int ret;
+	int		 ret;
+	const char	*errstr;
 
 	for (;;) {
 		if (mad_header_decode(header, stream) == 0)
@@ -174,10 +175,9 @@ ip_mad_decode_frame_header(FILE *fp, struct mad_stream *stream,
 			if (ret == IP_MAD_EOF || ret == IP_MAD_ERROR)
 				return ret;
 		} else if (!MAD_RECOVERABLE(stream->error)) {
-			LOG_ERRX("mad_header_decode: %s",
-			    mad_stream_errorstr(stream));
-			msg_errx("Cannot decode frame header: %s",
-			    mad_stream_errorstr(stream));
+			errstr = mad_stream_errorstr(stream);
+			LOG_ERRX("mad_frame_decode: %s", errstr);
+			msg_errx("Cannot decode frame: %s", errstr);
 			return IP_MAD_ERROR;
 		}
 	}
