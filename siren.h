@@ -136,12 +136,8 @@
 
 #ifndef DEBUG
 #define LOG_DEBUG(...)
-#define LOG_DEBUG_ERR(...)
-#define LOG_DEBUG_ERRX(...)
 #else
 #define LOG_DEBUG(...)		log_info(__func__, __VA_ARGS__)
-#define LOG_DEBUG_ERR(...)	log_err(__func__, __VA_ARGS__)
-#define LOG_DEBUG_ERRX(...)	log_errx(__func__, __VA_ARGS__)
 #endif
 
 /*
