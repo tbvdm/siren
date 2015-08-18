@@ -275,7 +275,7 @@ ip_aac_open(struct track *t)
 	if (ipd->aacbufsize == 0) {
 		/* Avoid zero-size allocation. */
 		LOG_ERRX("%s: MP4GetTrackMaxSampleSize() returned 0", t->path);
-		goto error1;
+		goto error2;
 	}
 
 	ipd->dec = NeAACDecOpen();
