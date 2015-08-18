@@ -349,8 +349,7 @@ ip_mad_get_position(struct track *t, unsigned int *pos)
 static int
 ip_mad_open(struct track *t)
 {
-	struct ip_mad_ipdata	*ipd;
-	int			 ret;
+	struct ip_mad_ipdata *ipd;
 
 	ipd = xmalloc(sizeof *ipd);
 
@@ -370,7 +369,7 @@ ip_mad_open(struct track *t)
 	mad_synth_init(&ipd->synth);
 	mad_timer_reset(&ipd->timer);
 
-	if ((ret = ip_mad_decode_frame(ipd)) != IP_MAD_OK) {
+	if (ip_mad_decode_frame(ipd) != IP_MAD_OK) {
 		ip_mad_close(t);
 		return -1;
 	}
