@@ -300,8 +300,10 @@ ip_aac_open(struct track *t)
 
 	if (NeAACDecInit2(ipd->dec, esc, escsize, &rate, &nchan) != 0) {
 		LOG_ERRX("%s: NeAACDecInit2() failed", t->path);
+		free(esc);
 		goto error3;
 	}
+	free(esc);
 
 	ipd->nsamples = MP4GetTrackNumberOfSamples(ipd->hdl, ipd->track);
 	ipd->sample = 1;
