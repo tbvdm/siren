@@ -164,11 +164,8 @@ op_oss_set_volume(unsigned int volume)
 	int arg;
 
 	if (op_oss_fd == -1)
-		/*
-		 * The device is closed. The volume will be set when the device
-		 * is opened.
-		 */
-		op_oss_volume = volume;
+		msg_errx("Cannot change the volume level while the device is "
+		    "closed");
 	else {
 		/* Set the volume level for the left and right channels. */
 		arg = volume | (volume << 8);
@@ -268,11 +265,6 @@ op_oss_start(struct sample_format *sf)
 		op_oss_buffer_size = OP_OSS_BUFSIZE;
 	} else
 		op_oss_buffer_size = arg;
-
-#ifdef OP_OSS_HAVE_VOLUME_SUPPORT
-	if (op_oss_volume != -1)
-		op_oss_set_volume(op_oss_volume);
-#endif
 
 	return 0;
 
