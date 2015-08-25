@@ -593,6 +593,18 @@ Increase the volume level by adding
 .El
 .Pp
 Not all output plug-ins have volume support.
+.Pp
+When using the
+.Em oss
+output plug-in on FreeBSD, the volume level may be reset every time a track is
+played back.
+To preserve the volume level, set the
+.Em hw.snd.vpc_autoreset
+.Xr sysctl 8
+variable to 0.
+See
+.Xr sound 4
+for more information.
 .It Ic show-binding Ar scope key
 Show the command bound to
 .Ar key .
@@ -1048,6 +1060,7 @@ Metadata cache file.
 .El
 .Sh SEE ALSO
 .Xr pulseaudio 1 ,
+.Xr sound 4 ,
 .Xr libao.conf 5 ,
 .Xr sndio 7
 .Pp
