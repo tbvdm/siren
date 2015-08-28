@@ -188,6 +188,9 @@ ip_mad_fill_stream(FILE *fp, struct mad_stream *stream, unsigned char *buf)
 {
 	size_t buffree, buflen, nread;
 
+	if (feof(fp))
+		return IP_MAD_EOF;
+
 	if (stream->next_frame == NULL)
 		buflen = 0;
 	else {
@@ -203,9 +206,6 @@ ip_mad_fill_stream(FILE *fp, struct mad_stream *stream, unsigned char *buf)
 			return IP_MAD_ERROR;
 		}
 		if (feof(fp)) {
-			if (nread == 0)
-				return IP_MAD_EOF;
-
 			memset(buf + buflen + nread, 0, MAD_BUFFER_GUARD);
 			buflen += MAD_BUFFER_GUARD;
 		}
