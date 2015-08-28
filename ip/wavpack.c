@@ -46,7 +46,8 @@ static int		 ip_wavpack_get_position(struct track *,
 static char		*ip_wavpack_get_tag_item(WavpackContext *,
 			    const char *);
 static int		 ip_wavpack_open(struct track *);
-static int		 ip_wavpack_read(struct track *, struct sample_buffer *);
+static int		 ip_wavpack_read(struct track *,
+			    struct sample_buffer *);
 static void		 ip_wavpack_seek(struct track *, unsigned int);
 
 static const char	*ip_wavpack_extensions[] = { "wv", NULL };

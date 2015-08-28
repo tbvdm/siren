@@ -35,7 +35,8 @@ static void		 ip_sndfile_get_metadata(struct track *);
 static int		 ip_sndfile_get_position(struct track *,
 			    unsigned int *);
 static int		 ip_sndfile_open(struct track *);
-static int		 ip_sndfile_read(struct track *, struct sample_buffer *);
+static int		 ip_sndfile_read(struct track *,
+			    struct sample_buffer *);
 static void		 ip_sndfile_seek(struct track *, unsigned int);
 
 /*
