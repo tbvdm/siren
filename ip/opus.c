@@ -14,6 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <inttypes.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -86,7 +87,8 @@ ip_opus_get_position(struct track *t, unsigned int *pos)
 	oof = t->ipdata;
 	offset = op_pcm_tell(oof);
 	if (offset < 0) {
-		LOG_ERRX("op_pcm_tell: %s: error %lld", t->path, offset);
+		LOG_ERRX("op_pcm_tell: %s: error %" PRId64, t->path,
+		    (int64_t)offset);
 		msg_errx("Cannot get track position");
 		return -1;
 	}
