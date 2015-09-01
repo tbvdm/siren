@@ -1,6 +1,23 @@
 This is a list of the most important changes only. See the repository history
 for a list of all changes.
 
+Siren 0.6 (2015-09-01):
+
+- Support bit depths other than 16.
+- Add the aac input plug-in.
+- Add the portaudio output plug-in.
+- Add the albumartist, comment, discnumber, disctotal and tracktotal metadata
+  fields.
+- Update the metadata cache on start-up if the metadata cache file uses an
+  older format.
+- Allow relative paths in playlists.
+- Handle CRLF newlines in playlists.
+- Remove the confirm command. It is not very useful. Instead let the
+  delete-entry and quit commands ask for confirmation directly.
+- Remove the -p option of the command-prompt and search-prompt commands. It is
+  not very useful.
+- Fix various minor bugs.
+
 Siren 0.5 (2015-03-04):
 
 - Add 256-colour support.
