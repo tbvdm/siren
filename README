@@ -22,7 +22,7 @@ Please see the siren(1) manual page. The manual page may be viewed from the
 source tree using mandoc(1) or nroff(1):
 
 	$ mandoc siren.1 | less
-	$ nroff -c -mdoc siren.1 | less
+	$ nroff -mdoc siren.1 | less
 
 An online version is also available:
 
