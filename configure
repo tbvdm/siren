@@ -106,24 +106,9 @@ check_plugin_pkgconfig()
 
 check_program()
 {
-	local found oifs path
-
 	print_check "for $1"
-	echo "searching for $1 in \$PATH" >> $logfile
 
-	found=0
-	oifs=$IFS
-	IFS=:
-	for path in $PATH; do
-		if [ -x "$path/$1" ]; then
-			found=1
-			break
-		fi
-	done
-	IFS=$oifs
-
-	if [ $found -eq 1 ]; then
-		echo "found $path/$1" >> $logfile
+	if run_command command -v "$1"; then
 		print_result yes
 	else
 		print_result no
