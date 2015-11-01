@@ -319,10 +319,15 @@ track_search(const struct track *t, const char *search)
 void
 track_set_vorbis_comment(struct track *t, const char *com)
 {
+	char *number, *total;
+
 	/*
 	 * A comment field may appear more than once, so free the old value
 	 * before setting a new one.
 	 */
+
+	number = NULL;
+	total = NULL;
 	if (!strncasecmp(com, "album=", 6)) {
 		free(t->album);
 		t->album = xstrdup(com + 6);
@@ -343,8 +348,15 @@ track_set_vorbis_comment(struct track *t, const char *com)
 		free(t->date);
 		t->date = xstrdup(com + 5);
 	} else if (!strncasecmp(com, "discnumber=", 11)) {
-		free(t->discnumber);
-		t->discnumber = xstrdup(com + 11);
+		track_split_tag(com + 11, &number, &total);
+		if (number != NULL) {
+			free(t->discnumber);
+			t->discnumber = number;
+		}
+		if (total != NULL) {
+			free(t->disctotal);
+			t->disctotal = total;
+		}
 	} else if (!strncasecmp(com, "disctotal=", 10)) {
 		free(t->disctotal);
 		t->disctotal = xstrdup(com + 10);
@@ -354,9 +366,22 @@ track_set_vorbis_comment(struct track *t, const char *com)
 	} else if (!strncasecmp(com, "title=", 6)) {
 		free(t->title);
 		t->title = xstrdup(com + 6);
+	} else if (!strncasecmp(com, "totaldiscs=", 11)) {
+		free(t->disctotal);
+		t->disctotal = xstrdup(com + 11);
+	} else if (!strncasecmp(com, "totaltracks=", 12)) {
+		free(t->tracktotal);
+		t->tracktotal = xstrdup(com + 12);
 	} else if (!strncasecmp(com, "tracknumber=", 12)) {
-		free(t->tracknumber);
-		t->tracknumber = xstrdup(com + 12);
+		track_split_tag(com + 12, &number, &total);
+		if (number != NULL) {
+			free(t->tracknumber);
+			t->tracknumber = number;
+		}
+		if (total != NULL) {
+			free(t->tracktotal);
+			t->tracktotal = total;
+		}
 	} else if (!strncasecmp(com, "tracktotal=", 11)) {
 		free(t->tracktotal);
 		t->tracktotal = xstrdup(com + 11);
