@@ -70,6 +70,12 @@ track_add_entry(struct track_entry *te)
 		return -1;
 	}
 
+	te->track.filename = strrchr(te->track.path, '/');
+	if (te->track.filename != NULL)
+		te->track.filename++;
+	else
+		te->track.filename = te->track.path;
+
 	track_nentries++;
 	return 0;
 }

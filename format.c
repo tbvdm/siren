@@ -414,7 +414,7 @@ void
 format_track_snprintf(char *buf, size_t bufsize, const struct format *f,
     const struct track *t)
 {
-	struct format_variable vars[13];
+	struct format_variable vars[14];
 
 	vars[0].lname = "album";
 	vars[0].sname = 'l';
@@ -448,26 +448,30 @@ format_track_snprintf(char *buf, size_t bufsize, const struct format *f,
 	vars[7].sname = 'd';
 	vars[7].type = FORMAT_VARIABLE_TIME;
 	vars[7].value.time = t->duration;
-	vars[8].lname = "genre";
-	vars[8].sname = 'g';
+	vars[8].lname = "filename";
+	vars[8].sname = 'F';
 	vars[8].type = FORMAT_VARIABLE_STRING;
-	vars[8].value.string = t->genre ? t->genre : "";
-	vars[9].lname = "path";
-	vars[9].sname = 'f';
+	vars[8].value.string = t->filename;
+	vars[9].lname = "genre";
+	vars[9].sname = 'g';
 	vars[9].type = FORMAT_VARIABLE_STRING;
-	vars[9].value.string = t->path;
-	vars[10].lname = "title";
-	vars[10].sname = 't';
+	vars[9].value.string = t->genre ? t->genre : "";
+	vars[10].lname = "path";
+	vars[10].sname = 'f';
 	vars[10].type = FORMAT_VARIABLE_STRING;
-	vars[10].value.string = t->title ? t->title : "";
-	vars[11].lname = "tracknumber";
-	vars[11].sname = 'n';
+	vars[10].value.string = t->path;
+	vars[11].lname = "title";
+	vars[11].sname = 't';
 	vars[11].type = FORMAT_VARIABLE_STRING;
-	vars[11].value.string = t->tracknumber ? t->tracknumber : "";
-	vars[12].lname = "tracktotal";
-	vars[12].sname = 'N';
+	vars[11].value.string = t->title ? t->title : "";
+	vars[12].lname = "tracknumber";
+	vars[12].sname = 'n';
 	vars[12].type = FORMAT_VARIABLE_STRING;
-	vars[12].value.string = t->tracktotal ? t->tracktotal : "";
+	vars[12].value.string = t->tracknumber ? t->tracknumber : "";
+	vars[13].lname = "tracktotal";
+	vars[13].sname = 'N';
+	vars[13].type = FORMAT_VARIABLE_STRING;
+	vars[13].value.string = t->tracktotal ? t->tracktotal : "";
 
 	format_snprintf(buf, bufsize, f, vars, NELEMENTS(vars));
 }

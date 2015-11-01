@@ -301,6 +301,7 @@ struct track {
 	char		*date;
 	char		*discnumber;
 	char		*disctotal;
+	char		*filename;
 	char		*genre;
 	char		*title;
 	char		*tracknumber;
