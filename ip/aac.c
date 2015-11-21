@@ -16,10 +16,8 @@
 
 #include <stdarg.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <strings.h>
 
 #include <mp4v2/mp4v2.h>
 #include <neaacdec.h>

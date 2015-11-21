@@ -22,7 +22,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <strings.h>
 
 #include <vorbis/vorbisfile.h>
 
