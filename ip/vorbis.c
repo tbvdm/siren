@@ -133,7 +133,7 @@ ip_vorbis_get_metadata(struct track *t)
 	}
 
 	for (c = vc->user_comments; *c != NULL; c++)
-		track_set_vorbis_comment(t, *c);
+		track_copy_vorbis_comment(t, *c);
 
 	if ((duration = ov_time_total(&ovf, -1)) != OV_EINVAL)
 		t->duration = duration;

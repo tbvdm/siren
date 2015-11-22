@@ -104,6 +104,73 @@ track_add_new_entry(char *path, const struct ip *ip)
 	return &te->track;
 }
 
+void
+track_copy_vorbis_comment(struct track *t, const char *com)
+{
+	char *number, *total;
+
+	number = NULL;
+	total = NULL;
+	if (!strncasecmp(com, "album=", 6)) {
+		free(t->album);
+		t->album = xstrdup(com + 6);
+	} else if (!strncasecmp(com, "albumartist=", 12)) {
+		free(t->albumartist);
+		t->albumartist = xstrdup(com + 12);
+	} else if (!strncasecmp(com, "album artist=", 13) ||
+	    !strncasecmp(com, "album_artist=", 13)) {
+		free(t->albumartist);
+		t->albumartist = xstrdup(com + 13);
+	} else if (!strncasecmp(com, "artist=", 7)) {
+		free(t->artist);
+		t->artist = xstrdup(com + 7);
+	} else if (!strncasecmp(com, "comment=", 8)) {
+		free(t->comment);
+		t->comment = xstrdup(com + 8);
+	} else if (!strncasecmp(com, "date=", 5)) {
+		free(t->date);
+		t->date = xstrdup(com + 5);
+	} else if (!strncasecmp(com, "discnumber=", 11)) {
+		track_split_tag(com + 11, &number, &total);
+		if (number != NULL) {
+			free(t->discnumber);
+			t->discnumber = number;
+		}
+		if (total != NULL) {
+			free(t->disctotal);
+			t->disctotal = total;
+		}
+	} else if (!strncasecmp(com, "disctotal=", 10)) {
+		free(t->disctotal);
+		t->disctotal = xstrdup(com + 10);
+	} else if (!strncasecmp(com, "genre=", 6)) {
+		free(t->genre);
+		t->genre = xstrdup(com + 6);
+	} else if (!strncasecmp(com, "title=", 6)) {
+		free(t->title);
+		t->title = xstrdup(com + 6);
+	} else if (!strncasecmp(com, "totaldiscs=", 11)) {
+		free(t->disctotal);
+		t->disctotal = xstrdup(com + 11);
+	} else if (!strncasecmp(com, "totaltracks=", 12)) {
+		free(t->tracktotal);
+		t->tracktotal = xstrdup(com + 12);
+	} else if (!strncasecmp(com, "tracknumber=", 12)) {
+		track_split_tag(com + 12, &number, &total);
+		if (number != NULL) {
+			free(t->tracknumber);
+			t->tracknumber = number;
+		}
+		if (total != NULL) {
+			free(t->tracktotal);
+			t->tracktotal = total;
+		}
+	} else if (!strncasecmp(com, "tracktotal=", 11)) {
+		free(t->tracktotal);
+		t->tracktotal = xstrdup(com + 11);
+	}
+}
+
 int
 track_cmp(const struct track *t1, const struct track *t2)
 {
@@ -320,78 +387,6 @@ track_search(const struct track *t, const char *search)
 	if (strcasestr(t->path, search))
 		return 0;
 	return -1;
-}
-
-void
-track_set_vorbis_comment(struct track *t, const char *com)
-{
-	char *number, *total;
-
-	/*
-	 * A comment field may appear more than once, so free the old value
-	 * before setting a new one.
-	 */
-
-	number = NULL;
-	total = NULL;
-	if (!strncasecmp(com, "album=", 6)) {
-		free(t->album);
-		t->album = xstrdup(com + 6);
-	} else if (!strncasecmp(com, "albumartist=", 12)) {
-		free(t->albumartist);
-		t->albumartist = xstrdup(com + 12);
-	} else if (!strncasecmp(com, "album artist=", 13) ||
-	    !strncasecmp(com, "album_artist=", 13)) {
-		free(t->albumartist);
-		t->albumartist = xstrdup(com + 13);
-	} else if (!strncasecmp(com, "artist=", 7)) {
-		free(t->artist);
-		t->artist = xstrdup(com + 7);
-	} else if (!strncasecmp(com, "comment=", 8)) {
-		free(t->comment);
-		t->comment = xstrdup(com + 8);
-	} else if (!strncasecmp(com, "date=", 5)) {
-		free(t->date);
-		t->date = xstrdup(com + 5);
-	} else if (!strncasecmp(com, "discnumber=", 11)) {
-		track_split_tag(com + 11, &number, &total);
-		if (number != NULL) {
-			free(t->discnumber);
-			t->discnumber = number;
-		}
-		if (total != NULL) {
-			free(t->disctotal);
-			t->disctotal = total;
-		}
-	} else if (!strncasecmp(com, "disctotal=", 10)) {
-		free(t->disctotal);
-		t->disctotal = xstrdup(com + 10);
-	} else if (!strncasecmp(com, "genre=", 6)) {
-		free(t->genre);
-		t->genre = xstrdup(com + 6);
-	} else if (!strncasecmp(com, "title=", 6)) {
-		free(t->title);
-		t->title = xstrdup(com + 6);
-	} else if (!strncasecmp(com, "totaldiscs=", 11)) {
-		free(t->disctotal);
-		t->disctotal = xstrdup(com + 11);
-	} else if (!strncasecmp(com, "totaltracks=", 12)) {
-		free(t->tracktotal);
-		t->tracktotal = xstrdup(com + 12);
-	} else if (!strncasecmp(com, "tracknumber=", 12)) {
-		track_split_tag(com + 12, &number, &total);
-		if (number != NULL) {
-			free(t->tracknumber);
-			t->tracknumber = number;
-		}
-		if (total != NULL) {
-			free(t->tracktotal);
-			t->tracktotal = total;
-		}
-	} else if (!strncasecmp(com, "tracktotal=", 11)) {
-		free(t->tracktotal);
-		t->tracktotal = xstrdup(com + 11);
-	}
 }
 
 void
