@@ -23,6 +23,7 @@
 static int		 queue_search_entry(const void *, const char *);
 
 static pthread_mutex_t	 queue_menu_mtx = PTHREAD_MUTEX_INITIALIZER;
+static struct format	*queue_altformat;
 static struct format	*queue_format;
 static struct menu	*queue_menu;
 static unsigned int	 queue_duration;
@@ -136,7 +137,7 @@ queue_get_entry_text(const void *e, char *buf, size_t bufsize)
 	const struct track *t;
 
 	t = e;
-	format_track_snprintf(buf, bufsize, queue_format, t);
+	format_track_snprintf(buf, bufsize, queue_format, queue_altformat, t);
 }
 
 struct track *
@@ -206,6 +207,7 @@ queue_print(void)
 	    MSECS(queue_duration));
 	option_lock();
 	queue_format = option_get_format("queue-format");
+	queue_altformat = option_get_format("queue-format-alt");
 	menu_print(queue_menu);
 	option_unlock();
 	XPTHREAD_MUTEX_UNLOCK(&queue_menu_mtx);

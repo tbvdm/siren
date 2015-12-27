@@ -403,7 +403,7 @@ void		 format_snprintf(char *, size_t, const struct format *,
 		    const struct format_variable *, size_t) NONNULL();
 const char	*format_to_string(const struct format *) NONNULL();
 void		 format_track_snprintf(char *, size_t, const struct format *,
-		    const struct track *) NONNULL();
+		    const struct format *, const struct track *) NONNULL();
 
 void		 history_add(struct history *, const char *) NONNULL();
 void		 history_free(struct history *) NONNULL();
@@ -629,7 +629,7 @@ void		 screen_msg_info_vprintf(const char *, va_list) NONNULL()
 void		 screen_player_status_printf(const struct format *,
 		    const struct format_variable *, size_t) NONNULL();
 void		 screen_player_track_printf(const struct format *,
-		    const struct track *) NONNULL(1);
+		    const struct format *, const struct track *) NONNULL(1, 2);
 void		 screen_print(void);
 void		 screen_prompt_begin(void);
 void		 screen_prompt_end(void);

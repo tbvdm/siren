@@ -27,6 +27,7 @@
 static int		 library_search_entry(const void *, const char *);
 
 static pthread_mutex_t	 library_menu_mtx = PTHREAD_MUTEX_INITIALIZER;
+static struct format	*library_altformat;
 static struct format	*library_format;
 static struct menu	*library_menu;
 static unsigned int	 library_duration;
@@ -166,7 +167,7 @@ library_get_entry_text(const void *e, char *buf, size_t bufsize)
 	const struct track *t;
 
 	t = e;
-	format_track_snprintf(buf, bufsize, library_format, t);
+	format_track_snprintf(buf, bufsize, library_format, library_altformat, t);
 }
 
 struct track *
@@ -243,6 +244,7 @@ library_print(void)
 	    MSECS(library_duration));
 	option_lock();
 	library_format = option_get_format("library-format");
+	library_altformat = option_get_format("library-format-alt");
 	menu_print(library_menu);
 	option_unlock();
 	XPTHREAD_MUTEX_UNLOCK(&library_menu_mtx);

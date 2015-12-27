@@ -24,6 +24,7 @@
 static int		 playlist_search_entry(const void *, const char *);
 
 static pthread_mutex_t	 playlist_menu_mtx = PTHREAD_MUTEX_INITIALIZER;
+static struct format	*playlist_altformat;
 static struct format	*playlist_format;
 static struct menu	*playlist_menu;
 static unsigned int	 playlist_duration;
@@ -75,7 +76,8 @@ playlist_get_entry_text(const void *e, char *buf, size_t bufsize)
 	const struct track *t;
 
 	t = e;
-	format_track_snprintf(buf, bufsize, playlist_format, t);
+	format_track_snprintf(buf, bufsize, playlist_format,
+	    playlist_altformat, t);
 }
 
 struct track *
@@ -223,6 +225,7 @@ playlist_print(void)
 	    MSECS(playlist_duration));
 	option_lock();
 	playlist_format = option_get_format("playlist-format");
+	playlist_altformat = option_get_format("playlist-format-alt");
 	menu_print(playlist_menu);
 	option_unlock();
 	XPTHREAD_MUTEX_UNLOCK(&playlist_menu_mtx);

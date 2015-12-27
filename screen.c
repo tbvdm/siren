@@ -448,7 +448,8 @@ screen_player_status_printf(const struct format *fmt,
 }
 
 void
-screen_player_track_printf(const struct format *fmt, const struct track *track)
+screen_player_track_printf(const struct format *fmt,
+    const struct format *altfmt, const struct track *track)
 {
 	int col, row;
 
@@ -456,7 +457,8 @@ screen_player_track_printf(const struct format *fmt, const struct track *track)
 	if (track == NULL)
 		screen_row[0] = '\0';
 	else
-		format_track_snprintf(screen_row, screen_rowsize, fmt, track);
+		format_track_snprintf(screen_row, screen_rowsize, fmt, altfmt,
+		    track);
 
 	getyx(stdscr, row, col);
 	if (move(screen_player_row, 0) == OK) {

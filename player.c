@@ -645,12 +645,13 @@ player_print_status(void)
 static void
 player_print_track(void)
 {
-	struct format *format;
+	struct format *altfmt, *fmt;
 
 	option_lock();
 	track_lock_metadata();
-	format = option_get_format("player-track-format");
-	screen_player_track_printf(format, player_track);
+	fmt = option_get_format("player-track-format");
+	altfmt = option_get_format("player-track-format-alt");
+	screen_player_track_printf(fmt, altfmt, player_track);
 	track_unlock_metadata();
 	option_unlock();
 }

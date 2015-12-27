@@ -830,6 +830,17 @@ The following variables are available.
 .It tracknumber Ta n Ta Track number
 .It tracktotal Ta N Ta Total number of tracks
 .El
+.It Cm library-format-alt Pq format string
+The alternative format used to display tracks in the library that have a
+missing or empty
+.Em title
+metadata field.
+See the
+.Cm library-format
+option for a list of available variables.
+If this option is empty, the
+.Cm library-format
+option is used.
 .It Cm output-plugin Pq string
 The name of the output plug-in to use.
 If the special name
@@ -909,11 +920,33 @@ The format used to display the currently playing track.
 See the
 .Cm library-format
 option for a list of available variables.
+.It Cm player-track-format-alt Pq format string
+The alternative format used to display the currently playing track if it has a
+missing or empty
+.Em title
+metadata field.
+See the
+.Cm library-format
+option for a list of available variables.
+If this option is empty, the
+.Cm player-track-format
+option is used.
 .It Cm playlist-format Pq format string
 The format used to display tracks in the playlist view.
 See the
 .Cm library-format
 option for a list of available variables.
+.It Cm playlist-format-alt Pq format string
+The alternative format used to display tracks in the playlist that have a
+missing or empty
+.Em title
+metadata field.
+See the
+.Cm library-format
+option for a list of available variables.
+If this option is empty, the
+.Cm playlist-format
+option is used.
 .It Cm prompt-attr Pq attribute
 Character attributes for the prompt.
 .It Cm prompt-bg Pq colour
@@ -925,6 +958,17 @@ The format used to display tracks in the queue.
 See the
 .Cm library-format
 option for a list of available variables.
+.It Cm queue-format-alt Pq format string
+The alternative format used to display tracks in the queue that have a
+missing or empty
+.Em title
+metadata field.
+See the
+.Cm library-format
+option for a list of available variables.
+If this option is empty, the
+.Cm queue-format
+option is used.
 .It Cm repeat-all Pq Boolean
 Whether to repeat playback of all tracks in the playback source.
 .It Cm repeat-track Pq Boolean

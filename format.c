@@ -411,8 +411,8 @@ format_to_string(const struct format *f)
 }
 
 void
-format_track_snprintf(char *buf, size_t bufsize, const struct format *f,
-    const struct track *t)
+format_track_snprintf(char *buf, size_t bufsize, const struct format *fmt,
+    const struct format *altfmt, const struct track *t)
 {
 	struct format_variable vars[14];
 
@@ -473,7 +473,11 @@ format_track_snprintf(char *buf, size_t bufsize, const struct format *f,
 	vars[13].type = FORMAT_VARIABLE_STRING;
 	vars[13].value.string = t->tracktotal ? t->tracktotal : "";
 
-	format_snprintf(buf, bufsize, f, vars, NELEMENTS(vars));
+	if ((t->title == NULL || t->title[0] == '\0') && altfmt->formatstr[0]
+	    != '\0')
+		format_snprintf(buf, bufsize, altfmt, vars, NELEMENTS(vars));
+	else
+		format_snprintf(buf, bufsize, fmt, vars, NELEMENTS(vars));
 }
 
 static size_t
