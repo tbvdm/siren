@@ -111,6 +111,7 @@ COMMAND_EXEC_PROTOTYPE(play_prev);
 COMMAND_EXEC_PROTOTYPE(quit);
 COMMAND_EXEC_PROTOTYPE(refresh_directory);
 COMMAND_EXEC_PROTOTYPE(refresh_screen);
+COMMAND_EXEC_PROTOTYPE(reopen_output_plugin);
 COMMAND_EXEC_PROTOTYPE(save_library);
 COMMAND_EXEC_PROTOTYPE(save_metadata);
 COMMAND_PARSE_PROTOTYPE(scroll);
@@ -247,6 +248,12 @@ static struct command command_list[] = {
 		"reread-directory",
 		command_generic_parse,
 		command_refresh_directory_exec,
+		NULL
+	},
+	{
+		"reopen-output-plugin",
+		command_generic_parse,
+		command_reopen_output_plugin_exec,
 		NULL
 	},
 	{
@@ -839,6 +846,12 @@ static void
 command_refresh_screen_exec(UNUSED void *datap)
 {
 	screen_refresh();
+}
+
+static void
+command_reopen_output_plugin_exec(UNUSED void *datap)
+{
+	player_reopen_op();
 }
 
 static void
