@@ -108,7 +108,7 @@ dir_open(const char *dir)
 	 *
 	 * We use dirfd() and fpathconf() instead of pathconf() to avoid a race
 	 * condition. See
-	 * <http://womble.decadentplace.org.uk/readdir_r-advisory.html>.
+	 * <https://womble.decadent.org.uk/readdir_r-advisory.html>.
 	 */
 #ifdef NAME_MAX
 	direntsize = offsetof(struct dirent, d_name) + NAME_MAX + 1;
