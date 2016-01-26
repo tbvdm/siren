@@ -499,7 +499,6 @@ if check_plugin_pkgconfig ao op ao; then
 fi
 
 if [ "$enable_oss" != no ]; then
-	# Check for <soundcard.h> first, then for <sys/soundcard.h>.
 	if ! check_header soundcard.h; then
 		if check_header sys/soundcard.h; then
 			header_define HAVE_SYS_SOUNDCARD_H
