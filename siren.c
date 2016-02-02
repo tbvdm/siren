@@ -20,6 +20,10 @@
 
 #include "siren.h"
 
+#if defined(HAVE_PLEDGE) && defined(HAVE_ERR)
+#include <err.h>
+#endif
+
 #if defined(DEBUG) && defined(__OpenBSD__)
 extern const char	*malloc_options;
 #endif
@@ -49,6 +53,12 @@ main(int argc, char **argv)
 {
 	int	 c, lflag;
 	char	*confdir;
+
+#ifdef HAVE_PLEDGE
+	if (pledge("stdio rpath wpath cpath getpw tty unix dns prot_exec "
+	    "audio", NULL) == -1)
+		err(1, "pledge");
+#endif
 
 #if defined(DEBUG) && defined(__OpenBSD__)
 	malloc_options = "AFGJPRS";

@@ -386,6 +386,10 @@ else
 	makefile_append SRCS compat/fgetln.c
 fi
 
+if check_function pledge 'pledge("", NULL)' unistd.h; then
+	header_define HAVE_PLEDGE
+fi
+
 if check_function reallocarray "reallocarray(NULL, 0, 0)" stdlib.h; then
 	header_define HAVE_REALLOCARRAY
 else
