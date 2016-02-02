@@ -42,9 +42,8 @@ void
 input_init(void)
 {
 	struct sigaction	sa;
-#if defined(VDSUSP) && defined(_PC_VDISABLE)
+#ifdef VDSUSP
 	struct termios		tio;
-	long int		vdisable;
 #endif
 
 	sa.sa_handler = input_handle_signal;
@@ -62,25 +61,20 @@ input_init(void)
 		LOG_ERR("sigaction");
 #endif
 
-#if defined(VDSUSP) && defined(_PC_VDISABLE)
+#ifdef VDSUSP
 	/*
 	 * Check if the DSUSP special character is set to ^Y. If it is, disable
 	 * it so that ^Y becomes an ordinary character that can be bound to a
 	 * command.
 	 */
-	if ((vdisable = xfpathconf(STDIN_FILENO, _PC_VDISABLE)) == -1)
-		return;
-
-	if (tcgetattr(STDIN_FILENO, &tio) == -1) {
+	if (tcgetattr(STDIN_FILENO, &tio) == -1)
 		LOG_ERR("tcgetattr");
-		return;
-	}
-
-	if (tio.c_cc[VDSUSP] == K_CTRL('Y')) {
-		tio.c_cc[VDSUSP] = vdisable;
-		if (tcsetattr(STDIN_FILENO, TCSANOW, &tio) == -1)
-			LOG_ERR("tcsetattr");
-	}
+	else
+		if (tio.c_cc[VDSUSP] == K_CTRL('Y')) {
+			tio.c_cc[VDSUSP] = _POSIX_VDISABLE;
+			if (tcsetattr(STDIN_FILENO, TCSANOW, &tio) == -1)
+				LOG_ERR("tcsetattr");
+		}
 #endif
 }
 
