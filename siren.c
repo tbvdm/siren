@@ -63,7 +63,7 @@ main(int argc, char **argv)
 #endif
 
 #ifdef HAVE_PLEDGE
-	if (pledge("stdio rpath wpath cpath unix dns getpw tty prot_exec "
+	if (pledge("stdio rpath wpath cpath inet unix dns getpw tty prot_exec "
 	    "audio", NULL) == -1)
 		err(1, "pledge");
 #endif
