@@ -54,18 +54,18 @@ main(int argc, char **argv)
 	int	 c, lflag;
 	char	*confdir;
 
-#ifdef HAVE_PLEDGE
-	if (pledge("stdio rpath wpath cpath getpw tty unix dns prot_exec "
-	    "audio", NULL) == -1)
-		err(1, "pledge");
-#endif
-
 #if defined(DEBUG) && defined(__OpenBSD__)
 	malloc_options = "AFGJPRS";
 #endif
 
 #ifndef HAVE___PROGNAME
 	__progname = argv[0];
+#endif
+
+#ifdef HAVE_PLEDGE
+	if (pledge("stdio rpath wpath cpath unix dns getpw tty prot_exec "
+	    "audio", NULL) == -1)
+		err(1, "pledge");
 #endif
 
 	confdir = NULL;
