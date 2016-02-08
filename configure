@@ -386,6 +386,10 @@ else
 	makefile_append SRCS compat/fgetln.c
 fi
 
+if ! check_function initscr "initscr()" curses.h "" -lcurses; then
+	error "cannot determine how to use initscr()"
+fi
+
 if check_function pledge 'pledge("", NULL)' unistd.h; then
 	header_define HAVE_PLEDGE
 fi
