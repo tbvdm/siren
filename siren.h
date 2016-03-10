@@ -360,6 +360,7 @@ void		 browser_activate_entry(void);
 void		 browser_change_dir(const char *);
 void		 browser_copy_entry(enum view_id);
 void		 browser_end(void);
+const char	*browser_get_dir(void);
 struct track	*browser_get_next_track(void);
 struct track	*browser_get_prev_track(void);
 void		 browser_init(void);

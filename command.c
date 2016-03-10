@@ -108,6 +108,7 @@ COMMAND_EXEC_PROTOTYPE(pause);
 COMMAND_EXEC_PROTOTYPE(play);
 COMMAND_EXEC_PROTOTYPE(play_next);
 COMMAND_EXEC_PROTOTYPE(play_prev);
+COMMAND_EXEC_PROTOTYPE(pwd);
 COMMAND_EXEC_PROTOTYPE(quit);
 COMMAND_EXEC_PROTOTYPE(refresh_directory);
 COMMAND_EXEC_PROTOTYPE(refresh_screen);
@@ -231,6 +232,12 @@ static struct command command_list[] = {
 		command_generic_parse,
 		command_play_prev_exec,
 		NULL
+	},
+	{
+		"pwd",
+		command_generic_parse,
+		command_pwd_exec,
+		NULL,
 	},
 	{
 		"quit",
@@ -820,6 +827,13 @@ command_process(const char *line, char **error)
 		command_free_data(cmd, cmd_data);
 	}
 	return 0;
+}
+
+static
+void
+command_pwd_exec(UNUSED void *datap)
+{
+	msg_info("%s", browser_get_dir());
 }
 
 static void

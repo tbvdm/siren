@@ -161,6 +161,12 @@ browser_end(void)
 	free(browser_dir);
 }
 
+const char *
+browser_get_dir(void)
+{
+	return browser_dir;
+}
+
 static void
 browser_free_entry(void *e)
 {
