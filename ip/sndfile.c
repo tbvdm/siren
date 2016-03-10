@@ -73,6 +73,7 @@ const struct ip		 ip = {
 	ip_sndfile_close,
 	ip_sndfile_get_metadata,
 	ip_sndfile_get_position,
+	NULL,
 	ip_sndfile_open,
 	ip_sndfile_read,
 	ip_sndfile_seek

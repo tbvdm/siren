@@ -39,6 +39,7 @@ const struct ip		 ip = {
 	ip_opus_close,
 	ip_opus_get_metadata,
 	ip_opus_get_position,
+	NULL,
 	ip_opus_open,
 	ip_opus_read,
 	ip_opus_seek

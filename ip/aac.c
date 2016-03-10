@@ -62,6 +62,7 @@ const struct ip		 ip = {
 	ip_aac_close,
 	ip_aac_get_metadata,
 	ip_aac_get_position,
+	NULL,
 	ip_aac_open,
 	ip_aac_read,
 	ip_aac_seek

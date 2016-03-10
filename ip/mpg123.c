@@ -250,6 +250,7 @@ const struct ip	 ip = {
 	ip_mpg123_close,
 	ip_mpg123_get_metadata,
 	ip_mpg123_get_position,
+	NULL,
 	ip_mpg123_open,
 	ip_mpg123_read,
 	ip_mpg123_seek

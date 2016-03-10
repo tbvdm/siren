@@ -319,6 +319,7 @@ struct ip {
 	void		  (*get_metadata)(struct track *) NONNULL();
 	int		  (*get_position)(struct track *, unsigned int *)
 			    NONNULL();
+	int		  (*init)(void);
 	int		  (*open)(struct track *) NONNULL();
 	int		  (*read)(struct track *, struct sample_buffer *)
 			    NONNULL();

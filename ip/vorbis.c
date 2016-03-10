@@ -45,6 +45,7 @@ const struct ip		 ip = {
 	ip_vorbis_close,
 	ip_vorbis_get_metadata,
 	ip_vorbis_get_position,
+	NULL,
 	ip_vorbis_open,
 	ip_vorbis_read,
 	ip_vorbis_seek

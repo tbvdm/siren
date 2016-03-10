@@ -71,6 +71,7 @@ const struct ip		 ip = {
 	ip_mad_close,
 	ip_mad_get_metadata,
 	ip_mad_get_position,
+	NULL,
 	ip_mad_open,
 	ip_mad_read,
 	ip_mad_seek

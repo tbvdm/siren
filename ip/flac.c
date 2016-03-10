@@ -65,6 +65,7 @@ const struct ip		 ip = {
 	ip_flac_close,
 	ip_flac_get_metadata,
 	ip_flac_get_position,
+	NULL,
 	ip_flac_open,
 	ip_flac_read,
 	ip_flac_seek

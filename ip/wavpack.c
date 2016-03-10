@@ -58,6 +58,7 @@ const struct ip		 ip = {
 	ip_wavpack_close,
 	ip_wavpack_get_metadata,
 	ip_wavpack_get_position,
+	NULL,
 	ip_wavpack_open,
 	ip_wavpack_read,
 	ip_wavpack_seek

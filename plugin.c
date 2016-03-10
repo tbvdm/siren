@@ -55,8 +55,12 @@ plugin_add_ip(void *handle, void *ip)
 	ipe = xmalloc(sizeof *ipe);
 	ipe->handle = handle;
 	ipe->ip = ip;
-	SLIST_INSERT_HEAD(&plugin_ip_list, ipe, entries);
 	LOG_INFO("loaded %s", ipe->ip->name);
+
+	if (ipe->ip->init != NULL && ipe->ip->init() != 0)
+		return;
+
+	SLIST_INSERT_HEAD(&plugin_ip_list, ipe, entries);
 }
 
 static void
