@@ -25,7 +25,7 @@
 static void	 op_portaudio_close(void);
 static size_t	 op_portaudio_get_buffer_size(void);
 static int	 op_portaudio_get_volume_support(void);
-static void	 op_portaudio_init(void);
+static int	 op_portaudio_init(void);
 static int	 op_portaudio_open(void);
 static int	 op_portaudio_start(struct sample_format *);
 static int	 op_portaudio_stop(void);
@@ -74,11 +74,12 @@ op_portaudio_get_volume_support(void)
 	return 0;
 }
 
-static void
+static int
 op_portaudio_init(void)
 {
 	option_add_number("portaudio-buffer-size", OP_PORTAUDIO_BUFSIZE, 1,
 	    INT_MAX, player_reopen_op);
+	return 0;
 }
 
 static int

@@ -71,11 +71,12 @@ plugin_add_op(void *handle, void *op)
 	ope = xmalloc(sizeof *ope);
 	ope->handle = handle;
 	ope->op = op;
-	SLIST_INSERT_HEAD(&plugin_op_list, ope, entries);
 	LOG_INFO("loaded %s", ope->op->name);
 
-	if (ope->op->init != NULL)
-		ope->op->init();
+	if (ope->op->init != NULL && ope->op->init() != 0)
+		return;
+
+	SLIST_INSERT_HEAD(&plugin_op_list, ope, entries);
 }
 
 void

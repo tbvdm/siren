@@ -27,7 +27,7 @@
 static void		 op_ao_close(void);
 static size_t		 op_ao_get_buffer_size(void);
 static int		 op_ao_get_volume_support(void);
-static void		 op_ao_init(void);
+static int		 op_ao_init(void);
 static int		 op_ao_open(void);
 static int		 op_ao_start(struct sample_format *);
 static int		 op_ao_stop(void);
@@ -72,13 +72,14 @@ op_ao_get_volume_support(void)
 	return 0;
 }
 
-static void
+static int
 op_ao_init(void)
 {
 	option_add_number("ao-buffer-size", OP_AO_BUFSIZE, 1, INT_MAX,
 	    player_reopen_op);
 	option_add_string("ao-driver", "", player_reopen_op);
 	option_add_string("ao-file", "", player_reopen_op);
+	return 0;
 }
 
 static int

@@ -334,7 +334,7 @@ struct op {
 	size_t		 (*get_buffer_size)(void);
 	int		 (*get_volume)(void);
 	int		 (*get_volume_support)(void);
-	void		 (*init)(void);
+	int		 (*init)(void);
 	int		 (*open)(void);
 	void		 (*set_volume)(unsigned int);
 	int		 (*start)(struct sample_format *) NONNULL();

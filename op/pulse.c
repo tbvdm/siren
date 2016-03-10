@@ -26,7 +26,7 @@
 static void		 op_pulse_close(void);
 static size_t		 op_pulse_get_buffer_size(void);
 static int		 op_pulse_get_volume_support(void);
-static void		 op_pulse_init(void);
+static int		 op_pulse_init(void);
 static int		 op_pulse_open(void);
 static int		 op_pulse_start(struct sample_format *);
 static int		 op_pulse_stop(void);
@@ -67,11 +67,12 @@ op_pulse_get_volume_support(void)
 	return 0;
 }
 
-static void
+static int
 op_pulse_init(void)
 {
 	option_add_number("pulse-buffer-size", OP_PULSE_BUFSIZE, 1, INT_MAX,
 	    player_reopen_op);
+	return 0;
 }
 
 static int

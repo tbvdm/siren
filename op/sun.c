@@ -45,7 +45,7 @@ static void		 op_sun_close(void);
 static size_t		 op_sun_get_buffer_size(void);
 static int		 op_sun_get_volume(void);
 static int		 op_sun_get_volume_support(void);
-static void		 op_sun_init(void);
+static int		 op_sun_init(void);
 static int		 op_sun_open(void);
 static void		 op_sun_set_volume(unsigned int);
 static int		 op_sun_start(struct sample_format *);
@@ -108,10 +108,11 @@ op_sun_get_volume_support(void)
 	return 1;
 }
 
-static void
+static int
 op_sun_init(void)
 {
 	option_add_string("sun-device", OP_SUN_DEVICE, player_reopen_op);
+	return 0;
 }
 
 static int

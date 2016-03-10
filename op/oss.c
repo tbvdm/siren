@@ -39,7 +39,7 @@
 static void		 op_oss_close(void);
 static size_t		 op_oss_get_buffer_size(void);
 static int		 op_oss_get_volume_support(void);
-static void		 op_oss_init(void);
+static int		 op_oss_init(void);
 static int		 op_oss_open(void);
 static int		 op_oss_start(struct sample_format *);
 static int		 op_oss_stop(void);
@@ -128,10 +128,11 @@ op_oss_get_volume_support(void)
 #endif
 }
 
-static void
+static int
 op_oss_init(void)
 {
 	option_add_string("oss-device", OP_OSS_DEVICE, player_reopen_op);
+	return 0;
 }
 
 static int

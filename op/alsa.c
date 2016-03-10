@@ -30,7 +30,7 @@ static void		 op_alsa_close(void);
 static size_t		 op_alsa_get_buffer_size(void);
 static int		 op_alsa_get_volume(void);
 static int		 op_alsa_get_volume_support(void);
-static void		 op_alsa_init(void);
+static int		 op_alsa_init(void);
 static int		 op_alsa_open(void);
 static void		 op_alsa_set_volume(unsigned int);
 static int		 op_alsa_start(struct sample_format *);
@@ -134,7 +134,7 @@ op_alsa_handle_error(const char *file, int line, const char *func, int errnum,
 	free(msg);
 }
 
-static void
+static int
 op_alsa_init(void)
 {
 	option_add_string("alsa-mixer-device", OP_ALSA_MIXER_DEVICE,
@@ -143,13 +143,8 @@ op_alsa_init(void)
 	    player_reopen_op);
 	option_add_string("alsa-pcm-device", OP_ALSA_PCM_DEVICE,
 	    player_reopen_op);
-
-	/*
-	 * The default ALSA error handler prints error messages to stderr,
-	 * which clutters the screen. To prevent this, install an error handler
-	 * that writes these error messages to the log file.
-	 */
 	snd_lib_error_set_handler(op_alsa_handle_error);
+	return 0;
 }
 
 static int

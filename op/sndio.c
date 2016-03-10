@@ -27,7 +27,7 @@ static void		 op_sndio_close(void);
 static size_t		 op_sndio_get_buffer_size(void);
 static int		 op_sndio_get_volume(void);
 static int		 op_sndio_get_volume_support(void);
-static void		 op_sndio_init(void);
+static int		 op_sndio_init(void);
 static int		 op_sndio_open(void);
 static void		 op_sndio_set_volume(unsigned int);
 static int		 op_sndio_start(struct sample_format *);
@@ -85,10 +85,11 @@ op_sndio_get_volume_support(void)
 	return op_sndio_volume_support;
 }
 
-static void
+static int
 op_sndio_init(void)
 {
 	option_add_string("sndio-device", SIO_DEVANY, player_reopen_op);
+	return 0;
 }
 
 static int
