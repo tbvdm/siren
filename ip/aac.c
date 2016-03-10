@@ -50,6 +50,7 @@ struct ip_aac_ipdata {
 static void		 ip_aac_close(struct track *);
 static void		 ip_aac_get_metadata(struct track *);
 static int		 ip_aac_get_position(struct track *, unsigned int *);
+static int		 ip_aac_init(void);
 static int		 ip_aac_open(struct track *);
 static int		 ip_aac_read(struct track *, struct sample_buffer *);
 static void		 ip_aac_seek(struct track *, unsigned int);
@@ -62,7 +63,7 @@ const struct ip		 ip = {
 	ip_aac_close,
 	ip_aac_get_metadata,
 	ip_aac_get_position,
-	NULL,
+	ip_aac_init,
 	ip_aac_open,
 	ip_aac_read,
 	ip_aac_seek
@@ -109,10 +110,8 @@ static int
 ip_aac_open_file(const char *path, MP4FileHandle *hdl, MP4TrackId *trk)
 {
 #ifdef IP_AAC_OLD_MP4V2_API
-	MP4SetLibFunc(ip_aac_log);
 	*hdl = MP4Read(path, MP4_DETAILS_ERROR);
 #else
-	MP4SetLogCallback(ip_aac_log);
 	*hdl = MP4Read(path);
 #endif
 
@@ -252,6 +251,17 @@ ip_aac_get_position(struct track *t, unsigned int *pos)
 	ipd = t->ipdata;
 	*pos = MP4ConvertFromTrackDuration(ipd->hdl, ipd->track, ipd->pos,
 	    MP4_SECS_TIME_SCALE);
+	return 0;
+}
+
+static int
+ip_aac_init(void)
+{
+#ifdef IP_AAC_OLD_MP4V2_API
+	MP4SetLibFunc(ip_aac_log);
+#else
+	MP4SetLogCallback(ip_aac_log);
+#endif
 	return 0;
 }
 

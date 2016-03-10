@@ -32,6 +32,7 @@ static void	 ip_mpg123_close(struct track *);
 static void	 ip_mpg123_close_fd_handle(int fd, mpg123_handle *);
 static int	 ip_mpg123_get_position(struct track *, unsigned int *);
 static void	 ip_mpg123_get_metadata(struct track *);
+static int	 ip_mpg123_init(void);
 static int	 ip_mpg123_open(struct track *);
 static int	 ip_mpg123_open_fd_handle(const char *, int *fd,
 		    mpg123_handle **);
@@ -250,7 +251,7 @@ const struct ip	 ip = {
 	ip_mpg123_close,
 	ip_mpg123_get_metadata,
 	ip_mpg123_get_position,
-	NULL,
+	ip_mpg123_init,
 	ip_mpg123_open,
 	ip_mpg123_read,
 	ip_mpg123_seek
@@ -399,6 +400,23 @@ ip_mpg123_get_position(struct track *t, unsigned int *pos)
 }
 
 static int
+ip_mpg123_init(void)
+{
+	int ret;
+
+	ret = mpg123_init();
+	if (ret == MPG123_OK)
+		return 0;
+	else {
+		LOG_ERRX("mpg123_init: %s", mpg123_plain_strerror(ret));
+		msg_errx("Cannot initialise libmpg123: %s",
+		    mpg123_plain_strerror(ret));
+		return -1;
+	}
+
+}
+
+static int
 ip_mpg123_open(struct track *t)
 {
 	struct ip_mpg123_ipdata	*ipd;
@@ -458,20 +476,7 @@ error:
 static int
 ip_mpg123_open_fd_handle(const char *path, int *fd, mpg123_handle **hdl)
 {
-	int		err;
-	static int	inited;
-
-	if (!inited) {
-		err = mpg123_init();
-		if (err != MPG123_OK) {
-			LOG_ERRX("mpg123_init: %s",
-			    mpg123_plain_strerror(err));
-			msg_errx("Cannot initialise libmpg123: %s",
-			    mpg123_plain_strerror(err));
-			return -1;
-		}
-		inited = 1;
-	}
+	int err;
 
 	*fd = open(path, O_RDONLY);
 	if (*fd == -1) {
