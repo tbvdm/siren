@@ -32,6 +32,13 @@ aac=yes|no (yes)
 	libraries. For more information, see <http://www.audiocoding.com/> and
 	<https://code.google.com/p/mp4v2/>.
 
+ffmpeg=yes|no (yes)
+	Wether to build the ffmpeg input plug-in. This plug-in serves as a
+	fallback: it will be used to play back a file only if none of the other
+	input plug-ins support that file. The ffmpeg plug-in requires the
+	libavformat library. For more information, see
+	<https://www.ffmpeg.org/>.
+
 flac=yes|no (yes)
 	Whether to build the flac input plug-in. This plug-in provides support
 	for the FLAC audio format. It requires the libFLAC library. For more

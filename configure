@@ -223,6 +223,7 @@ plugindir_suffix=lib/siren
 
 enable_debug=no
 enable_aac=yes
+enable_ffmpeg=yes
 enable_flac=yes
 enable_mad=yes
 enable_mpg123=no
@@ -472,6 +473,8 @@ if [ "$enable_aac" != no ] && check_header neaacdec.h && check_library faad &&
 	makefile_assign LDFLAGS_aac "-lfaad -lmp4v2"
 	enabled_ips="$enabled_ips aac"
 fi
+
+check_plugin_pkgconfig ffmpeg ip libavformat
 
 if check_plugin_pkgconfig flac ip flac; then
 	# The include path provided by the flac pkg-config file has changed in

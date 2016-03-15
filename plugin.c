@@ -46,6 +46,7 @@ static SLIST_HEAD(, plugin_ip_entry) plugin_ip_list =
     SLIST_HEAD_INITIALIZER(plugin_ip_list);
 static SLIST_HEAD(, plugin_op_entry) plugin_op_list =
     SLIST_HEAD_INITIALIZER(plugin_op_list);
+static const struct ip *plugin_fallback_ip;
 
 static void
 plugin_add_ip(void *handle, void *ip)
@@ -61,6 +62,9 @@ plugin_add_ip(void *handle, void *ip)
 		return;
 
 	SLIST_INSERT_HEAD(&plugin_ip_list, ipe, entries);
+
+	if (!strcmp(ipe->ip->name, "ffmpeg"))
+		plugin_fallback_ip = ipe->ip;
 }
 
 static void
@@ -116,7 +120,7 @@ plugin_find_ip(const char *file)
 			if (!strcasecmp(ext, ipe->ip->extensions[i]))
 				return ipe->ip;
 
-	return NULL;
+	return plugin_fallback_ip;
 }
 
 /*
