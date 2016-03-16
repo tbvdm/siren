@@ -27,10 +27,16 @@
 #define IP_FFMPEG_EOF	0
 #define IP_FFMPEG_OK	1
 
+/* Libav does not have av_err2str() */
+#ifdef av_err2str
 #define IP_FFMPEG_LOG(str) \
     LOG_ERRX("%s: %s: %s", t->path, str, av_err2str(ret))
 #define IP_FFMPEG_MSG(str) \
     msg_errx("%s: %s: %s", t->path, str, av_err2str(ret))
+#else
+#define IP_FFMPEG_LOG(str) LOG_ERRX("%s: %s", t->path, str)
+#define IP_FFMPEG_MSG(str) msg_errx("%s: %s", t->path, str)
+#endif
 
 struct ip_ffmpeg_ipdata {
 	AVFormatContext	*fmtctx;
