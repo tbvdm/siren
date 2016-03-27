@@ -48,7 +48,7 @@ mad=yes|no (yes)
 	requires the libmad and libid3tag libraries. For more information, see
 	<http://www.underbit.com/products/mad/>.
 
-mpg123=yes|no (no)
+mpg123=yes|no (yes)
 	Whether to build the mpg123 input plug-in. This plug-in is an
 	alternative to the mad input plug-in. It requires the libmpg123
 	library. For more information, see <http://www.mpg123.org/>.
