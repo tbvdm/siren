@@ -59,6 +59,7 @@ static const char	*ip_aac_extensions[] = { "aac", "m4a", "mp4", NULL };
 
 const struct ip		 ip = {
 	"aac",
+	IP_PRIORITY_AAC,
 	ip_aac_extensions,
 	ip_aac_close,
 	ip_aac_get_metadata,

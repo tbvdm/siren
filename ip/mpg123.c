@@ -247,6 +247,7 @@ static const char *ip_mpg123_genres[] = {
 
 const struct ip	 ip = {
 	"mpg123",
+	IP_PRIORITY_MPG123,
 	ip_mpg123_extensions,
 	ip_mpg123_close,
 	ip_mpg123_get_metadata,

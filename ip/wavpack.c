@@ -54,6 +54,7 @@ static const char	*ip_wavpack_extensions[] = { "wv", NULL };
 
 const struct ip		 ip = {
 	"wavpack",
+	IP_PRIORITY_WAVPACK,
 	ip_wavpack_extensions,
 	ip_wavpack_close,
 	ip_wavpack_get_metadata,

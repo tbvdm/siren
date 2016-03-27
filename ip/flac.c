@@ -61,6 +61,7 @@ static const char	*ip_flac_extensions[] = { "flac", NULL };
 
 const struct ip		 ip = {
 	"flac",
+	IP_PRIORITY_FLAC,
 	ip_flac_extensions,
 	ip_flac_close,
 	ip_flac_get_metadata,

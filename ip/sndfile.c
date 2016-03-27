@@ -69,6 +69,7 @@ static const char	*ip_sndfile_extensions[] = {
 
 const struct ip		 ip = {
 	"sndfile",
+	IP_PRIORITY_SNDFILE,
 	ip_sndfile_extensions,
 	ip_sndfile_close,
 	ip_sndfile_get_metadata,

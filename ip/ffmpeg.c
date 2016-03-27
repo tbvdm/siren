@@ -78,6 +78,7 @@ static const char	*ip_ffmpeg_extensions[] = {
 
 const struct ip		 ip = {
 	"ffmpeg",
+	IP_PRIORITY_FFMPEG,
 	ip_ffmpeg_extensions,
 	ip_ffmpeg_close,
 	ip_ffmpeg_get_metadata,

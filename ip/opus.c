@@ -35,6 +35,7 @@ static const char	*ip_opus_extensions[] = { "opus", NULL };
 
 const struct ip		 ip = {
 	"opus",
+	IP_PRIORITY_OPUS,
 	ip_opus_extensions,
 	ip_opus_close,
 	ip_opus_get_metadata,

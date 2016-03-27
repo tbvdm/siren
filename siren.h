@@ -33,6 +33,17 @@
 #define PLUGIN_IP_DIR		PLUGIN_DIR "/ip"
 #define PLUGIN_OP_DIR		PLUGIN_DIR "/op"
 
+/* Priority of input plug-ins. */
+#define IP_PRIORITY_FLAC	0
+#define IP_PRIORITY_MAD		0
+#define IP_PRIORITY_OPUS	0
+#define IP_PRIORITY_SNDFILE	0
+#define IP_PRIORITY_VORBIS	0
+#define IP_PRIORITY_WAVPACK	0
+#define IP_PRIORITY_MPG123	1
+#define IP_PRIORITY_FFMPEG	2
+#define IP_PRIORITY_AAC		3
+
 /* Priority of output plug-ins. */
 #define OP_PRIORITY_SNDIO	0
 #define OP_PRIORITY_PULSE	1
@@ -314,6 +325,7 @@ struct track {
 /* Input plug-in. */
 struct ip {
 	const char	 *name;
+	const int	  priority;
 	const char	**extensions;
 	void		  (*close)(struct track *) NONNULL();
 	void		  (*get_metadata)(struct track *) NONNULL();

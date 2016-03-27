@@ -41,6 +41,7 @@ static const char	*ip_vorbis_extensions[] = { "oga", "ogg", NULL };
 
 const struct ip		 ip = {
 	"vorbis",
+	IP_PRIORITY_VORBIS,
 	ip_vorbis_extensions,
 	ip_vorbis_close,
 	ip_vorbis_get_metadata,

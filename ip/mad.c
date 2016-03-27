@@ -67,6 +67,7 @@ static const char	*ip_mad_extensions[] = { "mp1", "mp2", "mp3", NULL };
 
 const struct ip		 ip = {
 	"mad",
+	IP_PRIORITY_MAD,
 	ip_mad_extensions,
 	ip_mad_close,
 	ip_mad_get_metadata,
