@@ -61,7 +61,20 @@ static int		 ip_ffmpeg_read(struct track *,
 			    struct sample_buffer *);
 static void		 ip_ffmpeg_seek(struct track *, unsigned int);
 
-static const char	*ip_ffmpeg_extensions[] = { NULL };
+static const char	*ip_ffmpeg_extensions[] = {
+	"aa",				/* Audible */
+	"ape",				/* Monkey's Audio */
+	"asf", "wma", "wmv",		/* Windows Media Audio */
+	"avi",
+	"flv",				/* Flash Video */
+	"mka", "mkv",			/* Matroska */
+	"mp+", "mpc", "mpp",		/* Musepack */
+	"mpeg", "mpg",
+	"ra", "ram", "rm", "rv",	/* RealAudio */
+	"shn",				/* Shorten */
+	"tta",				/* True Audio */
+	"webm"
+};
 
 const struct ip		 ip = {
 	"ffmpeg",
