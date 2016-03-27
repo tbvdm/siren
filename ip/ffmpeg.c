@@ -62,18 +62,39 @@ static int		 ip_ffmpeg_read(struct track *,
 static void		 ip_ffmpeg_seek(struct track *, unsigned int);
 
 static const char	*ip_ffmpeg_extensions[] = {
+	"8svx", "iff", "svx",		/* Commodore Amiga IFF/8SVX */
 	"aa",				/* Audible */
+	"aac",
+	"aif", "aiff",
 	"ape",				/* Monkey's Audio */
 	"asf", "wma", "wmv",		/* Windows Media Audio */
+	"au", "snd",			/* NeXT/Sun audio */
 	"avi",
+	"avr",				/* Audio Visual Research */
+	"caf",				/* Apple Core Audio Format */
+	"flac",
 	"flv",				/* Flash Video */
+	"m4a", "mp4",
 	"mka", "mkv",			/* Matroska */
 	"mp+", "mpc", "mpp",		/* Musepack */
+	"mp1",
+	"mp2",
+	"mp3",
 	"mpeg", "mpg",
+	"nist", "sph",			/* NIST/Sphere WAVE */
+	"oga", "ogg",
+	"opus",
+	"paf",				/* Ensoniq PARIS audio file */
+	"pvf",				/* Portable Voice Format */
 	"ra", "ram", "rm", "rv",	/* RealAudio */
+	"sf",				/* IRCAM SF */
 	"shn",				/* Shorten */
 	"tta",				/* True Audio */
-	"webm"
+	"voc",				/* Create Sound Blaster voice */
+	"w64",				/* Sony Sound Forge Wave64 */
+	"wav", "wave",
+	"webm",
+	"wv"				/* WavPack */
 };
 
 const struct ip		 ip = {
