@@ -49,7 +49,6 @@ const struct op		 op = {
 };
 
 static ao_device	*op_ao_device;
-static int		 op_ao_byte_format;
 static int		 op_ao_driver_id;
 
 static void
@@ -83,8 +82,8 @@ op_ao_init(void)
 static int
 op_ao_open(void)
 {
-	ao_info		*info;
-	char		*driver;
+	ao_info	*info;
+	char	*driver;
 
 	ao_initialize();
 
@@ -113,15 +112,6 @@ op_ao_open(void)
 		return -1;
 	}
 
-	if (info->preferred_byte_format != AO_FMT_NATIVE)
-		op_ao_byte_format = info->preferred_byte_format;
-	else {
-		if (player_get_byte_order() == BYTE_ORDER_BIG)
-			op_ao_byte_format = AO_FMT_BIG;
-		else
-			op_ao_byte_format = AO_FMT_LITTLE;
-	}
-
 	LOG_INFO("using %s driver", info->short_name);
 
 	return 0;
@@ -133,7 +123,7 @@ op_ao_start(struct sample_format *sf)
 	ao_sample_format aosf;
 
 	aosf.bits = sf->nbits;
-	aosf.byte_format = op_ao_byte_format;
+	aosf.byte_format = AO_FMT_NATIVE;
 	aosf.channels = sf->nchannels;
 	aosf.rate = sf->rate;
 #ifdef HAVE_AO_MATRIX
@@ -172,18 +162,7 @@ op_ao_start(struct sample_format *sf)
 		return -1;
 	}
 
-	switch (aosf.byte_format) {
-	case AO_FMT_BIG:
-		sf->byte_order = BYTE_ORDER_BIG;
-		break;
-	case AO_FMT_LITTLE:
-		sf->byte_order = BYTE_ORDER_LITTLE;
-		break;
-	case AO_FMT_NATIVE:
-	default:
-		sf->byte_order = player_get_byte_order();
-		break;
-	}
+	sf->byte_order = player_get_byte_order();
 
 	LOG_INFO("bits=%d, rate=%d, channels=%d, byte_format=%d", aosf.bits,
 	    aosf.rate, aosf.channels, aosf.byte_format);
