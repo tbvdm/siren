@@ -130,8 +130,7 @@ op_ao_open(void)
 static int
 op_ao_start(struct sample_format *sf)
 {
-	ao_sample_format	aosf;
-	int			error;
+	ao_sample_format aosf;
 
 	aosf.bits = sf->nbits;
 	aosf.byte_format = op_ao_byte_format;
@@ -143,27 +142,30 @@ op_ao_start(struct sample_format *sf)
 
 	if ((op_ao_device = ao_open_live(op_ao_driver_id, &aosf, NULL)) ==
 	    NULL) {
-		error = errno;
-		LOG_ERRX("ao_open_live() failed: error %d", error);
-
-		switch (error) {
+		switch (errno) {
 		case AO_ENOTLIVE:
+			LOG_ERRX("ao_open_live: not a live output driver");
 			msg_errx("Driver is not a live output driver");
 			break;
 		case AO_EOPENDEVICE:
+			LOG_ERRX("ao_open_live: cannot open device");
 			msg_errx("Cannot open device");
 			break;
 		case AO_EBADFORMAT:
+			LOG_ERRX("ao_open_live: unsupported sample format");
 			msg_errx("Sample format not supported");
 			break;
 		case AO_EBADOPTION:
+			LOG_ERRX("ao_open_live: invalid option value");
 			msg_errx("An ao option has an invalid value");
 			break;
 		case AO_ENODRIVER:
+			LOG_ERRX("ao_open_live: cannot find driver");
 			msg_errx("Cannot find driver");
 			break;
 		case AO_EFAIL:
 		default:
+			LOG_ERRX("ao_open_live: unknown error");
 			msg_errx("Unknown error");
 			break;
 		}
