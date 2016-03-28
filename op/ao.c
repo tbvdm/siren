@@ -51,7 +51,6 @@ const struct op		 op = {
 static ao_device	*op_ao_device;
 static int		 op_ao_byte_format;
 static int		 op_ao_driver_id;
-static int		 op_ao_driver_type;
 
 static void
 op_ao_close(void)
@@ -78,7 +77,6 @@ op_ao_init(void)
 	option_add_number("ao-buffer-size", OP_AO_BUFSIZE, 1, INT_MAX,
 	    player_reopen_op);
 	option_add_string("ao-driver", "", player_reopen_op);
-	option_add_string("ao-file", "", player_reopen_op);
 	return 0;
 }
 
@@ -115,8 +113,6 @@ op_ao_open(void)
 		return -1;
 	}
 
-	op_ao_driver_type = info->type;
-
 	if (info->preferred_byte_format != AO_FMT_NATIVE)
 		op_ao_byte_format = info->preferred_byte_format;
 	else {
@@ -134,9 +130,8 @@ op_ao_open(void)
 static int
 op_ao_start(struct sample_format *sf)
 {
-	ao_sample_format	 aosf;
-	int			 error;
-	char			*file;
+	ao_sample_format	aosf;
+	int			error;
 
 	aosf.bits = sf->nbits;
 	aosf.byte_format = op_ao_byte_format;
@@ -146,42 +141,18 @@ op_ao_start(struct sample_format *sf)
 	aosf.matrix = NULL;
 #endif
 
-	if (op_ao_driver_type == AO_TYPE_LIVE)
-		op_ao_device = ao_open_live(op_ao_driver_id, &aosf, NULL);
-	else {
-		file = option_get_string("ao-file");
-		op_ao_device = ao_open_file(op_ao_driver_id, file, 0, &aosf,
-		    NULL);
-		free(file);
-	}
-
-	if (op_ao_device == NULL) {
+	if ((op_ao_device = ao_open_live(op_ao_driver_id, &aosf, NULL)) ==
+	    NULL) {
 		error = errno;
-		LOG_ERRX("ao_open_%s() failed: error %d",
-		    op_ao_driver_type == AO_TYPE_LIVE ? "live" : "file",
-		    error);
+		LOG_ERRX("ao_open_live() failed: error %d", error);
 
 		switch (error) {
-		/* Errors specific to live output drivers. */
 		case AO_ENOTLIVE:
 			msg_errx("Driver is not a live output driver");
 			break;
 		case AO_EOPENDEVICE:
 			msg_errx("Cannot open device");
 			break;
-
-		/* Errors specific to file output drivers. */
-		case AO_ENOTFILE:
-			msg_errx("Driver is not a file output driver");
-			break;
-		case AO_EFILEEXISTS:
-			msg_errx("Output file already exists");
-			break;
-		case AO_EOPENFILE:
-			msg_errx("Cannot open output file");
-			break;
-
-		/* Common errors. */
 		case AO_EBADFORMAT:
 			msg_errx("Sample format not supported");
 			break;
