@@ -62,12 +62,6 @@ main(int argc, char **argv)
 	__progname = argv[0];
 #endif
 
-#ifdef HAVE_PLEDGE
-	if (pledge("stdio rpath wpath cpath inet unix dns getpw tty prot_exec "
-	    "audio", NULL) == -1)
-		err(1, "pledge");
-#endif
-
 	confdir = NULL;
 	lflag = 0;
 	while ((c = getopt(argc, argv, "c:lv")) != -1)
@@ -105,6 +99,12 @@ main(int argc, char **argv)
 	browser_init();
 	player_init();
 	prompt_init();
+
+#ifdef HAVE_PLEDGE
+	if (pledge("stdio rpath wpath cpath inet unix dns getpw tty audio",
+	    NULL) == -1)
+		err(1, "pledge");
+#endif
 
 	screen_print();
 	conf_read_file();
