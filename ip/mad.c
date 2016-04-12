@@ -262,10 +262,10 @@ ip_mad_get_id3_frame(const struct id3_tag *tag, const char *id)
 		return NULL;
 
 	/*
-	 * Note that id3_ucs4_latin1duplicate() returns NULL if its call to
+	 * Note that id3_ucs4_utf8duplicate() returns NULL if its call to
 	 * malloc() failed.
 	 */
-	return (char *)id3_ucs4_latin1duplicate(value);
+	return (char *)id3_ucs4_utf8duplicate(value);
 }
 
 static char *
@@ -285,7 +285,7 @@ ip_mad_get_id3_genre(struct id3_tag *tag)
 	if (genre[0] == '\0')
 		return NULL;
 
-	return (char *)id3_ucs4_latin1duplicate(genre);
+	return (char *)id3_ucs4_utf8duplicate(genre);
 }
 
 static void
