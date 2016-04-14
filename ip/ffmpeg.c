@@ -331,11 +331,11 @@ ip_ffmpeg_parse_metadata(struct track *t, AVDictionary *metadata)
 	 * checked to be valid UTF-8 in most cases"
 	 */
 
-	number = NULL;
-	total = NULL;
 	tag = NULL;
 	while ((tag = av_dict_get(metadata, "", tag, AV_DICT_IGNORE_SUFFIX)) !=
 	    NULL) {
+		number = NULL;
+		total = NULL;
 		if (!strcasecmp(tag->key, "album")) {
 			free(t->album);
 			t->album = xstrdup(tag->value);
