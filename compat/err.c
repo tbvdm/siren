@@ -46,7 +46,6 @@ void
 verr(int ret, const char *fmt, va_list ap)
 {
 	vwarn(fmt, ap);
-	va_end(ap);
 	exit(ret);
 }
 
@@ -54,7 +53,6 @@ void
 verrx(int ret, const char *fmt, va_list ap)
 {
 	vwarnx(fmt, ap);
-	va_end(ap);
 	exit(ret);
 }
 
