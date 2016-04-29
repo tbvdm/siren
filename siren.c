@@ -31,7 +31,7 @@ extern const char	*malloc_options;
 #ifdef HAVE___PROGNAME
 extern char		*__progname;
 #else
-char			*__progname;
+const char		*__progname;
 #endif
 
 NORETURN static void
@@ -59,7 +59,10 @@ main(int argc, char **argv)
 #endif
 
 #ifndef HAVE___PROGNAME
-	__progname = argv[0];
+	if (argv[0] != NULL && argv[0][0] != '\0')
+		__progname = argv[0];
+	else
+		__progname = "siren";
 #endif
 
 	confdir = NULL;
