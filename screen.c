@@ -320,7 +320,9 @@ screen_get_ncols(void)
 void
 screen_init(void)
 {
-	initscr();
+	if (initscr() == NULL)
+		LOG_FATALX("cannot initialise screen");
+
 	cbreak();
 	noecho();
 	nonl();
