@@ -53,18 +53,18 @@ struct option_entry {
 	} value;
 	void			 (*callback)(void);
 
-	SPLAY_ENTRY(option_entry) entries;
+	RB_ENTRY(option_entry)	 entries;
 };
 
-SPLAY_HEAD(option_tree, option_entry);
+RB_HEAD(option_tree, option_entry);
 
 static int			 option_cmp_entry(struct option_entry *,
 				    struct option_entry *);
 static void			 option_insert_entry(struct option_entry *);
 
-SPLAY_PROTOTYPE(option_tree, option_entry, entries, option_cmp_entry)
+RB_PROTOTYPE(option_tree, option_entry, entries, option_cmp_entry)
 
-static struct option_tree	option_tree = SPLAY_INITIALIZER(option_tree);
+static struct option_tree	option_tree = RB_INITIALIZER(option_tree);
 static pthread_mutex_t		option_tree_mtx = PTHREAD_MUTEX_INITIALIZER;
 
 static const struct {
@@ -110,7 +110,7 @@ static const struct {
 	{ 1,			"yes" }
 };
 
-SPLAY_GENERATE(option_tree, option_entry, entries, option_cmp_entry)
+RB_GENERATE(option_tree, option_entry, entries, option_cmp_entry)
 
 static void
 option_add_attrib(const char *name, int value, void (*callback)(void))
@@ -260,8 +260,8 @@ option_end(void)
 {
 	struct option_entry *o;
 
-	while ((o = SPLAY_ROOT(&option_tree)) != NULL) {
-		SPLAY_REMOVE(option_tree, &option_tree, o);
+	while ((o = RB_ROOT(&option_tree)) != NULL) {
+		RB_REMOVE(option_tree, &option_tree, o);
 		free(o->name);
 		switch (o->type) {
 		case OPTION_TYPE_FORMAT:
@@ -287,7 +287,7 @@ option_find(const char *name)
 	struct option_entry find, *o;
 
 	find.name = xstrdup(name);
-	o = SPLAY_FIND(option_tree, &option_tree, &find);
+	o = RB_FIND(option_tree, &option_tree, &find);
 	free(find.name);
 	return o;
 }
@@ -501,7 +501,7 @@ static void
 option_insert_entry(struct option_entry *o)
 {
 	XPTHREAD_MUTEX_LOCK(&option_tree_mtx);
-	if (SPLAY_INSERT(option_tree, &option_tree, o) != NULL)
+	if (RB_INSERT(option_tree, &option_tree, o) != NULL)
 		LOG_FATALX("%s: option already exists", o->name);
 	XPTHREAD_MUTEX_UNLOCK(&option_tree_mtx);
 }

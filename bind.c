@@ -40,10 +40,10 @@ struct bind_entry {
 	struct command		*command;
 	void			*command_data;
 	char			*command_string;
-	SPLAY_ENTRY(bind_entry)  entries;
+	RB_ENTRY(bind_entry)	 entries;
 };
 
-SPLAY_HEAD(bind_tree, bind_entry);
+RB_HEAD(bind_tree, bind_entry);
 
 static int			 bind_cmp_entry(struct bind_entry *,
 				    struct bind_entry *);
@@ -52,9 +52,9 @@ static char			*bind_key_to_string(int, char *, size_t);
 static void			 bind_remove(struct bind_entry *);
 static const char		*bind_scope_to_string(enum bind_scope);
 
-SPLAY_PROTOTYPE(bind_tree, bind_entry, entries, bind_cmp_entry)
+RB_PROTOTYPE(bind_tree, bind_entry, entries, bind_cmp_entry)
 
-static struct bind_tree bind_tree = SPLAY_INITIALIZER(bind_tree);
+static struct bind_tree bind_tree = RB_INITIALIZER(bind_tree);
 
 static const struct {
 	const enum bind_scope	 scope;
@@ -108,7 +108,7 @@ static const struct {
 	{ K_F20,		"f20" }
 };
 
-SPLAY_GENERATE(bind_tree, bind_entry, entries, bind_cmp_entry)
+RB_GENERATE(bind_tree, bind_entry, entries, bind_cmp_entry)
 
 static void
 bind_add(enum bind_scope scope, int key, const char *command)
@@ -129,7 +129,7 @@ bind_add(enum bind_scope scope, int key, const char *command)
 	b->scope = scope;
 	b->key = key;
 
-	if (SPLAY_INSERT(bind_tree, &bind_tree, b) != NULL)
+	if (RB_INSERT(bind_tree, &bind_tree, b) != NULL)
 		LOG_FATALX("scope %s, key %s: already bound",
 		    bind_scope_to_string(scope),
 		    bind_key_to_string(key, keyname, sizeof keyname));
@@ -149,7 +149,7 @@ bind_end(void)
 {
 	struct bind_entry *b;
 
-	while ((b = SPLAY_ROOT(&bind_tree)) != NULL)
+	while ((b = RB_ROOT(&bind_tree)) != NULL)
 		bind_remove(b);
 }
 
@@ -172,7 +172,7 @@ bind_find(enum bind_scope scope, int key)
 
 	b.key = key;
 	b.scope = scope;
-	return SPLAY_FIND(bind_tree, &bind_tree, &b);
+	return RB_FIND(bind_tree, &bind_tree, &b);
 }
 
 const char *
@@ -279,7 +279,7 @@ bind_key_to_string(int key, char *name, size_t namelen)
 static void
 bind_remove(struct bind_entry *b)
 {
-	SPLAY_REMOVE(bind_tree, &bind_tree, b);
+	RB_REMOVE(bind_tree, &bind_tree, b);
 	command_free_data(b->command, b->command_data);
 	free(b->command_string);
 	free(b);
@@ -312,7 +312,7 @@ bind_set(enum bind_scope scope, int key, struct command *command,
 	b->command = command;
 	b->command_data = command_data;
 	b->command_string = xstrdup(command_string);
-	SPLAY_INSERT(bind_tree, &bind_tree, b);
+	RB_INSERT(bind_tree, &bind_tree, b);
 }
 
 int
