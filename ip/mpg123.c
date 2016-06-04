@@ -333,7 +333,8 @@ ip_mpg123_get_metadata(struct track *t)
 	}
 
 	length = mpg123_length(hdl);
-	t->duration = (length <= 0 || rate == 0) ? 0 : length / rate;
+	if (length > 0 && rate > 0)
+		t->duration = length / rate;
 
 	if (mpg123_id3(hdl, &v1, &v2) != MPG123_OK) {
 		LOG_ERRX("mpg123_id3: %s: %s", t->path, mpg123_strerror(hdl));

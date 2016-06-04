@@ -125,9 +125,7 @@ ip_wavpack_get_metadata(struct track *t)
 
 	nframes = WavpackGetNumSamples(wpc);
 	rate = WavpackGetSampleRate(wpc);
-	if (nframes == (uint32_t)-1 || rate == 0)
-		t->duration = 0;
-	else
+	if (nframes != (uint32_t)-1 && rate != 0)
 		t->duration = nframes / rate;
 
 	WavpackCloseFile(wpc);

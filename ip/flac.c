@@ -145,9 +145,7 @@ ip_flac_get_metadata(struct track *t)
 		return;
 	}
 
-	if (streaminfo.data.stream_info.sample_rate == 0)
-		t->duration = 0;
-	else
+	if (streaminfo.data.stream_info.sample_rate != 0)
 		t->duration = streaminfo.data.stream_info.total_samples /
 		    streaminfo.data.stream_info.sample_rate;
 }

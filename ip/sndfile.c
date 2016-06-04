@@ -133,9 +133,7 @@ ip_sndfile_get_metadata(struct track *t)
 		t->tracknumber = xstrdup(value);
 #endif
 
-	if (sfinfo.frames < 0 || sfinfo.samplerate <= 0)
-		t->duration = 0;
-	else
+	if (sfinfo.frames > 0 && sfinfo.samplerate > 0)
 		t->duration = sfinfo.frames / sfinfo.samplerate;
 
 	sf_close(sffp);
