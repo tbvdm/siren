@@ -53,25 +53,21 @@ xmalloc(size_t size)
 void *
 xrealloc(void *p, size_t size)
 {
-	void *newp;
-
 	if (size == 0)
 		LOG_FATALX("zero-size allocation");
-	if ((newp = realloc(p, size)) == NULL)
+	if ((p = realloc(p, size)) == NULL)
 		LOG_FATAL("realloc");
-	return newp;
+	return p;
 }
 
 void *
 xreallocarray(void *p, size_t nmemb, size_t size)
 {
-	void *newp;
-
 	if (nmemb == 0 || size == 0)
 		LOG_FATALX("zero-size allocation");
-	if ((newp = reallocarray(p, nmemb, size)) == NULL)
+	if ((p = reallocarray(p, nmemb, size)) == NULL)
 		LOG_FATAL("reallocarray");
-	return newp;
+	return p;
 }
 
 int
