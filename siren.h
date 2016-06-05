@@ -709,7 +709,3 @@ int		 xvasprintf(char **, const char *, va_list) NONNULL()
 		    PRINTFLIKE(2, 0);
 int		 xvsnprintf(char *, size_t, const char *, va_list) NONNULL()
 		    PRINTFLIKE(3, 0);
-
-long int	 xfpathconf(int, int);
-long int	 xpathconf(const char *, int) NONNULL();
-long int	 xsysconf(int);

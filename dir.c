@@ -119,7 +119,9 @@ dir_open(const char *dir)
 		goto error;
 	}
 
-	if ((namemax = xfpathconf(fd, _PC_NAME_MAX)) == -1) {
+	errno = 0;
+	if ((namemax = fpathconf(fd, _PC_NAME_MAX)) == -1) {
+		LOG_ERRX("fpathconf() failed");
 		if (errno == 0)
 			/*
 			 * The value for _PC_NAME_MAX is indeterminate. While
