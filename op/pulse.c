@@ -35,6 +35,7 @@ static int		 op_pulse_write(struct sample_buffer *);
 const struct op		 op = {
 	"pulse",
 	OP_PRIORITY_PULSE,
+	"ps proc",
 	op_pulse_close,
 	op_pulse_get_buffer_size,
 	NULL,

@@ -38,6 +38,7 @@ static int		 op_sndio_write(struct sample_buffer *);
 struct op		 op = {
 	"sndio",
 	OP_PRIORITY_SNDIO,
+	"inet unix dns audio",
 	op_sndio_close,
 	op_sndio_get_buffer_size,
 	op_sndio_get_volume,

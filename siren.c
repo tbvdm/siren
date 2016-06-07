@@ -53,6 +53,9 @@ main(int argc, char **argv)
 {
 	int	 c, lflag;
 	char	*confdir;
+#ifdef HAVE_PLEDGE
+	char	*promises;
+#endif
 
 #if defined(DEBUG) && defined(__OpenBSD__)
 	malloc_options = "CFGJPRS";
@@ -104,9 +107,14 @@ main(int argc, char **argv)
 	prompt_init();
 
 #ifdef HAVE_PLEDGE
-	if (pledge("stdio rpath wpath cpath inet unix dns getpw tty audio",
-	    NULL) == -1)
+	promises = xstrdup("stdio rpath wpath cpath getpw tty");
+	plugin_append_promises(&promises);
+	LOG_INFO("pledging %s", promises);
+
+	if (pledge(promises, NULL) == -1)
 		err(1, "pledge");
+
+	free(promises);
 #endif
 
 	screen_print();

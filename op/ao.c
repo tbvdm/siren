@@ -36,6 +36,7 @@ static int		 op_ao_write(struct sample_buffer *);
 const struct op		 op = {
 	"ao",
 	OP_PRIORITY_AO,
+	"prot_exec",
 	op_ao_close,
 	op_ao_get_buffer_size,
 	NULL,

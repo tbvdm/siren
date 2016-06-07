@@ -79,6 +79,22 @@ plugin_add_op(void *handle, void *op)
 	SLIST_INSERT_HEAD(&plugin_op_list, ope, entries);
 }
 
+#ifdef HAVE_PLEDGE
+void
+plugin_append_promises(char **promises)
+{
+	struct plugin_op_entry	*ope;
+	char			*tmp;
+
+	SLIST_FOREACH(ope, &plugin_op_list, entries)
+		if (ope->op->promises != NULL) {
+			xasprintf(&tmp, "%s %s", *promises, ope->op->promises);
+			free(*promises);
+			*promises = tmp;
+		}
+}
+#endif
+
 void
 plugin_end(void)
 {

@@ -40,6 +40,7 @@ static int		 op_alsa_write(struct sample_buffer *);
 const struct op		 op = {
 	"alsa",
 	OP_PRIORITY_ALSA,
+	NULL,
 	op_alsa_close,
 	op_alsa_get_buffer_size,
 	op_alsa_get_volume,

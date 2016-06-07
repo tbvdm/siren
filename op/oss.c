@@ -52,6 +52,7 @@ static void		 op_oss_set_volume(unsigned int);
 struct op		 op = {
 	"oss",
 	OP_PRIORITY_OSS,
+	NULL,
 	op_oss_close,
 	op_oss_get_buffer_size,
 #ifdef OP_OSS_HAVE_VOLUME_SUPPORT

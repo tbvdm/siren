@@ -55,6 +55,7 @@ static int		 op_sun_write(struct sample_buffer *);
 struct op		 op = {
 	"sun",
 	OP_PRIORITY_SUN,
+	NULL,
 	op_sun_close,
 	op_sun_get_buffer_size,
 	op_sun_get_volume,

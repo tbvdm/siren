@@ -34,6 +34,7 @@ static int	 op_portaudio_write(struct sample_buffer *);
 const struct op	 op = {
 	"portaudio",
 	OP_PRIORITY_PORTAUDIO,
+	NULL,
 	op_portaudio_close,
 	op_portaudio_get_buffer_size,
 	NULL,
