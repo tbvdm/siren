@@ -40,14 +40,14 @@ struct plugin_op_entry {
 };
 
 static void plugin_load_dir(const char *, const char *,
-    void (*)(void *, void *));
+    int (*)(void *, void *));
 
 static SLIST_HEAD(, plugin_ip_entry) plugin_ip_list =
     SLIST_HEAD_INITIALIZER(plugin_ip_list);
 static SLIST_HEAD(, plugin_op_entry) plugin_op_list =
     SLIST_HEAD_INITIALIZER(plugin_op_list);
 
-static void
+static int
 plugin_add_ip(void *handle, void *ip)
 {
 	struct plugin_ip_entry *ipe;
@@ -57,13 +57,16 @@ plugin_add_ip(void *handle, void *ip)
 	ipe->ip = ip;
 	LOG_INFO("loaded %s", ipe->ip->name);
 
-	if (ipe->ip->init != NULL && ipe->ip->init() != 0)
-		return;
+	if (ipe->ip->init != NULL && ipe->ip->init() != 0) {
+		free(ipe);
+		return -1;
+	}
 
 	SLIST_INSERT_HEAD(&plugin_ip_list, ipe, entries);
+	return 0;
 }
 
-static void
+static int
 plugin_add_op(void *handle, void *op)
 {
 	struct plugin_op_entry *ope;
@@ -73,10 +76,13 @@ plugin_add_op(void *handle, void *op)
 	ope->op = op;
 	LOG_INFO("loaded %s", ope->op->name);
 
-	if (ope->op->init != NULL && ope->op->init() != 0)
-		return;
+	if (ope->op->init != NULL && ope->op->init() != 0) {
+		free(ope);
+		return -1;
+	}
 
 	SLIST_INSERT_HEAD(&plugin_op_list, ope, entries);
+	return 0;
 }
 
 #ifdef HAVE_PLEDGE
@@ -185,7 +191,7 @@ plugin_init(void)
 
 static void
 plugin_load_dir(const char *dir, const char *symbol,
-    void (*add)(void *, void *))
+    int (*add)(void *, void *))
 {
 	struct dir		*d;
 	struct dir_entry	*de;
@@ -217,7 +223,8 @@ plugin_load_dir(const char *dir, const char *symbol,
 			continue;
 		}
 
-		add(handle, plugin);
+		if (add(handle, plugin) == -1)
+			dlclose(handle);
 	}
 
 	dir_close(d);
