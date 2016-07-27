@@ -29,8 +29,8 @@
 
 /*
  * The length of the longest key-name (including "\0"). Most key names are
- * defined in the bind_key_names array below. The other key names have a length
- * of 1 (e.g. "a") or 2 (e.g. "^A").
+ * defined in the bind_keys array below. The other key names have a length of 1
+ * (e.g. "a") or 2 (e.g. "^A").
  */
 #define BIND_KEY_MAXLEN 10
 
