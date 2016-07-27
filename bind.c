@@ -227,6 +227,7 @@ bind_init(void)
 	bind_add(BIND_SCOPE_COMMON, 'b', "play-next");
 	bind_add(BIND_SCOPE_COMMON, 'c', "pause");
 	bind_add(BIND_SCOPE_COMMON, 'g', "select-first-entry");
+	bind_add(BIND_SCOPE_COMMON, 'i', "select-active-entry");
 	bind_add(BIND_SCOPE_COMMON, 'j', "select-next-entry");
 	bind_add(BIND_SCOPE_COMMON, 'k', "select-prev-entry");
 	bind_add(BIND_SCOPE_COMMON, 'n', "search-next");
