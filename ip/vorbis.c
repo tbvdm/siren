@@ -106,12 +106,11 @@ ip_vorbis_error(int errnum)
 static void
 ip_vorbis_get_metadata(struct track *t)
 {
-	OggVorbis_File	  ovf;
-	vorbis_comment	 *vc;
-	FILE		 *fp;
-	double		  duration;
-	int		  ret;
-	char		**c;
+	OggVorbis_File	 ovf;
+	vorbis_comment	*vc;
+	FILE		*fp;
+	double		 duration;
+	int		 i, ret;
 
 	if ((fp = fopen(t->path, "r")) == NULL) {
 		LOG_ERR("fopen: %s", t->path);
@@ -134,8 +133,8 @@ ip_vorbis_get_metadata(struct track *t)
 		return;
 	}
 
-	for (c = vc->user_comments; *c != NULL; c++)
-		track_copy_vorbis_comment(t, *c);
+	for (i = 0; i < vc->comments; i++)
+		track_copy_vorbis_comment(t, vc->user_comments[i]);
 
 	if ((duration = ov_time_total(&ovf, -1)) != OV_EINVAL)
 		t->duration = duration;

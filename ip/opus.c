@@ -58,10 +58,9 @@ ip_opus_close(struct track *t)
 static void
 ip_opus_get_metadata(struct track *t)
 {
-	OggOpusFile	 *oof;
-	const OpusTags	 *tags;
-	int		  error;
-	char		**c;
+	OggOpusFile	*oof;
+	const OpusTags	*tags;
+	int		 error, i;
 
 	oof = op_open_file(t->path, &error);
 	if (oof == NULL) {
@@ -72,8 +71,8 @@ ip_opus_get_metadata(struct track *t)
 
 	tags = op_tags(oof, -1);
 	if (tags != NULL)
-		for (c = tags->user_comments; *c != NULL; c++)
-			track_copy_vorbis_comment(t, *c);
+		for (i = 0; i < tags->comments; i++)
+			track_copy_vorbis_comment(t, tags->user_comments[i]);
 
 	t->duration = op_pcm_total(oof, -1) / IP_OPUS_RATE;
 
