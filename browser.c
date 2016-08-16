@@ -315,10 +315,10 @@ browser_read_dir(void)
 				continue;
 		}
 
-		if (de->type == FILE_TYPE_DIRECTORY ||
-		    option_get_boolean("show-all-files"))
+		if (de->type == FILE_TYPE_DIRECTORY)
 			ip = NULL;
-		else if ((ip = plugin_find_ip(de->path)) == NULL)
+		else if ((ip = plugin_find_ip(de->path)) == NULL &&
+		    !option_get_boolean("show-all-files"))
 			continue;
 
 		be = xmalloc(sizeof *be);
