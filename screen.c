@@ -663,10 +663,7 @@ screen_view_title_printf_right(const char *fmt, ...)
 	XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
 	bkgdset(screen_objects[SCREEN_OBJ_TITLE].attr);
 	len = xvsnprintf(screen_row, screen_rowsize, fmt, ap);
-	if (len < COLS)
-		mvaddstr(SCREEN_TITLE_ROW, COLS - len, screen_row);
-	else
-		mvaddstr(SCREEN_TITLE_ROW, 0, screen_row + len - COLS);
+	mvaddstr(SCREEN_TITLE_ROW, (len < COLS) ? (COLS - len) : 0, screen_row);
 	/* No refresh() yet; screen_view_print_end() will do that. */
 	XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
 	va_end(ap);
