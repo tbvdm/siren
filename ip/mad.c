@@ -27,7 +27,7 @@
 
 /*
  * This value must be equal to or larger than the largest possible MPEG audio
- * frame size, which, according to <http://marc.info/?m=113584709618786>, is
+ * frame size, which, according to <https://marc.info/?m=113584709618786>, is
  * 2880 bytes.
  */
 #define IP_MAD_BUFSIZE		65536

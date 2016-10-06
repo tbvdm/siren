@@ -66,8 +66,8 @@ static const char *
 ip_vorbis_error(int errnum)
 {
 	/*
-	 * See <http://www.xiph.org/vorbis/doc/vorbis-errors.txt> and
-	 * <http://www.xiph.org/vorbis/doc/libvorbis/return.html>.
+	 * See <https://www.xiph.org/vorbis/doc/vorbis-errors.txt> and
+	 * <https://www.xiph.org/vorbis/doc/libvorbis/return.html>.
 	 */
 	switch (errnum) {
 	case OV_EOF:

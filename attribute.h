@@ -16,8 +16,8 @@
 
 /*
  * GCC attributes. See
- * <http://gcc.gnu.org/onlinedocs/gcc/Attribute-Syntax.html> and
- * <http://ohse.de/uwe/articles/gcc-attributes.html>.
+ * <https://gcc.gnu.org/onlinedocs/gcc/Attribute-Syntax.html> and
+ * <https://ohse.de/uwe/articles/gcc-attributes.html>.
  */
 
 #ifndef ATTRIBUTE_H

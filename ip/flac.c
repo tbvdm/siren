@@ -332,7 +332,7 @@ ip_flac_write_cb(UNUSED const FLAC__StreamDecoder *decoder,
  * FLAC__StreamDecoderInitStatusString and FLAC__StreamDecoderStateString
  * string arrays do not provide very useful messages, so we use the messages
  * from the functions below instead. The messages are based on information in
- * <http://flac.sourceforge.net/api/group__flac__stream__decoder.html>.
+ * <https://www.xiph.org/flac/api/group__flac__stream__decoder.html>.
  */
 
 static const char *

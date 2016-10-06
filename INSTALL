@@ -40,7 +40,7 @@ ffmpeg=yes|no (yes)
 flac=yes|no (yes)
 	Whether to build the flac input plug-in. This plug-in provides support
 	for the FLAC audio format. It requires the libFLAC library. For more
-	information, see <http://www.xiph.org/flac/>.
+	information, see <https://www.xiph.org/flac/>.
 
 mad=yes|no (yes)
 	Whether to build the mad input plug-in. This plug-in provides support
@@ -56,7 +56,7 @@ mpg123=yes|no (yes)
 opus=yes|no (yes)
 	Whether to build the opus input plug-in. This plug-in provides support
 	for the Opus audio format. It requires the libopusfile library. For
-	more information, see <http://www.opus-codec.org/>.
+	more information, see <https://www.opus-codec.org/>.
 
 sndfile=yes|no (yes)
 	Whether to build the sndfile input plug-in. This plug-in provides
@@ -67,7 +67,7 @@ sndfile=yes|no (yes)
 vorbis=yes|no (yes)
 	Whether to build the vorbis input plug-in. This plug-in provides
 	support for the Ogg Vorbis audio format. It requires the libvorbisfile
-	library. For more information, see <http://www.xiph.org/vorbis/>.
+	library. For more information, see <https://www.xiph.org/vorbis/>.
 
 wavpack=yes|no (yes)
 	Whether to build the wavpack input plug-in. This plug-in provides
@@ -83,7 +83,7 @@ ao=yes|no (yes)
 	Whether to build the ao output plug-in. This plug-in provides support
 	for libao which in turn supports a variety of audio systems. It
 	requires the libao library. For more information, see
-	<http://www.xiph.org/ao/>.
+	<https://www.xiph.org/ao/>.
 
 oss=yes|no (yes)
 	Whether to build the oss output plug-in. This plug-in provides support
