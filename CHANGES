@@ -1,6 +1,21 @@
 This is a list of the most important changes only. See the repository history
 for a list of all changes.
 
+Siren 0.7 (2016-10-06):
+
+- Add the ffmpeg input plug-in.
+- Add the pwd and reopen-output-plugin commands.
+- Add the library-format-alt, player-track-format-alt, playlist-format-alt and
+  queue-format-alt options.
+- Add the filename format variable.
+- Add OpenBSD pledge(2) support.
+- Bind "i" to select-active-entry by default.
+- Support the (less standard) totaldiscs and totaltracks Vorbis comments.
+- Handle the "n/m" format in the discnumber and tracknumber Vorbis comments
+  where "n" is the disc/track number and "m" is total number of discs/tracks.
+- Remove support for ao file output drivers. These are not very useful.
+- Fix various minor bugs.
+
 Siren 0.6 (2015-09-01):
 
 - Support bit depths other than 16.
