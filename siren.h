@@ -356,7 +356,7 @@ struct op {
 };
 
 const char	*argv_error(int);
-void		 argv_free(int , char **);
+void		 argv_free(int, char **);
 int		 argv_parse(const char *, int *, char ***);
 
 void		 bind_end(void);
