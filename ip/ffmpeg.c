@@ -94,7 +94,8 @@ static const char	*ip_ffmpeg_extensions[] = {
 	"w64",				/* Sony Sound Forge Wave64 */
 	"wav", "wave",
 	"webm",
-	"wv"				/* WavPack */
+	"wv",				/* WavPack */
+	NULL
 };
 
 const struct ip		 ip = {
