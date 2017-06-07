@@ -272,6 +272,9 @@ for arg; do
 	aac=*)
 		get_option_value enable_aac "$arg"
 		;;
+	ffmpeg=*)
+		get_option_value enable_ffmpeg "$arg"
+		;;
 	flac=*)
 		get_option_value enable_flac "$arg"
 		;;
