@@ -33,9 +33,9 @@ aac=yes|no (yes)
 	<https://code.google.com/p/mp4v2/>.
 
 ffmpeg=yes|no (yes)
-	Wether to build the ffmpeg input plug-in. This plug-in provides support
-	for a variety of audio formats. It requires the libavformat library.
-	For more information, see <https://www.ffmpeg.org/>.
+	Whether to build the ffmpeg input plug-in. This plug-in provides
+	support for a variety of audio formats. It requires the libavformat
+	library. For more information, see <https://www.ffmpeg.org/>.
 
 flac=yes|no (yes)
 	Whether to build the flac input plug-in. This plug-in provides support
