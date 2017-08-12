@@ -71,7 +71,7 @@ const struct ip		 ip = {
 };
 
 #ifdef IP_AAC_OLD_MP4V2_API
-static void
+PRINTFLIKE(3, 0) static void
 ip_aac_log(UNUSED int loglevel, UNUSED const char *lib, const char *fmt, ...)
 {
 	va_list ap;
@@ -81,7 +81,7 @@ ip_aac_log(UNUSED int loglevel, UNUSED const char *lib, const char *fmt, ...)
 	va_end(ap);
 }
 #else
-static void
+PRINTFLIKE(2, 0) static void
 ip_aac_log(UNUSED MP4LogLevel loglevel, const char *fmt, va_list ap)
 {
 	LOG_VERRX(fmt, ap);
