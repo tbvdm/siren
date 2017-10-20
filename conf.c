@@ -79,8 +79,9 @@ void
 conf_source_file(const char *file)
 {
 	FILE	*fp;
-	size_t	 len, lineno;
-	char	*buf, *error, *lbuf;
+	size_t	 lineno, size;
+	ssize_t	 len;
+	char	*error, *line;
 
 	if ((fp = fopen(file, "r")) == NULL) {
 		LOG_ERR("fopen: %s", file);
@@ -88,24 +89,22 @@ conf_source_file(const char *file)
 		return;
 	}
 
-	lbuf = NULL;
-	for (lineno = 1; (buf = fgetln(fp, &len)) != NULL; lineno++) {
-		if (buf[len - 1] != '\n') {
-			lbuf = xmalloc(len + 1);
-			buf = memcpy(lbuf, buf, len++);
-		}
-		buf[len - 1] = '\0';
+	line = NULL;
+	size = 0;
+	for (lineno = 1; (len = getline(&line, &size, fp)) != -1; lineno++) {
+		if (len > 0 && line[len - 1] == '\n')
+			line[len - 1] = '\0';
 
-		if (command_process(buf, &error) == -1) {
+		if (command_process(line, &error) == -1) {
 			msg_errx("%s:%zu: %s", file, lineno, error);
 			free(error);
 		}
 	}
 	if (ferror(fp)) {
-		LOG_ERR("fgetln: %s", file);
+		LOG_ERR("getline: %s", file);
 		msg_err("Cannot read configuration file");
 	}
-	free(lbuf);
+	free(line);
 
 	fclose(fp);
 }

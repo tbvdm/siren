@@ -257,9 +257,10 @@ library_read_file(void)
 	struct menu_entry	*e;
 	struct track		*et, *t;
 	FILE			*fp;
-	size_t			 len;
+	size_t			 size;
+	ssize_t			 len;
 	time_t			 lasttime;
-	char			*buf, *file, *lbuf;
+	char			*line, *file;
 
 	file = conf_get_path(LIBRARY_FILE);
 	if ((fp = fopen(file, "r")) == NULL) {
@@ -272,20 +273,18 @@ library_read_file(void)
 	}
 
 	lasttime = time(NULL);
-	lbuf = NULL;
-	while ((buf = fgetln(fp, &len)) != NULL) {
-		if (buf[len - 1] != '\n') {
-			lbuf = xmalloc(len + 1);
-			buf = memcpy(lbuf, buf, len++);
-		}
-		buf[len - 1] = '\0';
+	line = NULL;
+	size = 0;
+	while ((len = getline(&line, &size, fp)) != -1) {
+		if (len > 0 && line[len - 1] == '\n')
+			line[len - 1] = '\0';
 
-		if (buf[0] != '/') {
-			LOG_ERRX("%s: %s: invalid entry", file, buf);
+		if (line[0] != '/') {
+			LOG_ERRX("%s: %s: invalid entry", file, line);
 			continue;
 		}
 
-		if ((t = track_require(buf)) == NULL)
+		if ((t = track_require(line)) == NULL)
 			continue;
 
 		MENU_FOR_EACH_ENTRY_REVERSE(library_menu, e) {
@@ -305,10 +304,10 @@ library_read_file(void)
 		}
 	}
 	if (ferror(fp)) {
-		LOG_ERR("fgetln: %s", file);
+		LOG_ERR("getline: %s", file);
 		msg_err("Cannot read library");
 	}
-	free(lbuf);
+	free(line);
 	free(file);
 
 	fclose(fp);

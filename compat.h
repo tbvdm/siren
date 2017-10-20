@@ -37,10 +37,6 @@ void		 warn(const char *, ...) PRINTFLIKE(1, 2);
 void		 warnx(const char *, ...) PRINTFLIKE(1, 2);
 #endif
 
-#ifndef HAVE_FGETLN
-char		*fgetln(FILE *, size_t *);
-#endif
-
 #ifndef HAVE_OPTRESET
 #define getopt		xgetopt
 #define optarg		xoptarg

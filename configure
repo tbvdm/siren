@@ -384,12 +384,6 @@ else
 	makefile_append SRCS compat/err.c
 fi
 
-if check_function fgetln "fgetln(NULL, NULL)" stdio.h; then
-	header_define HAVE_FGETLN
-else
-	makefile_append SRCS compat/fgetln.c
-fi
-
 if ! check_function initscr "initscr()" curses.h "" -lcurses; then
 	error "cannot determine how to use initscr()"
 fi

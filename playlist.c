@@ -146,8 +146,9 @@ playlist_load(const char *file)
 {
 	struct track		*t;
 	FILE			*fp;
-	size_t			 len;
-	char			*buf, *dir, *lbuf, *path, *tmp;
+	size_t			 size;
+	ssize_t			 len;
+	char			*dir, *line, *path, *tmp;
 
 	if ((fp = fopen(file, "r")) == NULL) {
 		LOG_ERR("fopen: %s", file);
@@ -162,26 +163,24 @@ playlist_load(const char *file)
 	playlist_file = path_normalise(file);
 	dir = path_get_dirname(playlist_file);
 
-	lbuf = NULL;
-	while ((buf = fgetln(fp, &len)) != NULL) {
+	line = NULL;
+	size = 0;
+	while ((len = getline(&line, &size, fp)) != -1) {
 		/* Strip both \n and \r\n EOLs. */
-		if (buf[len - 1] == '\n') {
-			len--;
-			if (len > 0 && buf[len - 1] == '\r')
-				len--;
-		} else {
-			lbuf = xmalloc(len + 1);
-			buf = memcpy(lbuf, buf, len);
+		if (len > 0 && line[len - 1] == '\n') {
+			if (len > 1 && line[len - 2] == '\r')
+				line[len - 2] = '\0';
+			else
+				line[len - 1] = '\0';
 		}
-		buf[len] = '\0';
 
-		if (buf[0] == '#' || buf[0] == '\0')
+		if (line[0] == '#' || line[0] == '\0')
 			continue;
 
-		if (buf[0] == '/')
-			path = path_normalise(buf);
+		if (line[0] == '/')
+			path = path_normalise(line);
 		else {
-			xasprintf(&tmp, "%s/%s", dir, buf);
+			xasprintf(&tmp, "%s/%s", dir, line);
 			path = path_normalise(tmp);
 			free(tmp);
 		}
@@ -195,11 +194,11 @@ playlist_load(const char *file)
 	}
 
 	if (ferror(fp)) {
-		LOG_ERR("fgetln: %s", file);
+		LOG_ERR("getline: %s", file);
 		msg_err("Cannot read playlist: %s", file);
 	}
 
-	free(lbuf);
+	free(line);
 	free(dir);
 
 	XPTHREAD_MUTEX_UNLOCK(&playlist_menu_mtx);
