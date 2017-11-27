@@ -58,7 +58,7 @@ main(int argc, char **argv)
 #endif
 
 #if defined(DEBUG) && defined(__OpenBSD__)
-	malloc_options = "CFGJPRS";
+	malloc_options = "CFGJRS";
 #endif
 
 #ifndef HAVE___PROGNAME
