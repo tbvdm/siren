@@ -160,6 +160,8 @@ playlist_load(const char *file)
 
 	menu_remove_all_entries(playlist_menu);
 	free(playlist_file);
+	playlist_duration = 0;
+
 	playlist_file = path_normalise(file);
 	dir = path_get_dirname(playlist_file);
 
