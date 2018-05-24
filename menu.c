@@ -181,13 +181,6 @@ menu_insert_after(struct menu *m, struct menu_entry *le, void *data)
 	TAILQ_INSERT_AFTER(&m->list, le, e, entries);
 	m->nentries++;
 
-	if (m->nentries == 1)
-		/*
-		 * This is the first entry in the menu: make it the top entry
-		 * and the selected entry.
-		 */
-		m->top = m->selected = e;
-
 	/* Increment the index of the entries after the inserted entry. */
 	while ((e = TAILQ_NEXT(e, entries)) != NULL)
 		e->index++;
@@ -207,13 +200,6 @@ menu_insert_before(struct menu *m, struct menu_entry *le, void *data)
 
 	TAILQ_INSERT_BEFORE(le, e, entries);
 	m->nentries++;
-
-	if (m->nentries == 1)
-		/*
-		 * This is the first entry in the menu: make it the top entry
-		 * and the selected entry.
-		 */
-		m->top = m->selected = e;
 
 	/* Increment the index of the entries after the inserted entry. */
 	while ((e = TAILQ_NEXT(e, entries)) != NULL)
