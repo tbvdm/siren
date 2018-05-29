@@ -178,8 +178,8 @@ ip_mad_decode_frame_header(FILE *fp, struct mad_stream *stream,
 				return ret;
 		} else if (!MAD_RECOVERABLE(stream->error)) {
 			errstr = mad_stream_errorstr(stream);
-			LOG_ERRX("mad_frame_decode: %s", errstr);
-			msg_errx("Cannot decode frame: %s", errstr);
+			LOG_ERRX("mad_header_decode: %s", errstr);
+			msg_errx("Cannot decode frame header: %s", errstr);
 			return IP_MAD_ERROR;
 		}
 	}
