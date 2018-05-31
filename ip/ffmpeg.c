@@ -327,11 +327,6 @@ ip_ffmpeg_parse_metadata(struct track *t, AVDictionary *metadata)
 	AVDictionaryEntry	*tag;
 	char			*number, *total;
 
-	/*
-	 * XXX libavformat/avformat.h: "metadata exported by demuxers isn't
-	 * checked to be valid UTF-8 in most cases"
-	 */
-
 	tag = NULL;
 	while ((tag = av_dict_get(metadata, "", tag, AV_DICT_IGNORE_SUFFIX)) !=
 	    NULL) {
