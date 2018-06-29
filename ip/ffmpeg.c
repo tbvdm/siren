@@ -65,6 +65,7 @@ static const char	*ip_ffmpeg_extensions[] = {
 	"8svx", "iff", "svx",		/* Commodore Amiga IFF/8SVX */
 	"aa",				/* Audible */
 	"aac",
+	"ac3",				/* Dolby AC-3 */
 	"aif", "aiff",
 	"ape",				/* Monkey's Audio */
 	"asf", "wma", "wmv",		/* Windows Media Audio */
