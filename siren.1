@@ -12,7 +12,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd November 8, 2014
+.Dd July 23, 2018
 .Dt SIREN 1
 .Os
 .Sh NAME
@@ -602,8 +602,9 @@ Not all output plug-ins have volume support.
 .Pp
 When using the
 .Em oss
-output plug-in on FreeBSD, the volume level may be reset every time a track is
-played back.
+output plug-in on
+.Fx ,
+the volume level may be reset every time a track is played back.
 To preserve the volume level, set the
 .Em hw.snd.vpc_autoreset
 .Xr sysctl 8
@@ -857,7 +858,7 @@ They are listed in descending order of priority.
 .Pp
 .Bl -tag -width portaudio -compact
 .It sndio
-OpenBSD
+.Ox
 .Xr sndio 7
 output plug-in
 .It pulse
