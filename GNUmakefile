@@ -49,7 +49,7 @@ CPPCHECKFLAGS?=	-I /usr/include -I /usr/local/include --enable=all --force \
 		--quiet
 MKDEPFLAGS?=	-a
 
-.PHONY: all clean cleandir cleanlog cppcheck depend dist install
+.PHONY: all clean cleandir cleanlog cppcheck depend dist install manlint
 
 ip/%.o: ip/%.c
 	${CC} ${CFLAGS} ${CFLAGS_LIB} ${CPPFLAGS} ${CPPFLAGS_$(*F)} -c -o $@ $<
@@ -114,6 +114,9 @@ endif
 ifneq (${OP_LIBS},)
 	${INSTALL_LIB} ${OP_LIBS} ${DESTDIR}${PLUGINDIR}/op
 endif
+
+manlint:
+	mandoc -Tlint -Wstyle ${PROG}.1
 
 tags: ${SRCS} ${IP_SRCS} ${OP_SRCS} ${PROG}.h
 	${CTAGS} -dtw ${SRCS} ${IP_SRCS} ${OP_SRCS}
