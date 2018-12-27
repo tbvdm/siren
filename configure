@@ -471,7 +471,7 @@ if [ "$enable_aac" != no ] && check_header neaacdec.h && check_library faad &&
 	enabled_ips="$enabled_ips aac"
 fi
 
-check_plugin_pkgconfig ffmpeg ip libavformat
+check_plugin_pkgconfig ffmpeg ip "libavcodec libavformat libavutil"
 
 if check_plugin_pkgconfig flac ip flac; then
 	# The include path provided by the flac pkg-config file has changed in
