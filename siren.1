@@ -12,7 +12,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd July 23, 2018
+.Dd December 29, 2018
 .Dt SIREN 1
 .Os
 .Sh NAME
@@ -432,6 +432,11 @@ and open it in the browser view.
 If
 .Ar directory
 is not specified, the user's home directory is used instead.
+.It Ic close-output-plugin
+Close the output plug-in.
+This may be useful if
+.Nm
+blocks audio access for other programs.
 .It Ic command-prompt
 Enter the command prompt.
 The command prompt can be used to enter and execute commands.

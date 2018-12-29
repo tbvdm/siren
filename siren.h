@@ -557,6 +557,7 @@ char		*path_normalise(const char *) NONNULL();
 
 void		 player_change_op(void);
 void		 player_end(void);
+void		 player_forcibly_close_op(void);
 enum byte_order	 player_get_byte_order(void);
 void		 player_init(void);
 void		 player_pause(void);

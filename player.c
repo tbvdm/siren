@@ -230,6 +230,20 @@ player_end_playback(struct sample_buffer *sb)
 	free(sb->data);
 }
 
+void
+player_forcibly_close_op(void)
+{
+	player_stop();
+
+	XPTHREAD_MUTEX_LOCK(&player_op_mtx);
+	if (player_op_opened) {
+		LOG_INFO("forcibly closing %s", player_op->name);
+		player_op->close();
+		player_op_opened = 0;
+	}
+	XPTHREAD_MUTEX_UNLOCK(&player_op_mtx);
+}
+
 enum byte_order
 player_get_byte_order(void)
 {

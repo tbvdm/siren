@@ -96,6 +96,7 @@ COMMAND_FREE_PROTOTYPE(bind_key);
 COMMAND_PARSE_PROTOTYPE(bind_key);
 COMMAND_EXEC_PROTOTYPE(cd);
 COMMAND_PARSE_PROTOTYPE(cd);
+COMMAND_EXEC_PROTOTYPE(close_output_plugin);
 COMMAND_EXEC_PROTOTYPE(command_prompt);
 COMMAND_EXEC_PROTOTYPE(delete_entry);
 COMMAND_PARSE_PROTOTYPE(delete_entry);
@@ -178,6 +179,12 @@ static struct command command_list[] = {
 		command_cd_parse,
 		command_cd_exec,
 		free
+	},
+	{
+		"close-output-plugin",
+		command_generic_parse,
+		command_close_output_plugin_exec,
+		NULL
 	},
 	{
 		"command-prompt",
@@ -619,6 +626,12 @@ command_cd_parse(int argc, char **argv, void **datap, char **error)
 		}
 
 	return 0;
+}
+
+static void
+command_close_output_plugin_exec(UNUSED void *datap)
+{
+	player_forcibly_close_op();
 }
 
 static void
