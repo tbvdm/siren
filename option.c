@@ -426,6 +426,7 @@ void
 option_init(void)
 {
 	option_add_boolean("continue", 1, player_print);
+	option_add_boolean("continue-after-error", 0, NULL);
 	option_add_format("library-format", "%-*a %-*l %4y %2n. %-*t %5d",
 	    library_print);
 	option_add_format("library-format-alt", "%-*F %5d", library_print);

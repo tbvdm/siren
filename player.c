@@ -437,9 +437,11 @@ player_play_sample_buffer(struct sample_buffer *sb)
 	return 0;
 
 error:
-	XPTHREAD_MUTEX_LOCK(&player_state_mtx);
-	player_command = PLAYER_COMMAND_STOP;
-	XPTHREAD_MUTEX_UNLOCK(&player_state_mtx);
+	if (!option_get_boolean("continue-after-error")) {
+		XPTHREAD_MUTEX_LOCK(&player_state_mtx);
+		player_command = PLAYER_COMMAND_STOP;
+		XPTHREAD_MUTEX_UNLOCK(&player_state_mtx);
+	}
 	return -1;
 }
 
