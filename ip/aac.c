@@ -55,7 +55,8 @@ static int		 ip_aac_open(struct track *);
 static int		 ip_aac_read(struct track *, struct sample_buffer *);
 static void		 ip_aac_seek(struct track *, unsigned int);
 
-static const char	*ip_aac_extensions[] = { "aac", "m4a", "mp4", NULL };
+static const char	*ip_aac_extensions[] = { "aac", "m4a", "m4b", "mp4",
+    NULL };
 
 const struct ip		 ip = {
 	"aac",

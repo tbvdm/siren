@@ -75,7 +75,7 @@ static const char	*ip_ffmpeg_extensions[] = {
 	"caf",				/* Apple Core Audio Format */
 	"flac",
 	"flv",				/* Flash Video */
-	"m4a", "mp4",
+	"m4a", "m4b", "mp4",
 	"mka", "mkv",			/* Matroska */
 	"mp+", "mpc", "mpp",		/* Musepack */
 	"mp1",
