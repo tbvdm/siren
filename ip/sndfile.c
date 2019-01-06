@@ -44,12 +44,12 @@ static void		 ip_sndfile_seek(struct track *, unsigned int);
  * libsndfile distribution.
  */
 static const char	*ip_sndfile_extensions[] = {
+	"8svx", "iff", "svx",	/* Commodore Amiga IFF/8SVX */
 	"aif", "aifc", "aiff",	/* AIFF; AIFF-C (compressed) */
 	"au", "snd",		/* NeXT/Sun audio */
 	"avr",			/* Audio Visual Research */
 	"caf",			/* Apple Core Audio Format */
 	"htk",			/* Hidden Markov Model Toolkit */
-	"iff", "svx",		/* Commodore Amiga IFF/8SVX */
 	"mat",			/* MATLAB or GNU Octave */
 	"mpc",			/* Akai Music Production Center */
 	"nist", "sph",		/* NIST/Sphere WAVE */
