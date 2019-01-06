@@ -461,6 +461,7 @@ library_write_file(void)
 			t = menu_get_entry_data(entry);
 			fprintf(fp, "%s\n", t->path);
 		}
+		library_modified = 0;
 		XPTHREAD_MUTEX_UNLOCK(&library_menu_mtx);
 
 		fclose(fp);
@@ -468,6 +469,5 @@ library_write_file(void)
 	}
 
 	free(file);
-	library_modified = 0;
 	return ret;
 }
