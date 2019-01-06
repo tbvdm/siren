@@ -58,7 +58,7 @@ queue_add_dir(const char *path)
 		return;
 	}
 
-	while ((de = dir_get_entry(d)) != NULL) {
+	while ((de = dir_get_entry(d)) != NULL)
 		switch (de->type) {
 		case FILE_TYPE_DIRECTORY:
 			if (strcmp(de->name, ".") && strcmp(de->name, ".."))
@@ -72,7 +72,6 @@ queue_add_dir(const char *path)
 			msg_errx("%s: Unsupported file type", de->path);
 			break;
 		}
-	}
 
 	dir_close(d);
 }
