@@ -199,6 +199,7 @@ plugin_load_dir(const char *dir, const char *symbol,
 	void			*handle, *plugin;
 
 	if ((d = dir_open(dir)) == NULL) {
+		LOG_ERR("%s", dir);
 		msg_err("%s", dir);
 		return;
 	}
