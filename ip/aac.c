@@ -29,9 +29,10 @@
 #endif
 
 #ifdef IP_AAC_OLD_MP4V2_API
-#define IP_AAC_MP4CLOSE(hdl)	MP4Close(hdl)
-#else
-#define IP_AAC_MP4CLOSE(hdl)	MP4Close(hdl, 0)
+#define MP4Close(hdl, flags)	MP4Close(hdl)
+#define MP4Read(path)		MP4Read(path, MP4_DETAILS_ERROR)
+#define MP4SetLogCallback(func)	MP4SetLibFunc(func)
+#define MP4TagsFetch(tag, hdl)	(MP4TagsFetch(tag, hdl), 1)
 #endif
 
 struct ip_aac_ipdata {
@@ -111,12 +112,7 @@ ip_aac_get_aac_track(MP4FileHandle hdl)
 static int
 ip_aac_open_file(const char *path, MP4FileHandle *hdl, MP4TrackId *trk)
 {
-#ifdef IP_AAC_OLD_MP4V2_API
-	*hdl = MP4Read(path, MP4_DETAILS_ERROR);
-#else
 	*hdl = MP4Read(path);
-#endif
-
 	if (*hdl == MP4_INVALID_FILE_HANDLE) {
 		LOG_ERRX("%s: MP4Read() failed", path);
 		msg_errx("%s: Cannot open file", path);
@@ -127,7 +123,7 @@ ip_aac_open_file(const char *path, MP4FileHandle *hdl, MP4TrackId *trk)
 	if (*trk == MP4_INVALID_TRACK_ID) {
 		LOG_ERRX("%s: cannot find AAC track", path);
 		msg_errx("%s: Cannot find AAC track", path);
-		IP_AAC_MP4CLOSE(*hdl);
+		MP4Close(*hdl, 0);
 		return -1;
 	}
 
@@ -180,7 +176,7 @@ ip_aac_close(struct track *t)
 
 	ipd = t->ipdata;
 	NeAACDecClose(ipd->dec);
-	IP_AAC_MP4CLOSE(ipd->hdl);
+	MP4Close(ipd->hdl, 0);
 	free(ipd->aacbuf);
 	free(ipd);
 }
@@ -199,21 +195,17 @@ ip_aac_get_metadata(struct track *t)
 	if (tag == NULL) {
 		LOG_ERRX("%s: MP4TagsAlloc() failed", t->path);
 		msg_errx("%s: Cannot get metadata", t->path);
-		IP_AAC_MP4CLOSE(hdl);
+		MP4Close(hdl, 0);
 		return;
 	}
 
-#ifdef IP_AAC_OLD_MP4V2_API
-	MP4TagsFetch(tag, hdl);
-#else
 	if (!MP4TagsFetch(tag, hdl)) {
 		LOG_ERRX("%s: MP4TagsFetch failed", t->path);
 		msg_errx("%s: Cannot get metadata", t->path);
 		MP4TagsFree(tag);
-		IP_AAC_MP4CLOSE(hdl);
+		MP4Close(hdl, 0);
 		return;
 	}
-#endif
 
 	if (tag->album != NULL)
 		t->album = xstrdup(tag->album);
@@ -242,7 +234,7 @@ ip_aac_get_metadata(struct track *t)
 	    MP4GetTrackDuration(hdl, trk), MP4_SECS_TIME_SCALE);
 
 	MP4TagsFree(tag);
-	IP_AAC_MP4CLOSE(hdl);
+	MP4Close(hdl, 0);
 }
 
 static int
@@ -259,11 +251,7 @@ ip_aac_get_position(struct track *t, unsigned int *pos)
 static int
 ip_aac_init(void)
 {
-#ifdef IP_AAC_OLD_MP4V2_API
-	MP4SetLibFunc(ip_aac_log);
-#else
 	MP4SetLogCallback(ip_aac_log);
-#endif
 	return 0;
 }
 
@@ -332,7 +320,7 @@ ip_aac_open(struct track *t)
 error3:
 	NeAACDecClose(ipd->dec);
 error2:
-	IP_AAC_MP4CLOSE(ipd->hdl);
+	MP4Close(ipd->hdl, 0);
 error1:
 	free(ipd);
 	msg_errx("%s: Cannot open file", t->path);
