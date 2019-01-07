@@ -369,9 +369,9 @@ else
 	makefile_append SRCS compat/asprintf.c
 fi
 
-if ! check_function dlopen "dlopen(NULL, 0)" "dlfcn.h stddef.h"; then
-	if check_function "dlopen() in libdl" "dlopen(NULL, 0)" \
-	    "dlfcn.h stddef.h" "" -ldl; then
+if ! check_function dlopen 'dlopen("", 0)' dlfcn.h; then
+	if check_function "dlopen() in libdl" 'dlopen("", 0)' dlfcn.h "" \
+	    -ldl; then
 		makefile_append LDFLAGS_PROG -ldl
 	else
 		error "cannot determine how to use dlopen()"
@@ -388,7 +388,7 @@ if ! check_function initscr "initscr()" curses.h "" -lcurses; then
 	error "cannot determine how to use initscr()"
 fi
 
-if check_function pledge 'pledge("", NULL)' unistd.h; then
+if check_function pledge 'pledge("", "")' unistd.h; then
 	header_define HAVE_PLEDGE
 fi
 
@@ -450,7 +450,7 @@ if check_function use_default_colors "use_default_colors()" curses.h "" \
 fi
 
 print_check "for __progname"
-if compile "" stddef.h "extern char *__progname; __progname = NULL"; then
+if compile "" "" 'extern char *__progname; __progname = ""'; then
 	print_result yes
 	header_define HAVE___PROGNAME
 else
