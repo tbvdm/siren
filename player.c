@@ -40,6 +40,9 @@
 #elif defined(HAVE_OPENBSD_SWAP16)
 #define PLAYER_SWAP16(i)	swap16(i)
 #define PLAYER_SWAP32(i)	swap32(i)
+#elif defined(HAVE___BUILTIN_BSWAP16)
+#define PLAYER_SWAP16(i)	__builtin_bswap16(i)
+#define PLAYER_SWAP32(i)	__builtin_bswap32(i)
 #else
 #define PLAYER_SWAP16(i)	((uint16_t)(i) >> 8 | (uint16_t)(i) << 8)
 #define PLAYER_SWAP32(i)	\

@@ -440,6 +440,8 @@ elif check_function "bswap16() in <machine/bswap.h>" "bswap16(0)" \
 elif check_function "bswap16() in <sys/endian.h>" "bswap16(0)" \
     sys/endian.h; then
 	header_define HAVE_FREEBSD_BSWAP16
+elif check_function __builtin_bswap16 "__builtin_bswap16(0)"; then
+	header_define HAVE___BUILTIN_BSWAP16
 fi
 
 if check_function use_default_colors "use_default_colors()" curses.h "" \
