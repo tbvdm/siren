@@ -14,6 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+/* Let NetBSD expose strtonum(). */
+#define _OPENBSD_SOURCE
+
 #ifdef __OpenBSD__
 #include <sys/tree.h>
 #else

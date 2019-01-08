@@ -17,6 +17,9 @@
 /* Let glibc expose vasprintf(). */
 #define _GNU_SOURCE
 
+/* Let NetBSD expose reallocarray(). */
+#define _OPENBSD_SOURCE
+
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>

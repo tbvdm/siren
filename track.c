@@ -17,6 +17,9 @@
 /* Let glibc expose strcasestr(). */
 #define _GNU_SOURCE
 
+/* Let NetBSD expose strtonum(). */
+#define _OPENBSD_SOURCE
+
 #ifdef __OpenBSD__
 #include <sys/tree.h>
 #else
