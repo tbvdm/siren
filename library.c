@@ -14,6 +14,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+/* For FreeBSD. */
+#define _WITH_GETLINE
+
 #include <errno.h>
 #include <limits.h>
 #include <pthread.h>
