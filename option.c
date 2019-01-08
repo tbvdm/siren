@@ -113,7 +113,7 @@ static const struct {
 RB_GENERATE(option_tree, option_entry, entries, option_cmp_entry)
 
 static void
-option_add_attrib(const char *name, int value, void (*callback)(void))
+option_add_attrib(const char *name, int value)
 {
 	struct option_entry *o;
 
@@ -121,7 +121,7 @@ option_add_attrib(const char *name, int value, void (*callback)(void))
 	o->name = xstrdup(name);
 	o->type = OPTION_TYPE_ATTRIB;
 	o->value.attrib = value;
-	o->callback = callback;
+	o->callback = screen_configure_objects;
 	option_insert_entry(o);
 }
 
@@ -139,7 +139,7 @@ option_add_boolean(const char *name, int value, void (*callback)(void))
 }
 
 static void
-option_add_colour(const char *name, int value, void (*callback)(void))
+option_add_colour(const char *name, int value)
 {
 	struct option_entry *o;
 
@@ -147,7 +147,7 @@ option_add_colour(const char *name, int value, void (*callback)(void))
 	o->name = xstrdup(name);
 	o->type = OPTION_TYPE_COLOUR;
 	o->value.colour = value;
-	o->callback = callback;
+	o->callback = screen_configure_objects;
 	option_insert_entry(o);
 }
 
@@ -447,55 +447,33 @@ option_init(void)
 	option_add_boolean("show-cursor", 0, screen_configure_cursor);
 	option_add_boolean("show-hidden-files", 0, browser_refresh_dir);
 
-	option_add_attrib("active-attr", ATTRIB_NORMAL,
-	    screen_configure_objects);
-	option_add_colour("active-bg", COLOUR_DEFAULT,
-	    screen_configure_objects);
-	option_add_colour("active-fg", COLOUR_YELLOW,
-	    screen_configure_objects);
-	option_add_attrib("error-attr", ATTRIB_NORMAL,
-	    screen_configure_objects);
-	option_add_colour("error-bg", COLOUR_DEFAULT,
-	    screen_configure_objects);
-	option_add_colour("error-fg", COLOUR_RED, screen_configure_objects);
-	option_add_attrib("info-attr", ATTRIB_NORMAL,
-	    screen_configure_objects);
-	option_add_colour("info-bg", COLOUR_DEFAULT, screen_configure_objects);
-	option_add_colour("info-fg", COLOUR_CYAN, screen_configure_objects);
-	option_add_attrib("player-attr", ATTRIB_REVERSE,
-	    screen_configure_objects);
-	option_add_colour("player-bg", COLOUR_DEFAULT,
-	    screen_configure_objects);
-	option_add_colour("player-fg", COLOUR_DEFAULT,
-	    screen_configure_objects);
-	option_add_attrib("prompt-attr", ATTRIB_NORMAL,
-	    screen_configure_objects);
-	option_add_colour("prompt-bg", COLOUR_DEFAULT,
-	    screen_configure_objects);
-	option_add_colour("prompt-fg", COLOUR_DEFAULT,
-	    screen_configure_objects);
-	option_add_attrib("selection-attr", ATTRIB_REVERSE,
-	    screen_configure_objects);
-	option_add_colour("selection-bg", COLOUR_WHITE,
-	    screen_configure_objects);
-	option_add_colour("selection-fg", COLOUR_BLUE,
-	    screen_configure_objects);
-	option_add_attrib("status-attr", ATTRIB_NORMAL,
-	    screen_configure_objects);
-	option_add_colour("status-bg", COLOUR_DEFAULT,
-	    screen_configure_objects);
-	option_add_colour("status-fg", COLOUR_DEFAULT,
-	    screen_configure_objects);
-	option_add_attrib("view-attr", ATTRIB_NORMAL,
-	    screen_configure_objects);
-	option_add_colour("view-bg", COLOUR_DEFAULT, screen_configure_objects);
-	option_add_colour("view-fg", COLOUR_DEFAULT, screen_configure_objects);
-	option_add_attrib("view-title-attr", ATTRIB_REVERSE,
-	    screen_configure_objects);
-	option_add_colour("view-title-bg", COLOUR_DEFAULT,
-	    screen_configure_objects);
-	option_add_colour("view-title-fg", COLOUR_DEFAULT,
-	    screen_configure_objects);
+	option_add_attrib("active-attr", ATTRIB_NORMAL);
+	option_add_colour("active-bg", COLOUR_DEFAULT);
+	option_add_colour("active-fg", COLOUR_YELLOW);
+	option_add_attrib("error-attr", ATTRIB_NORMAL);
+	option_add_colour("error-bg", COLOUR_DEFAULT);
+	option_add_colour("error-fg", COLOUR_RED);
+	option_add_attrib("info-attr", ATTRIB_NORMAL);
+	option_add_colour("info-bg", COLOUR_DEFAULT);
+	option_add_colour("info-fg", COLOUR_CYAN);
+	option_add_attrib("player-attr", ATTRIB_REVERSE);
+	option_add_colour("player-bg", COLOUR_DEFAULT);
+	option_add_colour("player-fg", COLOUR_DEFAULT);
+	option_add_attrib("prompt-attr", ATTRIB_NORMAL);
+	option_add_colour("prompt-bg", COLOUR_DEFAULT);
+	option_add_colour("prompt-fg", COLOUR_DEFAULT);
+	option_add_attrib("selection-attr", ATTRIB_REVERSE);
+	option_add_colour("selection-bg", COLOUR_WHITE);
+	option_add_colour("selection-fg", COLOUR_BLUE);
+	option_add_attrib("status-attr", ATTRIB_NORMAL);
+	option_add_colour("status-bg", COLOUR_DEFAULT);
+	option_add_colour("status-fg", COLOUR_DEFAULT);
+	option_add_attrib("view-attr", ATTRIB_NORMAL);
+	option_add_colour("view-bg", COLOUR_DEFAULT);
+	option_add_colour("view-fg", COLOUR_DEFAULT);
+	option_add_attrib("view-title-attr", ATTRIB_REVERSE);
+	option_add_colour("view-title-bg", COLOUR_DEFAULT);
+	option_add_colour("view-title-fg", COLOUR_DEFAULT);
 }
 
 static void
