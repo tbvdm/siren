@@ -23,6 +23,7 @@
 #include "../siren.h"
 
 #define OP_AO_BUFSIZE	4096
+#define OP_AO_DRIVER	""
 
 static void		 op_ao_close(void);
 static size_t		 op_ao_get_buffer_size(void);
@@ -76,7 +77,7 @@ op_ao_init(void)
 {
 	option_add_number("ao-buffer-size", OP_AO_BUFSIZE, 1, INT_MAX,
 	    player_reopen_op);
-	option_add_string("ao-driver", "", player_reopen_op);
+	option_add_string("ao-driver", OP_AO_DRIVER, player_reopen_op);
 	return 0;
 }
 
