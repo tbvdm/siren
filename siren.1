@@ -12,7 +12,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd December 29, 2018
+.Dd January 8, 2019
 .Dt SIREN 1
 .Os
 .Sh NAME
@@ -802,27 +802,49 @@ The following options are available.
 .Bl -tag -width Ds
 .It Cm active-attr Pq attribute
 Character attributes for the activated menu entry.
+The default is
+.Em normal .
 .It Cm active-bg Pq colour
 Background colour for the activated menu entry.
+The default is
+.Em default .
 .It Cm active-fg Pq colour
 Foreground colour for the activated menu entry.
+The default is
+.Em yellow .
 .It Cm continue Pq Boolean
 Whether to play the next track if the current track has finished.
+The default is
+.Em true .
 .It Cm continue-after-error Pq Boolean
 Whether to play the next track if playback of the current track was stopped due
 to an error.
+The default is
+.Em false .
 .It Cm error-attr Pq attribute
 Character attributes for error messages.
+The default is
+.Em normal .
 .It Cm error-bg Pq colour
 Background colour for error messages.
+The default is
+.Em default .
 .It Cm error-fg Pq colour
 Foreground colour for error messages.
+The default is
+.Em red .
 .It Cm info-attr Pq attribute
 Character attributes for informational messages.
+The default is
+.Em normal .
 .It Cm info-bg Pq colour
 Background colour for informational messages.
+The default is
+.Em default .
 .It Cm info-fg Pq colour
 Foreground colour for informational messages.
+The default is
+.Em cyan .
 .It Cm library-format Pq format string
 The format used to display tracks in the library.
 The following variables are available.
@@ -843,6 +865,9 @@ The following variables are available.
 .It tracknumber Ta n Ta Track number
 .It tracktotal Ta N Ta Total number of tracks
 .El
+.Pp
+The default is
+.Sq %-*a %-*l %4y %2n. %-*t %5d .
 .It Cm library-format-alt Pq format string
 The alternative format used to display tracks in the library that have a
 missing or empty
@@ -854,6 +879,8 @@ option for a list of available variables.
 If this option is empty, the
 .Cm library-format
 option is used.
+The default is
+.Sq %-*F %5d .
 .It Cm output-plugin Pq string
 The name of the output plug-in to use.
 If the special name
@@ -882,12 +909,21 @@ libao output plug-in
 .It portaudio
 PortAudio output plug-in
 .El
+.Pp
+The default is
+.Sq default .
 .It Cm player-attr Pq attribute
 Character attributes for the player area.
+The default is
+.Em reverse .
 .It Cm player-bg Pq colour
 Background colour for the player area.
+The default is
+.Em default .
 .It Cm player-fg Pq colour
 Foreground colour of the player area.
+The default is
+.Em default .
 .It Cm player-status-format Pq format string
 The format used to display the player status.
 The following variables are available.
@@ -928,11 +964,18 @@ or
 depending on the playback state
 .It volume Ta v Ta Sound volume
 .El
+.Pp
+The default is:
+.Bd -literal -offset indent
+%-7s  %5p / %5d  %3v%%  %u%{?c,  continue,}%{?r,  repeat-all,} %{?t,  repeat-track,}
+.Ed
 .It Cm player-track-format Pq format string
 The format used to display the currently playing track.
 See the
 .Cm library-format
 option for a list of available variables.
+The default is
+.Sq %a - %l (%y) - %n. %t .
 .It Cm player-track-format-alt Pq format string
 The alternative format used to display the currently playing track if it has a
 missing or empty
@@ -944,11 +987,15 @@ option for a list of available variables.
 If this option is empty, the
 .Cm player-track-format
 option is used.
+The default is
+.Sq %F .
 .It Cm playlist-format Pq format string
 The format used to display tracks in the playlist view.
 See the
 .Cm library-format
 option for a list of available variables.
+The default is
+.Sq %-*a %-*t %5d .
 .It Cm playlist-format-alt Pq format string
 The alternative format used to display tracks in the playlist that have a
 missing or empty
@@ -960,17 +1007,27 @@ option for a list of available variables.
 If this option is empty, the
 .Cm playlist-format
 option is used.
+The default is
+.Sq %-*F %5d .
 .It Cm prompt-attr Pq attribute
 Character attributes for the prompt.
+The default is
+.Em normal .
 .It Cm prompt-bg Pq colour
 Background colour for the prompt.
+The default is
+.Em default .
 .It Cm prompt-fg Pq colour
 Foreground colour for the prompt.
+The default is
+.Em default .
 .It Cm queue-format Pq format string
 The format used to display tracks in the queue.
 See the
 .Cm library-format
 option for a list of available variables.
+The default is
+.Sq %-*a %-*t %5d .
 .It Cm queue-format-alt Pq format string
 The alternative format used to display tracks in the queue that have a
 missing or empty
@@ -982,46 +1039,82 @@ option for a list of available variables.
 If this option is empty, the
 .Cm queue-format
 option is used.
+The default is
+.Sq %-*F %5d .
 .It Cm repeat-all Pq Boolean
 Whether to repeat playback of all tracks in the playback source.
+The default is
+.Em true .
 .It Cm repeat-track Pq Boolean
 Whether to repeat playback of the current track.
 This option takes precedence over the
 .Cm repeat-all
 option.
+The default is
+.Em false .
 .It Cm selection-attr Pq attribute
 Character attributes for the selection indicator.
+The default is
+.Em reverse .
 .It Cm selection-bg Pq colour
 Background colour for the selection indicator.
+The default is
+.Em white .
 .It Cm selection-fg Pq colour
 Foreground colour for the selection indicator.
+The default is
+.Em blue .
 .It Cm show-all-files Pq Boolean
 Whether to show all files in the browser view.
 If set to
 .Em false ,
 only directories and supported audio files are shown.
+The default is
+.Em false .
 .It Cm show-cursor Pq Boolean
 Whether always to show the cursor.
+The default is
+.Em false .
 .It Cm show-hidden-files Pq Boolean
 Whether to show hidden files and directories in the browser view.
+The default is
+.Em false .
 .It Cm status-attr Pq attribute
 Character attributes for the status line.
+The default is
+.Em normal .
 .It Cm status-bg Pq colour
 Background colour for the status line.
+The default is
+.Em default .
 .It Cm status-fg Pq colour
 Foreground colour for the status line.
+The default is
+.Em default .
 .It Cm view-attr Pq attribute
 Character attributes for the view.
+The default is
+.Em normal .
 .It Cm view-bg Pq colour
 Background colour for the view.
+The default is
+.Em default .
 .It Cm view-fg Pq colour
 Foreground colour for the view.
+The default is
+.Em default .
 .It Cm view-title-attr Pq attribute
 Character attributes for the view title.
+The default is
+.Em reverse .
 .It Cm view-title-bg Pq colour
 Background colour for the view title.
+The default is
+.Em default .
 .It Cm view-title-fg Pq colour
 Foreground colour for the view title.
+The default is
+.Em default .
 .El
 .Pp
 The following options are specific to the
@@ -1030,10 +1123,16 @@ output plug-in.
 .Bl -tag -width Ds
 .It Cm alsa-mixer-device Pq string
 The name of the mixer device to use.
+The default is
+.Sq default .
 .It Cm alsa-mixer-element Pq string
 The name of the mixer element to use.
+The default is
+.Sq PCM .
 .It Cm alsa-pcm-device Pq string
 The name of the PCM device to use.
+The default is
+.Sq default .
 .El
 .Pp
 The following options are specific to the
@@ -1042,6 +1141,7 @@ output plug-in.
 .Bl -tag -width Ds
 .It Cm ao-buffer-size Pq number
 The size of the output buffer, specified in bytes.
+The default is 4096.
 .It Cm ao-driver Pq string
 The name of the driver to use.
 If empty, the default driver will be used.
@@ -1050,6 +1150,7 @@ See
 and
 .Lk https://www.xiph.org/ao/doc/drivers.html
 for possible values.
+The default is empty.
 .El
 .Pp
 The following options are specific to the
@@ -1058,6 +1159,8 @@ output plug-in.
 .Bl -tag -width Ds
 .It Cm oss-device Pq string
 The path of the audio device to use.
+The default is
+.Sq /dev/dsp .
 .El
 .Pp
 The following options are specific to the
@@ -1066,6 +1169,7 @@ output plug-in.
 .Bl -tag -width Ds
 .It Cm portaudio-buffer-size Pq number
 The size of the output buffer, specified in bytes.
+The default is 4096.
 .El
 .Pp
 The following options are specific to the
@@ -1074,6 +1178,7 @@ output plug-in.
 .Bl -tag -width Ds
 .It Cm pulse-buffer-size Pq number
 The size of the output buffer, specified in bytes.
+The default is 4096.
 .El
 .Pp
 The following options are specific to the
@@ -1085,6 +1190,8 @@ The name of the device to use.
 See
 .Xr sndio 7
 for possible values.
+The default is
+.Sq default .
 .El
 .Pp
 The following options are specific to the
@@ -1093,6 +1200,8 @@ output plug-in.
 .Bl -tag -width Ds
 .It Cm sun-device Pq string
 The path of the audio device to use.
+The default is
+.Sq /dev/audio .
 .El
 .Sh CONFIGURATION FILE
 Upon start-up
