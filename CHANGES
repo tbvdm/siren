@@ -1,6 +1,13 @@
 This is a list of the most important changes only. See the repository history
 for a list of all changes.
 
+Siren 0.9 (2019-01-09):
+
+- Add the close-output-plugin command.
+- Add the continue-after-error option.
+- Unbreak the build on systems other than OpenBSD.
+- Unbreak the build of the ffmpeg plug-in on macOS.
+
 Siren 0.8 (2018-07-23):
 
 - Add the ffmpeg option to the configure script.
