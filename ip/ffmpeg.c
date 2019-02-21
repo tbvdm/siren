@@ -23,6 +23,14 @@
 
 #include "../siren.h"
 
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(57, 33, 100)
+#define IP_FFMPEG_AVSTREAM_CODEC_DEPRECATED
+#endif
+
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(58, 9, 100)
+#define IP_FFMPEG_AV_REGISTER_ALL_DEPRECATED
+#endif
+
 #define IP_FFMPEG_ERROR	-1
 #define IP_FFMPEG_EOF	0
 #define IP_FFMPEG_OK	1
@@ -380,6 +388,9 @@ ip_ffmpeg_close(struct track *t)
 	ipd = t->ipdata;
 	av_frame_free(&ipd->frame);
 	avcodec_close(ipd->codecctx);
+#ifdef IP_FFMPEG_AVSTREAM_CODEC_DEPRECATED
+	avcodec_free_context(&ipd->codecctx);
+#endif
 	avformat_close_input(&ipd->fmtctx);
 	free(ipd);
 }
@@ -438,7 +449,9 @@ static int
 ip_ffmpeg_init(void)
 {
 	av_log_set_callback(ip_ffmpeg_log);
+#ifndef IP_FFMPEG_AV_REGISTER_ALL_DEPRECATED
 	av_register_all();
+#endif
 	return 0;
 }
 
@@ -475,19 +488,41 @@ ip_ffmpeg_open(struct track *t)
 	}
 	ipd->stream = ret;
 
+#ifdef IP_FFMPEG_AVSTREAM_CODEC_DEPRECATED
+	codec = avcodec_find_decoder(
+	    ipd->fmtctx->streams[ipd->stream]->codecpar->codec_id);
+#else
 	ipd->codecctx = ipd->fmtctx->streams[ipd->stream]->codec;
 	codec = avcodec_find_decoder(ipd->codecctx->codec_id);
+#endif
 	if (codec == NULL) {
 		LOG_ERRX("%s: avcodec_find_decoder() failed", t->path);
 		msg_errx("%s: Cannot find decoder", t->path);
 		goto error2;
 	}
 
+#ifdef IP_FFMPEG_AVSTREAM_CODEC_DEPRECATED
+	ipd->codecctx = avcodec_alloc_context3(codec);
+	if (ipd->codecctx == NULL) {
+		LOG_ERRX("%s: avcodec_allocate_context3() failed", t->path);
+		msg_errx("%s: Cannot allocate codec context", t->path);
+		goto error2;
+	}
+
+	ret = avcodec_parameters_to_context(ipd->codecctx,
+	    ipd->fmtctx->streams[ipd->stream]->codecpar);
+	if (ret < 0) {
+		IP_FFMPEG_LOG("avcodec_parameters_to_context");
+		IP_FFMPEG_MSG("Cannot copy codec parameters");
+		goto error3;
+	}
+#endif
+
 	ret = avcodec_open2(ipd->codecctx, codec, NULL);
 	if (ret != 0) {
 		IP_FFMPEG_LOG("avcodec_open2");
 		IP_FFMPEG_MSG("Cannot initialise codec context");
-		goto error2;
+		goto error3;
 	}
 
 	switch (ipd->codecctx->sample_fmt) {
@@ -505,7 +540,7 @@ ip_ffmpeg_open(struct track *t)
 		LOG_ERRX("%s: %s: unsupported sample format", t->path,
 		    av_get_sample_fmt_name(ipd->codecctx->sample_fmt));
 		msg_errx("%s: Unsupported sample format", t->path);
-		goto error2;
+		goto error3;
 	}
 
 	av_init_packet(&ipd->packet);
@@ -522,6 +557,10 @@ ip_ffmpeg_open(struct track *t)
 
 	return 0;
 
+error3:
+#ifdef IP_FFMPEG_AVSTREAM_CODEC_DEPRECATED
+	avcodec_free_context(&ipd->codecctx);
+#endif
 error2:
 	avformat_close_input(&ipd->fmtctx);
 error1:
