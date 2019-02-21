@@ -462,7 +462,7 @@ ip_ffmpeg_open(struct track *t)
 	ret = avformat_find_stream_info(ipd->fmtctx, NULL);
 	if (ret < 0) {
 		IP_FFMPEG_LOG("avformat_find_stream_info");
-		IP_FFMPEG_MSG("Cannot open file");
+		IP_FFMPEG_MSG("Cannot get stream information");
 		goto error2;
 	}
 
@@ -470,7 +470,7 @@ ip_ffmpeg_open(struct track *t)
 	    NULL, 0);
 	if (ret < 0) {
 		IP_FFMPEG_LOG("av_find_best_stream");
-		IP_FFMPEG_MSG("Cannot open file");
+		IP_FFMPEG_MSG("Cannot find audio stream");
 		goto error2;
 	}
 	ipd->stream = ret;
@@ -478,15 +478,15 @@ ip_ffmpeg_open(struct track *t)
 	ipd->codecctx = ipd->fmtctx->streams[ipd->stream]->codec;
 	codec = avcodec_find_decoder(ipd->codecctx->codec_id);
 	if (codec == NULL) {
-		LOG_ERRX("%s: cannot find decoder", t->path);
+		LOG_ERRX("%s: avcodec_find_decoder() failed", t->path);
 		msg_errx("%s: Cannot find decoder", t->path);
 		goto error2;
 	}
 
 	ret = avcodec_open2(ipd->codecctx, codec, NULL);
 	if (ret != 0) {
-		IP_FFMPEG_LOG("avcodec_open2() failed");
-		IP_FFMPEG_MSG("Cannot open file");
+		IP_FFMPEG_LOG("avcodec_open2");
+		IP_FFMPEG_MSG("Cannot initialise codec context");
 		goto error2;
 	}
 
