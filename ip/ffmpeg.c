@@ -543,9 +543,15 @@ ip_ffmpeg_open(struct track *t)
 		goto error3;
 	}
 
+	ipd->frame = av_frame_alloc();
+	if (ipd->frame == NULL) {
+		LOG_ERRX("%s: av_frame_alloc() failed", t->path);
+		msg_errx("%s: Cannot allocate frame", t->path);
+		goto error3;
+	}
+
 	av_init_packet(&ipd->packet);
 	ipd->packet.size = 0;
-	ipd->frame = av_frame_alloc();
 	ipd->timestamp = 0;
 	ipd->pdatalen = 0;
 	ipd->fdatalen = 0;
