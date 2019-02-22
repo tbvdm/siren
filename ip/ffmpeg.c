@@ -181,20 +181,8 @@ ip_ffmpeg_decode_frame(struct track *t, struct ip_ffmpeg_ipdata *ipd)
 		}
 		ipd->pdatalen -= ret;
 
-		if (got_frame) {
-			ret = av_samples_get_buffer_size(NULL,
-			    ipd->codecctx->channels, ipd->frame->nb_samples,
-			    ipd->codecctx->sample_fmt, 1);
-			if (ret < 0) {
-				IP_FFMPEG_LOG("av_samples_get_buffer_size");
-				IP_FFMPEG_MSG("Decoding error");
-				return IP_FFMPEG_ERROR;
-			}
-
-			ipd->fdatalen = ret;
-			ipd->fdata = ipd->frame->data[0];
+		if (got_frame)
 			return IP_FFMPEG_OK;
-		}
 
 		if (eof)
 			/* No more frames, so the decoder has been flushed */
@@ -221,6 +209,18 @@ ip_ffmpeg_read_interleaved(struct track *t, struct ip_ffmpeg_ipdata *ipd,
 				break;
 			if (ret == IP_FFMPEG_ERROR)
 				return -1;
+
+			ret = av_samples_get_buffer_size(NULL,
+			    ipd->codecctx->channels, ipd->frame->nb_samples,
+			    ipd->codecctx->sample_fmt, 1);
+			if (ret < 0) {
+				IP_FFMPEG_LOG("av_samples_get_buffer_size");
+				IP_FFMPEG_MSG("Decoding error");
+				return -1;
+			}
+
+			ipd->fdatalen = ret;
+			ipd->fdata = ipd->frame->data[0];
 		}
 
 		switch (ipd->codecctx->sample_fmt) {
