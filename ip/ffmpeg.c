@@ -551,6 +551,7 @@ ip_ffmpeg_open(struct track *t)
 	}
 
 	av_init_packet(&ipd->packet);
+	ipd->packet.data = NULL;
 	ipd->packet.size = 0;
 	ipd->timestamp = 0;
 	ipd->pdatalen = 0;
