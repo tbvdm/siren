@@ -234,6 +234,7 @@ bind_init(void)
 	bind_add(BIND_SCOPE_COMMON, 'p', "search-prev");
 	bind_add(BIND_SCOPE_COMMON, 'q', "quit");
 	bind_add(BIND_SCOPE_COMMON, 'r', "set repeat-track");
+	bind_add(BIND_SCOPE_COMMON, 's', "set-playback-source");
 	bind_add(BIND_SCOPE_COMMON, 'v', "stop");
 	bind_add(BIND_SCOPE_COMMON, 'x', "play");
 	bind_add(BIND_SCOPE_COMMON, 'z', "play-prev");
