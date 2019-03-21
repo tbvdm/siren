@@ -138,6 +138,8 @@ COMMAND_PARSE_PROTOTYPE(select_view);
 COMMAND_EXEC_PROTOTYPE(set);
 COMMAND_FREE_PROTOTYPE(set);
 COMMAND_PARSE_PROTOTYPE(set);
+COMMAND_EXEC_PROTOTYPE(set_playback_source);
+COMMAND_PARSE_PROTOTYPE(set_playback_source);
 COMMAND_EXEC_PROTOTYPE(set_volume);
 COMMAND_PARSE_PROTOTYPE(set_volume);
 COMMAND_EXEC_PROTOTYPE(show_binding);
@@ -362,6 +364,12 @@ static struct command command_list[] = {
 		command_set_parse,
 		command_set_exec,
 		command_set_free
+	},
+	{
+		"set-playback-source",
+		command_set_playback_source_parse,
+		command_set_playback_source_exec,
+		free
 	},
 	{
 		"set-volume",
@@ -1306,6 +1314,64 @@ command_set_parse(int argc, char **argv, void **datap, char **error)
 error:
 	free(data);
 	return -1;
+}
+
+static void
+command_set_playback_source_exec(void *datap)
+{
+	enum player_source src;
+
+	if (datap != NULL)
+		src = *(enum player_source *)datap;
+	else
+		switch (view_get_id()) {
+		case VIEW_ID_BROWSER:
+			src = PLAYER_SOURCE_BROWSER;
+			break;
+		case VIEW_ID_LIBRARY:
+			src = PLAYER_SOURCE_LIBRARY;
+			break;
+		case VIEW_ID_PLAYLIST:
+			src = PLAYER_SOURCE_PLAYLIST;
+			break;
+		default:
+			msg_errx("This view cannot be set as playback source");
+			return;
+		}
+
+	player_set_source(src);
+}
+
+static int
+command_set_playback_source_parse(int argc, char **argv, void **datap,
+    char **error)
+{
+	enum player_source *src;
+
+	if (argc > 2) {
+		*error = xstrdup("Usage: set-playback-source [source]");
+		return -1;
+	}
+
+	if (argc != 2)
+		src = NULL;
+	else {
+		src = xmalloc(sizeof *src);
+		if (!strcmp(argv[1], "browser"))
+			*src = PLAYER_SOURCE_BROWSER;
+		else if (!strcmp(argv[1], "library"))
+			*src = PLAYER_SOURCE_LIBRARY;
+		else if (!strcmp(argv[1], "playlist"))
+			*src = PLAYER_SOURCE_PLAYLIST;
+		else {
+			xasprintf(error, "Invalid source: %s", argv[1]);
+			free(src);
+			return -1;
+		}
+	}
+
+	*datap = src;
+	return 0;
 }
 
 static void

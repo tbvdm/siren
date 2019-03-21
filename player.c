@@ -745,6 +745,7 @@ player_set_source(enum player_source source)
 	XPTHREAD_MUTEX_LOCK(&player_source_mtx);
 	player_source = source;
 	XPTHREAD_MUTEX_UNLOCK(&player_source_mtx);
+	player_print_status();
 }
 
 void

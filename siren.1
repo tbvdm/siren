@@ -12,7 +12,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd January 8, 2019
+.Dd March 21, 2019
 .Dt SIREN 1
 .Os
 .Sh NAME
@@ -583,6 +583,18 @@ is not specified, it is toggled.
 See
 .Sx OPTIONS
 below for a list of available options.
+.It Ic set-playback-source Op Ar source
+Set the playback source.
+The
+.Ar source
+argument must be one of
+.Em browser ,
+.Em library
+or
+.Em playlist .
+If
+.Ar source
+is not specified, the current view is used, if possible.
 .It Xo
 .Ic set-volume
 .Op Fl d | i
