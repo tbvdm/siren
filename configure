@@ -492,7 +492,13 @@ if check_plugin_pkgconfig flac ip flac; then
 	fi
 fi
 
-check_plugin_pkgconfig mad ip "mad id3tag"
+if ! check_plugin_pkgconfig mad ip "mad id3tag" && [ "$enable_mad" != no ] &&
+    check_header mad.h && check_library mad && check_header id3tag.h &&
+    check_library id3tag; then
+	makefile_append IP mad
+	makefile_assign LDFLAGS_mad "-lmad -lid3tag"
+	enabled_ips="$enabled_ips mad"
+fi
 
 check_plugin_pkgconfig mpg123 ip libmpg123
 
