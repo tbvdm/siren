@@ -144,7 +144,6 @@ ip_ffmpeg_read_packet(struct track *t, struct ip_ffmpeg_ipdata *ipd)
 		}
 		if (ipd->packet.stream_index == ipd->stream) {
 			ipd->pdatalen = ipd->packet.size;
-			ipd->timestamp = ipd->packet.pts;
 			return IP_FFMPEG_OK;
 		}
 	}
@@ -181,8 +180,10 @@ ip_ffmpeg_decode_frame(struct track *t, struct ip_ffmpeg_ipdata *ipd)
 		}
 		ipd->pdatalen -= ret;
 
-		if (got_frame)
+		if (got_frame) {
+			ipd->timestamp = ipd->frame->pts;
 			return IP_FFMPEG_OK;
+		}
 
 		if (eof)
 			/* No more frames, so the decoder has been flushed */
