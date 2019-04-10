@@ -27,6 +27,10 @@
 #define IP_FFMPEG_AVSTREAM_CODEC_DEPRECATED
 #endif
 
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57, 37, 100)
+#define IP_FFMPEG_AVCODEC_DECODE_AUDIO4_DEPRECATED
+#endif
+
 #if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(58, 9, 100)
 #define IP_FFMPEG_AV_REGISTER_ALL_DEPRECATED
 #endif
@@ -47,7 +51,11 @@ struct ip_ffmpeg_ipdata {
 	AVFrame		*frame;
 	int64_t		 timestamp;
 	int		 stream;	/* Audio stream index		*/
+#ifdef IP_FFMPEG_AVCODEC_DECODE_AUDIO4_DEPRECATED
+	int		 have_packet;
+#else
 	int		 pdatalen;	/* Remaining packet data length	*/
+#endif
 	int		 fdatalen;	/* Remaining frame data length	*/
 	uint8_t		*fdata;		/* Remaining frame data		*/
 	int		 sample;	/* Sample index in frame	*/
@@ -157,6 +165,41 @@ ip_ffmpeg_read_packet(struct track *t, struct ip_ffmpeg_ipdata *ipd)
 static int
 ip_ffmpeg_decode_frame(struct track *t, struct ip_ffmpeg_ipdata *ipd)
 {
+#ifdef IP_FFMPEG_AVCODEC_DECODE_AUDIO4_DEPRECATED
+	int ret;
+
+	for (;;) {
+		if (!ipd->have_packet) {
+			if (ip_ffmpeg_read_packet(t, ipd) == IP_FFMPEG_ERROR)
+				return IP_FFMPEG_ERROR;
+			ipd->have_packet = 1;
+		}
+
+		ret = avcodec_send_packet(ipd->codecctx, &ipd->packet);
+		if (ret != AVERROR(EAGAIN)) {
+			av_packet_unref(&ipd->packet);
+			ipd->have_packet = 0;
+			if (ret < 0 && ret != AVERROR_EOF) {
+				IP_FFMPEG_LOG("avcodec_send_packet");
+				IP_FFMPEG_MSG("Decoding error");
+				return IP_FFMPEG_ERROR;
+			}
+		}
+
+		ret = avcodec_receive_frame(ipd->codecctx, ipd->frame);
+		if (ret == AVERROR_EOF)
+			return IP_FFMPEG_EOF;
+		if (ret < 0 && ret != AVERROR(EAGAIN)) {
+			IP_FFMPEG_LOG("avcodec_receive_frame");
+			IP_FFMPEG_MSG("Decoding error");
+			return IP_FFMPEG_ERROR;
+		}
+		if (ret == 0) {
+			ipd->timestamp = ipd->frame->pts;
+			return IP_FFMPEG_OK;
+		}
+	}
+#else
 	int eof, got_frame, ret;
 
 	eof = 0;
@@ -192,6 +235,7 @@ ip_ffmpeg_decode_frame(struct track *t, struct ip_ffmpeg_ipdata *ipd)
 			/* No more frames, so the decoder has been flushed */
 			return IP_FFMPEG_EOF;
 	}
+#endif
 }
 
 static int
@@ -558,7 +602,11 @@ ip_ffmpeg_open(struct track *t)
 	ipd->packet.data = NULL;
 	ipd->packet.size = 0;
 	ipd->timestamp = 0;
+#ifdef IP_FFMPEG_AVCODEC_DECODE_AUDIO4_DEPRECATED
+	ipd->have_packet = 0;
+#else
 	ipd->pdatalen = 0;
+#endif
 	ipd->fdatalen = 0;
 	ipd->sample = 0;
 
@@ -603,7 +651,11 @@ ip_ffmpeg_seek(struct track *t, unsigned int sec)
 	    ipd->fmtctx->streams[ipd->stream]->time_base.num;
 	if (av_seek_frame(ipd->fmtctx, ipd->stream, timestamp, 0) >= 0) {
 		/* Flush */
+#ifdef IP_FFMPEG_AVCODEC_DECODE_AUDIO4_DEPRECATED
+		ipd->have_packet = 0;
+#else
 		ipd->pdatalen = 0;
+#endif
 		ipd->fdatalen = 0;
 		ipd->sample = ipd->frame->nb_samples;
 		avcodec_flush_buffers(ipd->codecctx);
