@@ -131,21 +131,23 @@ ip_ffmpeg_read_packet(struct track *t, struct ip_ffmpeg_ipdata *ipd)
 	int ret;
 
 	for (;;) {
-		/* Free the previous packet */
-		av_packet_unref(&ipd->packet);
-
 		ret = av_read_frame(ipd->fmtctx, &ipd->packet);
-		if (ret == AVERROR_EOF)
+		if (ret == AVERROR_EOF) {
+			/* Prepare a flush packet */
+			ipd->packet.data = NULL;
+			ipd->packet.size = 0;
 			return IP_FFMPEG_EOF;
+		}
 		if (ret < 0) {
 			IP_FFMPEG_LOG("av_read_frame");
 			IP_FFMPEG_MSG("Cannot read from file");
 			return IP_FFMPEG_ERROR;
 		}
-		if (ipd->packet.stream_index == ipd->stream) {
-			ipd->pdatalen = ipd->packet.size;
+		if (ipd->packet.stream_index == ipd->stream)
 			return IP_FFMPEG_OK;
-		}
+
+		/* Packet from wrong stream; unref it and try again */
+		av_packet_unref(&ipd->packet);
 	}
 }
 
@@ -160,15 +162,16 @@ ip_ffmpeg_decode_frame(struct track *t, struct ip_ffmpeg_ipdata *ipd)
 	eof = 0;
 	for (;;) {
 		if (ipd->pdatalen == 0) {
+			/* Free the previous packet */
+			av_packet_unref(&ipd->packet);
+
 			ret = ip_ffmpeg_read_packet(t, ipd);
 			if (ret == IP_FFMPEG_ERROR)
 				return ret;
-			if (ret == IP_FFMPEG_EOF) {
-				/* Flush the decoder */
+			if (ret == IP_FFMPEG_EOF)
 				eof = 1;
-				ipd->packet.data = NULL;
-				ipd->packet.size = 0;
-			}
+
+			ipd->pdatalen = ipd->packet.size;
 		}
 
 		ret = avcodec_decode_audio4(ipd->codecctx, ipd->frame,
