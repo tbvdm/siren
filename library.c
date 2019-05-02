@@ -255,6 +255,21 @@ library_print(void)
 }
 
 void
+library_reactivate_entry(void)
+{
+	struct menu_entry	*e;
+	struct track		*t;
+
+	XPTHREAD_MUTEX_LOCK(&library_menu_mtx);
+	if ((e = menu_get_active_entry(library_menu)) != NULL) {
+		t = menu_get_entry_data(e);
+		player_set_source(PLAYER_SOURCE_LIBRARY);
+		player_play_track(t);
+	}
+	XPTHREAD_MUTEX_UNLOCK(&library_menu_mtx);
+}
+
+void
 library_read_file(void)
 {
 	struct menu_entry	*e;

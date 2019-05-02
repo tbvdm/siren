@@ -110,6 +110,7 @@ COMMAND_EXEC_PROTOTYPE(move_entry_down);
 COMMAND_EXEC_PROTOTYPE(move_entry_up);
 COMMAND_EXEC_PROTOTYPE(pause);
 COMMAND_EXEC_PROTOTYPE(play);
+COMMAND_EXEC_PROTOTYPE(play_active);
 COMMAND_EXEC_PROTOTYPE(play_next);
 COMMAND_EXEC_PROTOTYPE(play_prev);
 COMMAND_EXEC_PROTOTYPE(pwd);
@@ -231,6 +232,12 @@ static struct command command_list[] = {
 		"play",
 		command_generic_parse,
 		command_play_exec,
+		NULL
+	},
+	{
+		"play-active",
+		command_generic_parse,
+		command_play_active_exec,
 		NULL
 	},
 	{
@@ -823,6 +830,12 @@ static void
 command_play_exec(UNUSED void *datap)
 {
 	player_play();
+}
+
+static void
+command_play_active_exec(UNUSED void *datap)
+{
+	view_reactivate_entry();
 }
 
 static void

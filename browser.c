@@ -282,6 +282,27 @@ browser_print(void)
 	}
 }
 
+void
+browser_reactivate_entry(void)
+{
+	struct menu_entry	*me;
+	struct browser_entry	*be;
+	struct track		*t;
+	char			*path;
+
+	XPTHREAD_MUTEX_LOCK(&browser_menu_mtx);
+	if ((me = menu_get_active_entry(browser_menu)) != NULL) {
+		be = menu_get_entry_data(me);
+		xasprintf(&path, "%s/%s", browser_dir, be->name);
+		if ((t = track_get(path, be->ip)) != NULL) {
+			player_set_source(PLAYER_SOURCE_BROWSER);
+			player_play_track(t);
+		}
+		free(path);
+	}
+	XPTHREAD_MUTEX_UNLOCK(&browser_menu_mtx);
+}
+
 /*
  * The browser_menu_mtx mutex must be locked before calling this function.
  */

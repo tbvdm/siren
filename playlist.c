@@ -214,6 +214,21 @@ playlist_load(const char *file)
 }
 
 void
+playlist_reactivate_entry(void)
+{
+	struct menu_entry	*e;
+	struct track		*t;
+
+	XPTHREAD_MUTEX_LOCK(&playlist_menu_mtx);
+	if ((e = menu_get_active_entry(playlist_menu)) != NULL) {
+		t = menu_get_entry_data(e);
+		player_set_source(PLAYER_SOURCE_PLAYLIST);
+		player_play_track(t);
+	}
+	XPTHREAD_MUTEX_UNLOCK(&playlist_menu_mtx);
+}
+
+void
 playlist_print(void)
 {
 	if (view_get_id() != VIEW_ID_PLAYLIST)

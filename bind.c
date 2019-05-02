@@ -223,6 +223,7 @@ bind_init(void)
 	bind_add(BIND_SCOPE_COMMON, 'G', "select-last-entry");
 	bind_add(BIND_SCOPE_COMMON, 'N', "search-prev");
 	bind_add(BIND_SCOPE_COMMON, 'R', "set repeat-all");
+	bind_add(BIND_SCOPE_COMMON, 'X', "play-active");
 	bind_add(BIND_SCOPE_COMMON, '_', "set-volume -d 10");
 	bind_add(BIND_SCOPE_COMMON, 'b', "play-next");
 	bind_add(BIND_SCOPE_COMMON, 'c', "pause");

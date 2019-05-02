@@ -28,6 +28,7 @@ struct view_entry {
 	void		 (*delete_entry)(void);
 	void		 (*move_entry_down)(void);
 	void		 (*move_entry_up)(void);
+	void		 (*reactivate_entry)(void);
 	void		 (*search_next)(const char *);
 	void		 (*search_prev)(const char *);
 	void		 (*select_active_entry)(void);
@@ -50,6 +51,7 @@ static struct view_entry view_list[] = {
 		library_delete_entry,
 		NULL,
 		NULL,
+		library_reactivate_entry,
 		library_search_next,
 		library_search_prev,
 		library_select_active_entry,
@@ -70,6 +72,7 @@ static struct view_entry view_list[] = {
 		NULL,
 		NULL,
 		NULL,
+		playlist_reactivate_entry,
 		playlist_search_next,
 		playlist_search_prev,
 		playlist_select_active_entry,
@@ -90,6 +93,7 @@ static struct view_entry view_list[] = {
 		queue_delete_entry,
 		queue_move_entry_down,
 		queue_move_entry_up,
+		NULL,
 		queue_search_next,
 		queue_search_prev,
 		NULL,
@@ -110,6 +114,7 @@ static struct view_entry view_list[] = {
 		NULL,
 		NULL,
 		NULL,
+		browser_reactivate_entry,
 		browser_search_next,
 		browser_search_prev,
 		browser_select_active_entry,
@@ -313,4 +318,11 @@ view_select_view(enum view_id id)
 				view_print();
 				break;
 			}
+}
+
+void
+view_reactivate_entry(void)
+{
+	if (view_list[view_sel].reactivate_entry != NULL)
+		view_list[view_sel].reactivate_entry();
 }

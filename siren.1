@@ -12,7 +12,7 @@
 .\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 .\" OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 .\"
-.Dd March 24, 2019
+.Dd May 2, 2019
 .Dt SIREN 1
 .Os
 .Sh NAME
@@ -207,6 +207,9 @@ Enter the search prompt to search backward.
 Search for the previous occurrence.
 .It n
 Search for the next occurrence.
+.It X
+Play the active track in the current view, even if that view is not the
+playback source.
 .It s
 Make the current view the playback source.
 .El
@@ -471,6 +474,9 @@ This command is supported in the queue view only.
 Pause or resume playback.
 .It Ic play
 Start, restart or resume playback.
+.It Ic play-active
+Play the active track in the current view, even if that view is not the
+playback source.
 .It Ic play-next
 Play the next track in the playback source.
 .It Ic play-prev
