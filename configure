@@ -384,15 +384,6 @@ else
 	makefile_append SRCS compat/err.c
 fi
 
-if ! check_function glob "glob(NULL, 0, NULL, NULL)" glob.h; then
-	if check_function "glob() in libandroid-glob" \
-	    "glob(NULL, 0, NULL, NULL)" glob.h "" -landroid-glob; then
-		makefile_append LDFLAGS_PROG -landroid-glob
-	else
-		error "cannot determine how to use glob()"
-	fi
-fi
-
 if ! check_function initscr "initscr()" curses.h "" -lcurses; then
 	error "cannot determine how to use initscr()"
 fi
