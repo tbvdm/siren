@@ -48,14 +48,12 @@ static void		 track_free_metadata(struct track_entry *);
 static void		 track_init_metadata(struct track_entry *);
 static void		 track_read_cache(void);
 
-RB_PROTOTYPE(track_tree, track_entry, entries, track_cmp_entry)
-
 static pthread_mutex_t	 track_metadata_mtx = PTHREAD_MUTEX_INITIALIZER;
 static struct track_tree track_tree = RB_INITIALIZER(track_tree);
 static size_t		 track_nentries;
 static int		 track_tree_modified;
 
-RB_GENERATE(track_tree, track_entry, entries, track_cmp_entry)
+RB_GENERATE_STATIC(track_tree, track_entry, entries, track_cmp_entry)
 
 static int
 track_add_entry(struct track_entry *te)

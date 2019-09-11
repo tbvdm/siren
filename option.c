@@ -61,8 +61,6 @@ static int			 option_cmp_entry(struct option_entry *,
 				    struct option_entry *);
 static void			 option_insert_entry(struct option_entry *);
 
-RB_PROTOTYPE(option_tree, option_entry, entries, option_cmp_entry)
-
 static struct option_tree	option_tree = RB_INITIALIZER(option_tree);
 static pthread_mutex_t		option_tree_mtx = PTHREAD_MUTEX_INITIALIZER;
 
@@ -109,7 +107,7 @@ static const struct {
 	{ 1,			"yes" }
 };
 
-RB_GENERATE(option_tree, option_entry, entries, option_cmp_entry)
+RB_GENERATE_STATIC(option_tree, option_entry, entries, option_cmp_entry)
 
 static void
 option_add_attrib(const char *name, int value)

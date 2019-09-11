@@ -48,8 +48,6 @@ static char			*bind_key_to_string(int, char *, size_t);
 static void			 bind_remove(struct bind_entry *);
 static const char		*bind_scope_to_string(enum bind_scope);
 
-RB_PROTOTYPE(bind_tree, bind_entry, entries, bind_cmp_entry)
-
 static struct bind_tree bind_tree = RB_INITIALIZER(bind_tree);
 
 static const struct {
@@ -104,7 +102,7 @@ static const struct {
 	{ K_F20,		"f20" }
 };
 
-RB_GENERATE(bind_tree, bind_entry, entries, bind_cmp_entry)
+RB_GENERATE_STATIC(bind_tree, bind_entry, entries, bind_cmp_entry)
 
 static void
 bind_add(enum bind_scope scope, int key, const char *command)
