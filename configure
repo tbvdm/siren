@@ -436,7 +436,7 @@ else
 	makefile_append SRCS compat/strtonum.c
 fi
 
-if check_function swap16 "swap16(0)" sys/types.h; then
+if check_function swap16 "swap16(0)" endian.h; then
 	header_define HAVE_OPENBSD_SWAP16
 elif check_function "bswap16() in <machine/bswap.h>" "bswap16(0)" \
     "sys/types.h machine/bswap.h"; then

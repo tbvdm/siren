@@ -33,7 +33,7 @@
 #endif
 
 #ifdef HAVE_OPENBSD_SWAP16
-#include <sys/types.h>
+#include <endian.h>
 #endif
 
 #if defined(HAVE_FREEBSD_BSWAP16) || defined(HAVE_NETBSD_BSWAP16)
