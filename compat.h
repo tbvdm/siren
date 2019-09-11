@@ -85,4 +85,31 @@ char		*strsep(char **, const char *);
 long long int	 strtonum(const char *, long long, long long, const char **);
 #endif
 
+#ifdef HAVE_OPENBSD_SWAP16
+#include <endian.h>
+#else
+#ifdef HAVE_FREEBSD_BSWAP16
+#include <sys/endian.h>
+#define swap16		bswap16
+#define swap32		bswap32
+#elif defined(HAVE_NETBSD_BSWAP16)
+#include <sys/types.h>
+#include <machine/bswap.h>
+#define swap16		bswap16
+#define swap32		bswap32
+#elif defined(HAVE___BUILTIN_BSWAP16)
+#define swap16		__builtin_bswap16
+#define swap32		__builtin_bswap32
+#else
+#define swap16(u)	(uint16_t)(					\
+			((uint16_t)(u) & 0xff00U) >> 8 |		\
+			((uint16_t)(u) & 0x00ffU) << 8)
+#define swap32(u)	(uint32_t)(					\
+			((uint32_t)(u) & 0xff000000U) >> 24 |		\
+			((uint32_t)(u) & 0x00ff0000U) >>  8 |		\
+			((uint32_t)(u) & 0x0000ff00U) <<  8 |		\
+			((uint32_t)(u) & 0x000000ffU) << 24)
+#endif
+#endif
+
 #endif

@@ -23,34 +23,6 @@
 
 #include "siren.h"
 
-#ifdef HAVE_FREEBSD_BSWAP16
-#include <sys/endian.h>
-#endif
-
-#ifdef HAVE_NETBSD_BSWAP16
-#include <sys/types.h>
-#include <machine/bswap.h>
-#endif
-
-#ifdef HAVE_OPENBSD_SWAP16
-#include <endian.h>
-#endif
-
-#if defined(HAVE_FREEBSD_BSWAP16) || defined(HAVE_NETBSD_BSWAP16)
-#define PLAYER_SWAP16(i)	bswap16(i)
-#define PLAYER_SWAP32(i)	bswap32(i)
-#elif defined(HAVE_OPENBSD_SWAP16)
-#define PLAYER_SWAP16(i)	swap16(i)
-#define PLAYER_SWAP32(i)	swap32(i)
-#elif defined(HAVE___BUILTIN_BSWAP16)
-#define PLAYER_SWAP16(i)	__builtin_bswap16(i)
-#define PLAYER_SWAP32(i)	__builtin_bswap32(i)
-#else
-#define PLAYER_SWAP16(i)	((uint16_t)(i) >> 8 | (uint16_t)(i) << 8)
-#define PLAYER_SWAP32(i)	\
-	((i) >> 24 | ((i) & 0xff0000) >> 16 | ((i) & 0xff00) << 8 | (i) << 24)
-#endif
-
 #define PLAYER_FMT_CONTINUE	0
 #define PLAYER_FMT_DURATION	1
 #define PLAYER_FMT_POSITION	2
@@ -426,10 +398,10 @@ player_play_sample_buffer(struct sample_buffer *sb)
 	if (sb->swap) {
 		if (sb->nbytes == 2)
 			for (i = 0; i < sb->len_s; i++)
-				sb->data2[i] = PLAYER_SWAP16(sb->data2[i]);
+				sb->data2[i] = swap16(sb->data2[i]);
 		else
 			for (i = 0; i < sb->len_s; i++)
-				sb->data4[i] = PLAYER_SWAP32(sb->data4[i]);
+				sb->data4[i] = swap32(sb->data4[i]);
 	}
 
 	XPTHREAD_MUTEX_LOCK(&player_op_mtx);
