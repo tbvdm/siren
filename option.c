@@ -19,12 +19,6 @@
 
 #include "config.h"
 
-#ifdef __OpenBSD__
-#include <sys/tree.h>
-#else
-#include "compat/tree.h"
-#endif
-
 #include <limits.h>
 #include <pthread.h>
 #include <stdlib.h>

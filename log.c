@@ -29,10 +29,6 @@
 
 #include "siren.h"
 
-#ifdef HAVE_ERR
-#include <err.h>
-#endif
-
 static void		 log_verr(const char *, const char *, va_list)
 			    PRINTFLIKE(2, 0);
 static void		 log_vprintf(const char *, const char *, va_list)

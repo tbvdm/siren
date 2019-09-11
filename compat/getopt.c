@@ -20,10 +20,6 @@
 
 #include "../compat.h"
 
-#ifdef HAVE_ERR
-#include <err.h>
-#endif
-
 int	 xopterr = 1;
 int	 xoptind = 1;
 int	 xoptopt = '\0';

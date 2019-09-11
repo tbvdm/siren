@@ -16,12 +16,6 @@
 
 #include "config.h"
 
-#ifdef __OpenBSD__
-#include <sys/queue.h>
-#else
-#include "compat/queue.h"
-#endif
-
 #include <dlfcn.h>
 #include <stdlib.h>
 #include <string.h>

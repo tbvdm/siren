@@ -19,6 +19,14 @@
 
 #include "attribute.h"
 
+#ifdef __OpenBSD__
+#include <sys/queue.h>
+#include <sys/tree.h>
+#else
+#include "compat/queue.h"
+#include "compat/tree.h"
+#endif
+
 #ifndef HAVE_ASPRINTF
 int		 asprintf(char **, const char *, ...) NONNULL()
 		    PRINTFLIKE(2, 3);
@@ -26,7 +34,9 @@ int		 vasprintf(char **, const char *, va_list) NONNULL()
 		    PRINTFLIKE(2, 0);
 #endif
 
-#ifndef HAVE_ERR
+#ifdef HAVE_ERR
+#include <err.h>
+#else
 void		 err(int, const char *, ...) NORETURN PRINTFLIKE(2, 3);
 void		 errx(int, const char *, ...) NORETURN PRINTFLIKE(2, 3);
 void		 verr(int, const char *, va_list) NORETURN PRINTFLIKE(2, 0);

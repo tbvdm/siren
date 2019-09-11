@@ -16,12 +16,6 @@
 
 #include "config.h"
 
-#ifdef __OpenBSD__
-#include <sys/tree.h>
-#else
-#include "compat/tree.h"
-#endif
-
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>

@@ -22,10 +22,6 @@
 
 #include "siren.h"
 
-#if defined(HAVE_PLEDGE) && defined(HAVE_ERR)
-#include <err.h>
-#endif
-
 #if defined(DEBUG) && defined(__OpenBSD__)
 extern const char	*malloc_options;
 #endif
