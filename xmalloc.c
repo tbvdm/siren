@@ -20,6 +20,8 @@
 /* Let NetBSD expose reallocarray(). */
 #define _OPENBSD_SOURCE
 
+#include "config.h"
+
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>

@@ -17,6 +17,8 @@
 /* Let NetBSD expose strtonum(). */
 #define _OPENBSD_SOURCE
 
+#include "config.h"
+
 #include <sys/types.h>
 #include <sys/stat.h>
 

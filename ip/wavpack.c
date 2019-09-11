@@ -19,6 +19,8 @@
  * channel" (i.e. a frame).
  */
 
+#include "../config.h"
+
 #include <limits.h>
 #include <stdint.h>
 #include <stdlib.h>

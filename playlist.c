@@ -17,6 +17,8 @@
 /* For FreeBSD. */
 #define _WITH_GETLINE
 
+#include "config.h"
+
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>

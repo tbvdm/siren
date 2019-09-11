@@ -17,6 +17,8 @@
 /* Let glibc expose strcasestr(). */
 #define _GNU_SOURCE
 
+#include "config.h"
+
 #ifdef __OpenBSD__
 #include <sys/queue.h>
 #else

@@ -17,6 +17,8 @@
 /* Silence gcc. */
 #define ENABLE_SNDFILE_WINDOWS_PROTOTYPES 0
 
+#include "../config.h"
+
 #include <fcntl.h>
 #include <stdlib.h>
 #include <unistd.h>
