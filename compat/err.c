@@ -22,7 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../siren.h"
+#include "../compat.h"
 
 extern char *__progname;
 

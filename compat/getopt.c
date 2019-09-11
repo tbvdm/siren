@@ -18,7 +18,7 @@
 
 #include <string.h>
 
-#include "../siren.h"
+#include "../compat.h"
 
 #ifdef HAVE_ERR
 #include <err.h>
