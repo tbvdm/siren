@@ -14,12 +14,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* Let glibc expose vasprintf(). */
-#define _GNU_SOURCE
-
-/* Let NetBSD expose reallocarray(). */
-#define _OPENBSD_SOURCE
-
 #include "config.h"
 
 #include <stdarg.h>

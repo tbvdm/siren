@@ -14,12 +14,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* Let glibc expose strcasestr(). */
-#define _GNU_SOURCE
-
-/* Let NetBSD expose strtonum(). */
-#define _OPENBSD_SOURCE
-
 #include "config.h"
 
 #include <limits.h>

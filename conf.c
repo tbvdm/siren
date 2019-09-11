@@ -14,9 +14,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* For FreeBSD. */
-#define _WITH_GETLINE
-
 #include "config.h"
 
 #include <sys/types.h>

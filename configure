@@ -363,6 +363,10 @@ fi
 check_program "$CC"
 check_program pkg-config
 
+header_define _GNU_SOURCE
+header_define _OPENBSD_SOURCE	# For OpenBSD extensions on NetBSD.
+header_define _WITH_GETLINE	# For getline() on FreeBSD.
+
 if check_function asprintf 'asprintf(NULL, "")' stdio.h _GNU_SOURCE; then
 	header_define HAVE_ASPRINTF
 else
