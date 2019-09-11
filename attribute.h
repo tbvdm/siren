@@ -23,10 +23,13 @@
 #ifndef ATTRIBUTE_H
 #define ATTRIBUTE_H
 
-/* Check if the GCC version is equal to or greater than the one specified. */
+#ifdef __GNUC__
 #define GCC_VERSION(major, minor)					\
-	(defined(__GNUC__) && (__GNUC__ > major ||			\
-	(__GNUC__ == major && __GNUC_MINOR__ >= minor)))
+	(__GNUC__ > (major) ||						\
+	(__GNUC__ == (major) && __GNUC_MINOR__ >= (minor)))
+#else
+#define GCC_VERSION(major, minor) 0
+#endif
 
 #if GCC_VERSION(3, 3) || defined(__clang__)
 #define NONNULL(...)		__attribute__((nonnull(__VA_ARGS__)))
