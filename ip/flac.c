@@ -19,8 +19,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../siren.h"
-
 #ifdef HAVE_NEW_FLAC_INCLUDE_PATH
 #include <FLAC/metadata.h>
 #include <FLAC/stream_decoder.h>
@@ -28,6 +26,8 @@
 #include <metadata.h>
 #include <stream_decoder.h>
 #endif
+
+#include "../siren.h"
 
 #define IP_FLAC_ERROR	-1
 #define IP_FLAC_EOF	0

@@ -19,17 +19,17 @@
 #include <sys/ioctl.h>
 #include <sys/types.h>
 
-#include <fcntl.h>
-#include <stdlib.h>
-#include <unistd.h>
-
-#include "../siren.h"
-
 #ifdef HAVE_SYS_SOUNDCARD_H
 #include <sys/soundcard.h>
 #else
 #include <soundcard.h>
 #endif
+
+#include <fcntl.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+#include "../siren.h"
 
 #if defined(SNDCTL_DSP_GETPLAYVOL) && defined(SNDCTL_DSP_SETPLAYVOL)
 #define OP_OSS_HAVE_VOLUME_SUPPORT

@@ -19,19 +19,19 @@
 #include <sys/ioctl.h>
 #include <sys/types.h>
 
-#include <fcntl.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-
-#include "../siren.h"
-
 /* NetBSD has <sys/audioio.h>; Solaris has <sys/audio.h>. */
 #ifdef HAVE_SYS_AUDIO_H
 #include <sys/audio.h>
 #else
 #include <sys/audioio.h>
 #endif
+
+#include <fcntl.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+#include "../siren.h"
 
 #define OP_SUN_BUFSIZE	4096
 #define OP_SUN_DEVICE	"/dev/audio"
