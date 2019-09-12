@@ -16,6 +16,8 @@
 
 #include "config.h"
 
+#include <sys/ioctl.h>
+
 #include <curses.h>
 #include <errno.h>
 #include <pthread.h>
@@ -25,10 +27,6 @@
 #include <unistd.h>
 
 #include "siren.h"
-
-#ifdef HAVE_RESIZETERM
-#include <sys/ioctl.h>
-#endif
 
 #define SCREEN_OBJ_ACTIVE	0
 #define SCREEN_OBJ_ERROR	1
@@ -53,12 +51,11 @@ static void			 screen_msg_vprintf(int, const char *,
 static void			 screen_print_row(const char *);
 static void			 screen_view_print_row(chtype, const char *);
 static void			 screen_vprintf(const char *, va_list);
-#if defined(HAVE_RESIZETERM) && defined(TIOCGWINSZ)
 static void			 screen_resize(void);
-#endif
 
 static pthread_mutex_t		 screen_curses_mtx = PTHREAD_MUTEX_INITIALIZER;
 static int			 screen_have_colours;
+static int			 screen_have_default_colours;
 static int			 screen_player_row;
 static int			 screen_status_col;
 static int			 screen_status_row;
@@ -68,10 +65,6 @@ static int			 screen_view_nrows;
 
 static char			*screen_row = NULL;
 static size_t			 screen_rowsize;
-
-#ifdef HAVE_USE_DEFAULT_COLORS
-static int			 screen_have_default_colours;
-#endif
 
 static const struct {
 	const int		 attrib;
@@ -270,11 +263,7 @@ screen_get_colour(const char *option, enum colour default_colour)
 	if (colour >= 0 && colour < COLORS)
 		return colour;
 
-#ifdef HAVE_USE_DEFAULT_COLORS
 	if (colour == COLOUR_DEFAULT && !screen_have_default_colours)
-#else
-	if (colour == COLOUR_DEFAULT)
-#endif
 		colour = default_colour;
 
 	for (i = 0; i < NELEMENTS(screen_colours); i++)
@@ -516,16 +505,14 @@ screen_refresh(void)
 	XPTHREAD_MUTEX_LOCK(&screen_curses_mtx);
 	clear();
 	XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
-#if defined(HAVE_RESIZETERM) && defined(TIOCGWINSZ)
 	screen_resize();
-#endif
 	screen_print();
 }
 
-#if defined(HAVE_RESIZETERM) && defined(TIOCGWINSZ)
 static void
 screen_resize(void)
 {
+#if defined(HAVE_RESIZETERM) && defined(TIOCGWINSZ)
 	struct winsize ws;
 
 	if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) == -1) {
@@ -550,8 +537,8 @@ screen_resize(void)
 	XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
 
 	screen_configure_rows();
-}
 #endif
+}
 
 void
 screen_status_clear(void)
