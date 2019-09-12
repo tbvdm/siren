@@ -22,10 +22,6 @@
 
 #include "siren.h"
 
-#if defined(DEBUG) && defined(__OpenBSD__)
-extern const char	*malloc_options;
-#endif
-
 NORETURN static void
 usage(void)
 {
@@ -46,10 +42,6 @@ main(int argc, char **argv)
 	int	 c, lflag;
 	char	*confdir;
 	char	*promises;
-
-#if defined(DEBUG) && defined(__OpenBSD__)
-	malloc_options = "CFGJRS";
-#endif
 
 	confdir = NULL;
 	lflag = 0;
