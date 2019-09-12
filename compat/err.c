@@ -34,6 +34,15 @@ err(int ret, const char *fmt, ...)
 }
 
 void
+errc(int ret, int errnum, const char *fmt, ...)
+{
+	va_list ap;
+
+	va_start(ap, fmt);
+	verrc(ret, errnum, fmt, ap);
+}
+
+void
 errx(int ret, const char *fmt, ...)
 {
 	va_list ap;
@@ -50,40 +59,17 @@ verr(int ret, const char *fmt, va_list ap)
 }
 
 void
-verrx(int ret, const char *fmt, va_list ap)
+verrc(int ret, int errnum, const char *fmt, va_list ap)
 {
-	vwarnx(fmt, ap);
+	vwarnc(errnum, fmt, ap);
 	exit(ret);
 }
 
 void
-vwarn(const char *fmt, va_list ap)
+verrx(int ret, const char *fmt, va_list ap)
 {
-	int	oerrno;
-	char	errstr[STRERROR_BUFSIZE];
-
-	oerrno = errno;
-
-	fputs(getprogname(), stderr);
-	if (fmt != NULL) {
-		fputs(": ", stderr);
-		vfprintf(stderr, fmt, ap);
-	}
-	strerror_r(oerrno, errstr, sizeof errstr);
-	fprintf(stderr, ": %s\n", errstr);
-
-	errno = oerrno;
-}
-
-void
-vwarnx(const char *fmt, va_list ap)
-{
-	fputs(getprogname(), stderr);
-	if (fmt != NULL) {
-		fputs(": ", stderr);
-		vfprintf(stderr, fmt, ap);
-	}
-	putc('\n', stderr);
+	vwarnx(fmt, ap);
+	exit(ret);
 }
 
 void
@@ -97,6 +83,16 @@ warn(const char *fmt, ...)
 }
 
 void
+warnc(int errnum, const char *fmt, ...)
+{
+	va_list ap;
+
+	va_start(ap, fmt);
+	vwarnc(errnum, fmt, ap);
+	va_end(ap);
+}
+
+void
 warnx(const char *fmt, ...)
 {
 	va_list ap;
@@ -104,4 +100,37 @@ warnx(const char *fmt, ...)
 	va_start(ap, fmt);
 	vwarnx(fmt, ap);
 	va_end(ap);
+}
+
+void
+vwarn(const char *fmt, va_list ap)
+{
+	vwarnc(errno, fmt, ap);
+}
+
+void
+vwarnc(int errnum, const char *fmt, va_list ap)
+{
+	fputs(getprogname(), stderr);
+	fputs(": ", stderr);
+
+	if (fmt != NULL) {
+		vfprintf(stderr, fmt, ap);
+		fputs(": ", stderr);
+	}
+
+	fputs(strerror(errnum), stderr);
+	putc('\n', stderr);
+}
+
+void
+vwarnx(const char *fmt, va_list ap)
+{
+	fputs(getprogname(), stderr);
+	fputs(": ", stderr);
+
+	if (fmt != NULL)
+		vfprintf(stderr, fmt, ap);
+
+	putc('\n', stderr);
 }
