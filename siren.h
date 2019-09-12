@@ -592,9 +592,7 @@ void		 playlist_select_next_entry(void);
 void		 playlist_select_prev_entry(void);
 void		 playlist_update(void);
 
-#ifdef HAVE_PLEDGE
 void		 plugin_append_promises(char **) NONNULL();
-#endif
 void		 plugin_end(void);
 void		 plugin_init(void);
 const struct ip	*plugin_find_ip(const char *) NONNULL();

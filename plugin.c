@@ -81,7 +81,6 @@ plugin_add_op(void *handle, void *op)
 	return 0;
 }
 
-#ifdef HAVE_PLEDGE
 void
 plugin_append_promises(char **promises)
 {
@@ -95,7 +94,6 @@ plugin_append_promises(char **promises)
 			*promises = tmp;
 		}
 }
-#endif
 
 void
 plugin_end(void)

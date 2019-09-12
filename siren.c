@@ -51,9 +51,7 @@ main(int argc, char **argv)
 {
 	int	 c, lflag;
 	char	*confdir;
-#ifdef HAVE_PLEDGE
 	char	*promises;
-#endif
 
 #if defined(DEBUG) && defined(__OpenBSD__)
 	malloc_options = "CFGJRS";
@@ -104,7 +102,6 @@ main(int argc, char **argv)
 	player_init();
 	prompt_init();
 
-#ifdef HAVE_PLEDGE
 	promises = xstrdup("stdio rpath wpath cpath getpw tty");
 	plugin_append_promises(&promises);
 	LOG_INFO("pledging %s", promises);
@@ -113,7 +110,6 @@ main(int argc, char **argv)
 		err(1, "pledge");
 
 	free(promises);
-#endif
 
 	screen_print();
 	conf_read_file();
