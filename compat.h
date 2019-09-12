@@ -47,6 +47,10 @@ void		 warn(const char *, ...) PRINTFLIKE(1, 2);
 void		 warnx(const char *, ...) PRINTFLIKE(1, 2);
 #endif
 
+#ifndef HAVE_GETPROGNAME
+#define getprogname()	"siren"
+#endif
+
 #ifndef HAVE_OPTRESET
 #define getopt		xgetopt
 #define optarg		xoptarg

@@ -24,8 +24,6 @@
 
 #include "../compat.h"
 
-extern char *__progname;
-
 void
 err(int ret, const char *fmt, ...)
 {
@@ -66,7 +64,7 @@ vwarn(const char *fmt, va_list ap)
 
 	oerrno = errno;
 
-	fputs(__progname, stderr);
+	fputs(getprogname(), stderr);
 	if (fmt != NULL) {
 		fputs(": ", stderr);
 		vfprintf(stderr, fmt, ap);
@@ -80,7 +78,7 @@ vwarn(const char *fmt, va_list ap)
 void
 vwarnx(const char *fmt, va_list ap)
 {
-	fputs(__progname, stderr);
+	fputs(getprogname(), stderr);
 	if (fmt != NULL) {
 		fputs(": ", stderr);
 		vfprintf(stderr, fmt, ap);

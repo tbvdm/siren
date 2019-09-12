@@ -26,16 +26,10 @@
 extern const char	*malloc_options;
 #endif
 
-#ifdef HAVE___PROGNAME
-extern char		*__progname;
-#else
-const char		*__progname;
-#endif
-
 NORETURN static void
 usage(void)
 {
-	fprintf(stderr, "usage: %s [-lv] [-c directory]\n", __progname);
+	fprintf(stderr, "usage: %s [-lv] [-c directory]\n", getprogname());
 	exit(1);
 }
 
@@ -55,13 +49,6 @@ main(int argc, char **argv)
 
 #if defined(DEBUG) && defined(__OpenBSD__)
 	malloc_options = "CFGJRS";
-#endif
-
-#ifndef HAVE___PROGNAME
-	if (argv[0] != NULL && argv[0][0] != '\0')
-		__progname = argv[0];
-	else
-		__progname = "siren";
 #endif
 
 	confdir = NULL;
