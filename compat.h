@@ -38,12 +38,17 @@ int		 vasprintf(char **, const char *, va_list) NONNULL()
 #include <err.h>
 #else
 void		 err(int, const char *, ...) NORETURN PRINTFLIKE(2, 3);
+void		 errc(int, int, const char *, ...) NORETURN PRINTFLIKE(3, 4);
 void		 errx(int, const char *, ...) NORETURN PRINTFLIKE(2, 3);
 void		 verr(int, const char *, va_list) NORETURN PRINTFLIKE(2, 0);
+void		 verrc(int, int, const char *, va_list) NORETURN
+		    PRINTFLIKE(3, 0);
 void		 verrx(int, const char *, va_list) NORETURN PRINTFLIKE(2, 0);
 void		 vwarn(const char *, va_list) PRINTFLIKE(1, 0);
+void		 vwarnc(int, const char *, va_list) PRINTFLIKE(2, 0);
 void		 vwarnx(const char *, va_list) PRINTFLIKE(1, 0);
 void		 warn(const char *, ...) PRINTFLIKE(1, 2);
+void		 warnc(int, const char *, ...) PRINTFLIKE(2, 3);
 void		 warnx(const char *, ...) PRINTFLIKE(1, 2);
 #endif
 
