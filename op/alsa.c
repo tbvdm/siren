@@ -116,7 +116,7 @@ op_alsa_get_volume_support(void)
 	return op_alsa_mixer_handle != NULL;
 }
 
-PRINTFLIKE(5, 0) static void
+PRINTFLIKE5 static void
 op_alsa_handle_error(const char *file, int line, const char *func, int errnum,
     const char *fmt, ...)
 {

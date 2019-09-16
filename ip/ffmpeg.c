@@ -124,7 +124,7 @@ const struct ip		 ip = {
 	ip_ffmpeg_seek
 };
 
-PRINTFLIKE(3, 0) static void
+VPRINTFLIKE3 static void
 ip_ffmpeg_log(UNUSED void *p, int level, const char *fmt, va_list ap)
 {
 	if (level <= AV_LOG_WARNING)

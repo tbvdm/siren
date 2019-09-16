@@ -31,28 +31,26 @@
 #include <stddef.h> /* size_t */
 
 #ifndef HAVE_ASPRINTF
-int		 asprintf(char **, const char *, ...) NONNULL()
-		    PRINTFLIKE(2, 3);
+int		 asprintf(char **, const char *, ...) NONNULL() PRINTFLIKE2;
 int		 vasprintf(char **, const char *, va_list) NONNULL()
-		    PRINTFLIKE(2, 0);
+		    VPRINTFLIKE2;
 #endif
 
 #ifdef HAVE_ERR
 #include <err.h>
 #else
-void		 err(int, const char *, ...) NORETURN PRINTFLIKE(2, 3);
-void		 errc(int, int, const char *, ...) NORETURN PRINTFLIKE(3, 4);
-void		 errx(int, const char *, ...) NORETURN PRINTFLIKE(2, 3);
-void		 verr(int, const char *, va_list) NORETURN PRINTFLIKE(2, 0);
-void		 verrc(int, int, const char *, va_list) NORETURN
-		    PRINTFLIKE(3, 0);
-void		 verrx(int, const char *, va_list) NORETURN PRINTFLIKE(2, 0);
-void		 vwarn(const char *, va_list) PRINTFLIKE(1, 0);
-void		 vwarnc(int, const char *, va_list) PRINTFLIKE(2, 0);
-void		 vwarnx(const char *, va_list) PRINTFLIKE(1, 0);
-void		 warn(const char *, ...) PRINTFLIKE(1, 2);
-void		 warnc(int, const char *, ...) PRINTFLIKE(2, 3);
-void		 warnx(const char *, ...) PRINTFLIKE(1, 2);
+void		 err(int, const char *, ...) NORETURN PRINTFLIKE2;
+void		 errc(int, int, const char *, ...) NORETURN PRINTFLIKE3;
+void		 errx(int, const char *, ...) NORETURN PRINTFLIKE2;
+void		 verr(int, const char *, va_list) NORETURN VPRINTFLIKE2;
+void		 verrc(int, int, const char *, va_list) NORETURN VPRINTFLIKE3;
+void		 verrx(int, const char *, va_list) NORETURN VPRINTFLIKE2;
+void		 vwarn(const char *, va_list) VPRINTFLIKE1;
+void		 vwarnc(int, const char *, va_list) VPRINTFLIKE2;
+void		 vwarnx(const char *, va_list) VPRINTFLIKE1;
+void		 warn(const char *, ...) PRINTFLIKE1;
+void		 warnc(int, const char *, ...) PRINTFLIKE2;
+void		 warnx(const char *, ...) PRINTFLIKE1;
 #endif
 
 #ifndef HAVE_GETPROGNAME

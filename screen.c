@@ -661,7 +661,7 @@ screen_view_title_printf_right(const char *fmt, ...)
 /*
  * The screen_curses_mtx mutex must be locked before calling this function.
  */
-PRINTFLIKE(1, 0) static void
+VPRINTFLIKE1 static void
 screen_vprintf(const char *fmt, va_list ap)
 {
 	int col UNUSED, len, row;

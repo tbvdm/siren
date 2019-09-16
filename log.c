@@ -30,9 +30,9 @@
 #include "siren.h"
 
 static void		 log_verr(const char *, const char *, va_list)
-			    PRINTFLIKE(2, 0);
+			    VPRINTFLIKE2;
 static void		 log_vprintf(const char *, const char *, va_list)
-			    PRINTFLIKE(2, 0);
+			    VPRINTFLIKE2;
 
 static pthread_mutex_t	 log_fp_mtx = PTHREAD_MUTEX_INITIALIZER;
 static FILE		*log_fp;
@@ -120,7 +120,7 @@ log_init(int enable)
 	}
 }
 
-PRINTFLIKE(2, 3) static void
+PRINTFLIKE2 static void
 log_printf(const char *func, const char *fmt, ...)
 {
 	va_list ap;

@@ -458,16 +458,15 @@ void		 library_update(void);
 int		 library_write_file(void);
 
 void		 log_end(void);
-void		 log_err(const char *, const char *, ...) PRINTFLIKE(2, 3);
-void		 log_errx(const char *, const char *, ...) PRINTFLIKE(2, 3);
+void		 log_err(const char *, const char *, ...) PRINTFLIKE2;
+void		 log_errx(const char *, const char *, ...) PRINTFLIKE2;
 void		 log_fatal(const char *, const char *, ...) NORETURN
-		    PRINTFLIKE(2, 3);
+		    PRINTFLIKE2;
 void		 log_fatalx(const char *, const char *, ...) NORETURN
-		    PRINTFLIKE(2, 3);
-void		 log_info(const char *, const char *, ...) PRINTFLIKE(2, 3);
+		    PRINTFLIKE2;
+void		 log_info(const char *, const char *, ...) PRINTFLIKE2;
 void		 log_init(int);
-void		 log_verrx(const char *, const char *, va_list)
-		    PRINTFLIKE(2, 0);
+void		 log_verrx(const char *, const char *, va_list) VPRINTFLIKE2;
 
 void		 menu_activate_entry(struct menu *, struct menu_entry *)
 		    NONNULL();
@@ -514,9 +513,9 @@ void		 menu_select_next_entry(struct menu *) NONNULL();
 void		 menu_select_prev_entry(struct menu *) NONNULL();
 
 void		 msg_clear(void);
-void		 msg_err(const char *, ...) PRINTFLIKE(1, 2);
-void		 msg_errx(const char *, ...) PRINTFLIKE(1, 2);
-void		 msg_info(const char *, ...) PRINTFLIKE(1, 2);
+void		 msg_err(const char *, ...) PRINTFLIKE1;
+void		 msg_errx(const char *, ...) PRINTFLIKE1;
+void		 msg_info(const char *, ...) PRINTFLIKE1;
 
 void		 option_add_number(const char *, int, int, int, void (*)(void))
 		    NONNULL(1);
@@ -639,11 +638,11 @@ int		 screen_get_ncolours(void);
 unsigned int	 screen_get_ncols(void);
 void		 screen_init(void);
 void		 screen_msg_error_printf(const char *, ...) NONNULL()
-		    PRINTFLIKE(1, 2);
+		    PRINTFLIKE1;
 void		 screen_msg_error_vprintf(const char *, va_list) NONNULL()
-		    PRINTFLIKE(1, 0);
+		    VPRINTFLIKE1;
 void		 screen_msg_info_vprintf(const char *, va_list) NONNULL()
-		    PRINTFLIKE(1, 0);
+		    VPRINTFLIKE1;
 void		 screen_player_status_printf(const struct format *,
 		    const struct format_variable *, size_t) NONNULL();
 void		 screen_player_track_printf(const struct format *,
@@ -652,7 +651,7 @@ void		 screen_print(void);
 void		 screen_prompt_begin(void);
 void		 screen_prompt_end(void);
 void		 screen_prompt_printf(size_t, const char *, ...) NONNULL()
-		    PRINTFLIKE(2, 3);
+		    PRINTFLIKE2;
 void		 screen_refresh(void);
 void		 screen_status_clear(void);
 unsigned int	 screen_view_get_nrows(void);
@@ -661,9 +660,8 @@ void		 screen_view_print_active(const char *) NONNULL();
 void		 screen_view_print_begin(void);
 void		 screen_view_print_end(void);
 void		 screen_view_print_selected(const char *) NONNULL();
-void		 screen_view_title_printf(const char *, ...) PRINTFLIKE(1, 2);
-void		 screen_view_title_printf_right(const char *, ...)
-		    PRINTFLIKE(1, 2);
+void		 screen_view_title_printf(const char *, ...) PRINTFLIKE1;
+void		 screen_view_title_printf_right(const char *, ...) PRINTFLIKE1;
 
 int		 track_cmp(const struct track *, const struct track *)
 		    NONNULL();
@@ -702,15 +700,14 @@ void		 view_select_next_entry(void);
 void		 view_select_prev_entry(void);
 void		 view_select_view(enum view_id);
 
-int		 xasprintf(char **, const char *, ...) NONNULL()
-		    PRINTFLIKE(2, 3);
+int		 xasprintf(char **, const char *, ...) NONNULL() PRINTFLIKE2;
 void		*xmalloc(size_t);
 void		*xrealloc(void *, size_t);
 void		*xreallocarray(void *, size_t, size_t);
-int		 xsnprintf(char *, size_t, const char *, ...) PRINTFLIKE(3, 4);
+int		 xsnprintf(char *, size_t, const char *, ...) PRINTFLIKE3;
 char		*xstrdup(const char *) NONNULL();
 char		*xstrndup(const char *, size_t) NONNULL();
 int		 xvasprintf(char **, const char *, va_list) NONNULL()
-		    PRINTFLIKE(2, 0);
+		    VPRINTFLIKE2;
 int		 xvsnprintf(char *, size_t, const char *, va_list) NONNULL()
-		    PRINTFLIKE(3, 0);
+		    VPRINTFLIKE3;

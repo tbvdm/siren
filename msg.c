@@ -23,8 +23,8 @@
 
 #include "siren.h"
 
-static void msg_verr(const char *, va_list) PRINTFLIKE(1, 0);
-static void msg_verrx(const char *, va_list) PRINTFLIKE(1, 0);
+static void msg_verr(const char *, va_list) VPRINTFLIKE1;
+static void msg_verrx(const char *, va_list) VPRINTFLIKE1;
 
 void
 msg_clear(void)
