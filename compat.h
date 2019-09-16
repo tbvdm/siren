@@ -27,6 +27,9 @@
 #include "compat/tree.h"
 #endif
 
+#include <stdarg.h>
+#include <stddef.h> /* size_t */
+
 #ifndef HAVE_ASPRINTF
 int		 asprintf(char **, const char *, ...) NONNULL()
 		    PRINTFLIKE(2, 3);
