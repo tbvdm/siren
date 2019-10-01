@@ -492,6 +492,17 @@ if check_function use_default_colors "use_default_colors()" curses.h "" \
 	header_define HAVE_USE_DEFAULT_COLORS
 fi
 
+# Defining _GNU_SOURCE gives us the GNU version of strerror_r() which is
+# incompatible with the POSIX version.
+print_check "if strerror_r() is GNU"
+if compile "" string.h "char *strerror_r(int, char *, size_t)"; then
+	print_result yes
+	header_define HAVE_GNU_STRERROR_R
+	makefile_append SRCS compat/strerror_r.c
+else
+	print_result no
+fi
+
 print_check "for optreset"
 if compile "" unistd.h "optreset = 0"; then
 	print_result yes

@@ -83,6 +83,11 @@ void		*reallocarray(void *, size_t, size_t);
 char		*strcasestr(const char *, const char *);
 #endif
 
+#ifdef HAVE_GNU_STRERROR_R
+int		 xstrerror_r(int, char *, size_t);
+#define strerror_r xstrerror_r
+#endif
+
 #ifndef HAVE_STRLCAT
 size_t		 strlcat(char *, const char *, size_t);
 #endif
