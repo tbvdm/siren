@@ -40,8 +40,7 @@ int
 main(int argc, char **argv)
 {
 	int	 c, lflag;
-	char	*confdir;
-	char	*promises;
+	char	*confdir, *promises;
 
 	confdir = NULL;
 	lflag = 0;
