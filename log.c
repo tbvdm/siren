@@ -20,7 +20,6 @@
 #include <sys/utsname.h>
 
 #include <errno.h>
-#include <pthread.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -34,7 +33,6 @@ static void		 log_verr(const char *, const char *, va_list)
 static void		 log_vprintf(const char *, const char *, va_list)
 			    VPRINTFLIKE2;
 
-static pthread_mutex_t	 log_fp_mtx = PTHREAD_MUTEX_INITIALIZER;
 static FILE		*log_fp;
 static int		 log_enabled;
 
@@ -154,12 +152,12 @@ static void
 log_vprintf(const char *func, const char *fmt, va_list ap)
 {
 	if (log_enabled) {
-		pthread_mutex_lock(&log_fp_mtx);
+		flockfile(log_fp);
 		if (func != NULL)
 			fprintf(log_fp, "%s: ", func);
 		if (fmt != NULL)
 			vfprintf(log_fp, fmt, ap);
 		putc('\n', log_fp);
-		pthread_mutex_unlock(&log_fp_mtx);
+		funlockfile(log_fp);
 	}
 }
