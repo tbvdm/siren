@@ -133,6 +133,8 @@ compile()
 		echo "#define $macro" >> $srcfile
 	done
 
+	echo '#include "config.h"' >> $srcfile
+
 	for header in $2; do
 		echo "#include <$header>" >> $srcfile
 	done
@@ -367,7 +369,7 @@ header_define _GNU_SOURCE
 header_define _OPENBSD_SOURCE	# For OpenBSD extensions on NetBSD.
 header_define _WITH_GETLINE	# For getline() on FreeBSD.
 
-if check_function asprintf 'asprintf(NULL, "")' stdio.h _GNU_SOURCE; then
+if check_function asprintf 'asprintf(NULL, "")' stdio.h; then
 	header_define HAVE_ASPRINTF
 else
 	makefile_append SRCS compat/asprintf.c
