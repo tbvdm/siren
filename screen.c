@@ -325,12 +325,10 @@ screen_init(void)
 		else {
 			screen_have_colours = 1;
 			LOG_INFO("terminal supports %d colours", COLORS);
-#ifdef HAVE_USE_DEFAULT_COLORS
 			if (use_default_colors() == OK) {
 				screen_have_default_colours = 1;
 				LOG_INFO("terminal supports default colours");
 			}
-#endif
 		}
 	}
 

@@ -129,4 +129,9 @@ long long int	 strtonum(const char *, long long, long long, const char **);
 			((uint32_t)(u) & 0x000000ffU) << 24)
 #endif
 
+#ifndef HAVE_USE_DEFAULT_COLORS
+#include <curses.h>
+#define use_default_colors() ERR
+#endif
+
 #endif
