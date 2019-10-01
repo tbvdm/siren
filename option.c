@@ -202,7 +202,7 @@ option_attrib_to_string(int attrib)
 	char	str[OPTION_ATTRIB_MAXLEN];
 
 	str[0] = '\0';
-	for (i = 0; i < NELEMENTS(option_attribs); i++)
+	for (i = 0; i < nitems(option_attribs); i++)
 		if (attrib & option_attribs[i].attrib ||
 		    attrib == option_attribs[i].attrib) {
 			if (str[0] != '\0')
@@ -218,7 +218,7 @@ option_boolean_to_string(int boolean)
 {
 	size_t i;
 
-	for (i = 0; i < NELEMENTS(option_booleans); i++)
+	for (i = 0; i < nitems(option_booleans); i++)
 		if (boolean == option_booleans[i].boolean)
 			return option_booleans[i].name;
 
@@ -242,7 +242,7 @@ option_colour_to_string(int colour)
 		return str;
 	}
 
-	for (i = 0; i < NELEMENTS(option_colours); i++)
+	for (i = 0; i < nitems(option_colours); i++)
 		if (colour == option_colours[i].colour)
 			return xstrdup(option_colours[i].name);
 
@@ -596,7 +596,7 @@ option_string_to_attrib(const char *name)
 {
 	size_t i;
 
-	for (i = 0; i < NELEMENTS(option_attribs); i++)
+	for (i = 0; i < nitems(option_attribs); i++)
 		if (!strcasecmp(name, option_attribs[i].name))
 			return option_attribs[i].attrib;
 	return -1;
@@ -607,7 +607,7 @@ option_string_to_boolean(const char *name)
 {
 	size_t i;
 
-	for (i = 0; i < NELEMENTS(option_booleans); i++)
+	for (i = 0; i < nitems(option_booleans); i++)
 		if (!strcasecmp(name, option_booleans[i].name))
 			return option_booleans[i].boolean;
 	return -1;
@@ -624,7 +624,7 @@ option_string_to_colour(const char *name, int *colour)
 		return errstr == NULL ? 0 : -1;
 	}
 
-	for (i = 0; i < NELEMENTS(option_colours); i++)
+	for (i = 0; i < nitems(option_colours); i++)
 		if (!strcasecmp(name, option_colours[i].name)) {
 			*colour = option_colours[i].colour;
 			return 0;

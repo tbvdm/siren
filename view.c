@@ -314,7 +314,7 @@ view_select_view(enum view_id id)
 	size_t i;
 
 	if (view_list[view_sel].id != id)
-		for (i = 0; i < NELEMENTS(view_list); i++)
+		for (i = 0; i < nitems(view_list); i++)
 			if (view_list[i].id == id) {
 				view_sel = i;
 				view_print();

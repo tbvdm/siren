@@ -108,7 +108,7 @@ input_handle_key(void)
 		}
 #endif
 
-		if (poll(pfd, NELEMENTS(pfd), -1) == -1) {
+		if (poll(pfd, nitems(pfd), -1) == -1) {
 			if (errno != EINTR)
 				LOG_FATAL("poll");
 		} else {

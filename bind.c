@@ -263,7 +263,7 @@ bind_key_to_string(int key, char *name, size_t namelen)
 		return name;
 	}
 
-	for (i = 0; i < NELEMENTS(bind_keys); i++)
+	for (i = 0; i < nitems(bind_keys); i++)
 		if (key == bind_keys[i].key) {
 			strlcpy(name, bind_keys[i].name, namelen);
 			return name;
@@ -287,7 +287,7 @@ bind_scope_to_string(enum bind_scope scope)
 {
 	size_t i;
 
-	for (i = 0; i < NELEMENTS(bind_scopes); i++)
+	for (i = 0; i < nitems(bind_scopes); i++)
 		if (scope == bind_scopes[i].scope)
 			return bind_scopes[i].name;
 
@@ -317,7 +317,7 @@ bind_string_to_scope(const char *name, enum bind_scope *scope)
 {
 	size_t i;
 
-	for (i = 0; i < NELEMENTS(bind_scopes); i++)
+	for (i = 0; i < nitems(bind_scopes); i++)
 		if (!strcasecmp(name, bind_scopes[i].name)) {
 			*scope = bind_scopes[i].scope;
 			return 0;
@@ -341,7 +341,7 @@ bind_string_to_key(const char *str)
 		return K_CTRL(toupper((unsigned char)str[1]));
 
 	/* Key names. */
-	for (i = 0; i < NELEMENTS(bind_keys); i++)
+	for (i = 0; i < nitems(bind_keys); i++)
 		if (!strcasecmp(str, bind_keys[i].name))
 			return bind_keys[i].key;
 

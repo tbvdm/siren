@@ -129,8 +129,10 @@
 	    (entry) != NULL;						\
 	    (entry) = menu_get_prev_entry(entry))
 
-/* Number of elements in an array. */
-#define NELEMENTS(x)		(sizeof (x) / sizeof (x)[0])
+/* Number of items in an array. */
+#ifndef nitems
+#define nitems(a)		(sizeof (a) / sizeof (a)[0])
+#endif
 
 /*
  * Wrappers for log functions.

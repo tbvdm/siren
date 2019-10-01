@@ -298,7 +298,7 @@ ip_mpg123_get_genre(mpg123_string *s)
 		t[strcspn(t, ")")] = '\0';
 	}
 
-	idx = strtonum(t, 0, NELEMENTS(ip_mpg123_genres) - 1, &errstr);
+	idx = strtonum(t, 0, nitems(ip_mpg123_genres) - 1, &errstr);
 	if (errstr == NULL)
 		return xstrdup(ip_mpg123_genres[idx]);
 	else
@@ -375,7 +375,7 @@ ip_mpg123_get_metadata(struct track *t)
 		t->date = xstrndup(v1->year, sizeof v1->year);
 		t->title = xstrndup(v1->title, sizeof v1->title);
 
-		if (v1->genre < NELEMENTS(ip_mpg123_genres))
+		if (v1->genre < nitems(ip_mpg123_genres))
 			t->genre = xstrdup(ip_mpg123_genres[v1->genre]);
 
 		/*

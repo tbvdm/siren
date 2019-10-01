@@ -163,11 +163,11 @@ screen_configure_attribs(void)
 	int	 attr;
 	chtype	 cattr;
 
-	for (i = 0; i < NELEMENTS(screen_objects); i++) {
+	for (i = 0; i < nitems(screen_objects); i++) {
 		attr = option_get_attrib(screen_objects[i].option_attr);
 		cattr = A_NORMAL;
 
-		for (j = 0; j < NELEMENTS(screen_attribs); j++)
+		for (j = 0; j < nitems(screen_attribs); j++)
 			if (attr & screen_attribs[j].attrib)
 				cattr |= screen_attribs[j].curses_attrib;
 
@@ -186,7 +186,7 @@ screen_configure_colours(void)
 	if (!screen_have_colours)
 		return;
 
-	for (i = 0; i < NELEMENTS(screen_objects); i++) {
+	for (i = 0; i < nitems(screen_objects); i++) {
 		bg = screen_get_colour(screen_objects[i].option_bg,
 		    COLOUR_BLACK);
 		fg = screen_get_colour(screen_objects[i].option_fg,
@@ -266,7 +266,7 @@ screen_get_colour(const char *option, enum colour default_colour)
 	if (colour == COLOUR_DEFAULT && !screen_have_default_colours)
 		colour = default_colour;
 
-	for (i = 0; i < NELEMENTS(screen_colours); i++)
+	for (i = 0; i < nitems(screen_colours); i++)
 		if (colour == screen_colours[i].colour)
 			return screen_colours[i].curses_colour;
 
@@ -284,7 +284,7 @@ screen_get_key(void)
 	XPTHREAD_MUTEX_UNLOCK(&screen_curses_mtx);
 
 	if (key != ERR) {
-		for (i = 0; i < NELEMENTS(screen_keys); i++)
+		for (i = 0; i < nitems(screen_keys); i++)
 			if (key == screen_keys[i].curses_key)
 				return screen_keys[i].key;
 

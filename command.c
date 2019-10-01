@@ -801,7 +801,7 @@ command_parse_string(const char *str, struct command **cmd,
 	if (argc == 0)
 		return 0;
 
-	for (i = 0; i < NELEMENTS(command_list); i++)
+	for (i = 0; i < nitems(command_list); i++)
 		if (!strcmp(argv[0], command_list[i].name)) {
 			*cmd = &command_list[i];
 			break;

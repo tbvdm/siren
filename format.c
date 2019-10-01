@@ -477,9 +477,9 @@ format_track_snprintf(char *buf, size_t bufsize, const struct format *fmt,
 
 	if ((t->title == NULL || t->title[0] == '\0') && altfmt->formatstr[0]
 	    != '\0')
-		format_snprintf(buf, bufsize, altfmt, vars, NELEMENTS(vars));
+		format_snprintf(buf, bufsize, altfmt, vars, nitems(vars));
 	else
-		format_snprintf(buf, bufsize, fmt, vars, NELEMENTS(vars));
+		format_snprintf(buf, bufsize, fmt, vars, nitems(vars));
 }
 
 static size_t
