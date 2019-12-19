@@ -17,6 +17,9 @@
 #ifndef COMPAT_H
 #define COMPAT_H
 
+#include <stdarg.h>
+#include <stddef.h> /* size_t */
+
 #include "attribute.h"
 
 #ifdef __OpenBSD__
@@ -26,9 +29,6 @@
 #include "compat/queue.h"
 #include "compat/tree.h"
 #endif
-
-#include <stdarg.h>
-#include <stddef.h> /* size_t */
 
 #ifndef HAVE_ASPRINTF
 int		 asprintf(char **, const char *, ...) NONNULL() PRINTFLIKE2;
