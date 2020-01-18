@@ -93,10 +93,7 @@ cppcheck:
 depend: .depend
 
 dist:
-	hg archive -X .hg\* -r ${DIST} ${DIST}
-	chmod -R go+rX ${DIST}
-	GZIP=-9 tar -czf ${DIST}.tar.gz ${DIST}
-	rm -fr ${DIST}
+	git archive --prefix=${DIST}/ -o ${DIST}.tar.gz ${DIST}
 	sha256 ${DIST}.tar.gz > ${DIST}.tar.gz.sha256
 	gpg -b ${DIST}.tar.gz
 
