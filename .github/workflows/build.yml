@@ -1,0 +1,41 @@
+name: build
+
+on: push
+
+jobs:
+  build:
+
+    strategy:
+      matrix:
+        os: [ubuntu-16.04, ubuntu-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: install dependencies
+      run: >
+        sudo apt-get install
+        build-essential
+        pkg-config
+        libncurses-dev
+        libfaad-dev libmp4v2-dev
+        libavcodec-dev libavformat-dev libavutil-dev
+        libflac-dev
+        libid3tag0-dev libmad0-dev
+        libmpg123-dev
+        libopusfile-dev
+        libsndfile1-dev
+        libvorbis-dev
+        libwavpack-dev
+        libasound2-dev
+        libao-dev
+        portaudio19-dev
+        libpulse-dev
+        libsndio-dev
+    - name: configure
+      run: ./configure
+    - name: build
+      run: make
+    - name: install
+      run: sudo make install
