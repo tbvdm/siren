@@ -551,8 +551,8 @@ check_plugin_pkgconfig portaudio op portaudio-2.0
 
 check_plugin_pkgconfig pulse op libpulse-simple
 
-if [ "$enable_sndio" != no ] && check_header sndio.h &&
-    check_library sndio; then
+if ! check_plugin_pkgconfig sndio op sndio && [ "$enable_sndio" != no ] &&
+    check_header sndio.h && check_library sndio; then
 	makefile_append OP sndio
 	makefile_assign LDFLAGS_sndio -lsndio
 	enabled_ops="$enabled_ops sndio"
