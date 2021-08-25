@@ -21,7 +21,6 @@ jobs:
         build-essential
         pkg-config
         libncurses-dev
-        libfaad-dev libmp4v2-dev
         libavcodec-dev libavformat-dev libavutil-dev
         libflac-dev
         libid3tag0-dev libmad0-dev
