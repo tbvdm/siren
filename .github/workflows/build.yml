@@ -18,6 +18,7 @@ jobs:
     - name: install dependencies
       if: startsWith(matrix.os, 'ubuntu')
       run: >
+        sudo apt-get update &&
         sudo apt-get install
         build-essential
         pkg-config
