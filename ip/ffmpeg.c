@@ -513,20 +513,34 @@ ip_ffmpeg_open(struct track *t)
 	int			 ret;
 
 	ipd = xmalloc(sizeof *ipd);
-
 	ipd->fmtctx = NULL;
+	ipd->codecctx = NULL;
+	av_init_packet(&ipd->packet);
+	ipd->packet.data = NULL;
+	ipd->packet.size = 0;
+	ipd->frame = NULL;
+	ipd->timestamp = 0;
+#ifdef IP_FFMPEG_AVCODEC_DECODE_AUDIO4_DEPRECATED
+	ipd->have_packet = 0;
+#else
+	ipd->pdatalen = 0;
+#endif
+	ipd->fdatalen = 0;
+	ipd->sample = 0;
+
 	ret = avformat_open_input(&ipd->fmtctx, t->path, NULL, NULL);
 	if (ret != 0) {
 		IP_FFMPEG_LOG("avformat_open_input");
 		IP_FFMPEG_MSG("Cannot open file");
-		goto error1;
+		ipd->fmtctx = NULL;
+		goto error;
 	}
 
 	ret = avformat_find_stream_info(ipd->fmtctx, NULL);
 	if (ret < 0) {
 		IP_FFMPEG_LOG("avformat_find_stream_info");
 		IP_FFMPEG_MSG("Cannot get stream information");
-		goto error2;
+		goto error;
 	}
 
 	ret = av_find_best_stream(ipd->fmtctx, AVMEDIA_TYPE_AUDIO, -1, -1,
@@ -534,7 +548,7 @@ ip_ffmpeg_open(struct track *t)
 	if (ret < 0) {
 		IP_FFMPEG_LOG("av_find_best_stream");
 		IP_FFMPEG_MSG("Cannot find audio stream");
-		goto error2;
+		goto error;
 	}
 	ipd->stream = ret;
 
@@ -548,7 +562,7 @@ ip_ffmpeg_open(struct track *t)
 	if (codec == NULL) {
 		LOG_ERRX("%s: avcodec_find_decoder() failed", t->path);
 		msg_errx("%s: Cannot find decoder", t->path);
-		goto error2;
+		goto error;
 	}
 
 #ifdef IP_FFMPEG_AVSTREAM_CODEC_DEPRECATED
@@ -556,7 +570,7 @@ ip_ffmpeg_open(struct track *t)
 	if (ipd->codecctx == NULL) {
 		LOG_ERRX("%s: avcodec_allocate_context3() failed", t->path);
 		msg_errx("%s: Cannot allocate codec context", t->path);
-		goto error2;
+		goto error;
 	}
 
 	ret = avcodec_parameters_to_context(ipd->codecctx,
@@ -564,7 +578,7 @@ ip_ffmpeg_open(struct track *t)
 	if (ret < 0) {
 		IP_FFMPEG_LOG("avcodec_parameters_to_context");
 		IP_FFMPEG_MSG("Cannot copy codec parameters");
-		goto error3;
+		goto error;
 	}
 #endif
 
@@ -572,7 +586,7 @@ ip_ffmpeg_open(struct track *t)
 	if (ret != 0) {
 		IP_FFMPEG_LOG("avcodec_open2");
 		IP_FFMPEG_MSG("Cannot initialise codec context");
-		goto error3;
+		goto error;
 	}
 
 	switch (ipd->codecctx->sample_fmt) {
@@ -590,41 +604,29 @@ ip_ffmpeg_open(struct track *t)
 		LOG_ERRX("%s: %s: unsupported sample format", t->path,
 		    av_get_sample_fmt_name(ipd->codecctx->sample_fmt));
 		msg_errx("%s: Unsupported sample format", t->path);
-		goto error3;
+		goto error;
 	}
+
+	t->format.nchannels = ipd->codecctx->channels;
+	t->format.rate = ipd->codecctx->sample_rate;
 
 	ipd->frame = av_frame_alloc();
 	if (ipd->frame == NULL) {
 		LOG_ERRX("%s: av_frame_alloc() failed", t->path);
 		msg_errx("%s: Cannot allocate frame", t->path);
-		goto error3;
+		goto error;
 	}
 
-	av_init_packet(&ipd->packet);
-	ipd->packet.data = NULL;
-	ipd->packet.size = 0;
-	ipd->timestamp = 0;
-#ifdef IP_FFMPEG_AVCODEC_DECODE_AUDIO4_DEPRECATED
-	ipd->have_packet = 0;
-#else
-	ipd->pdatalen = 0;
-#endif
-	ipd->fdatalen = 0;
-	ipd->sample = 0;
-
-	t->format.nchannels = ipd->codecctx->channels;
-	t->format.rate = ipd->codecctx->sample_rate;
 	t->ipdata = ipd;
-
 	return 0;
 
-error3:
+error:
 #ifdef IP_FFMPEG_AVSTREAM_CODEC_DEPRECATED
-	avcodec_free_context(&ipd->codecctx);
+	if (ipd->codecctx != NULL)
+		avcodec_free_context(&ipd->codecctx);
 #endif
-error2:
-	avformat_close_input(&ipd->fmtctx);
-error1:
+	if (ipd->fmtctx != NULL)
+		avformat_close_input(&ipd->fmtctx);
 	free(ipd);
 	return -1;
 }
