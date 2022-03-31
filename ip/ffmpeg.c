@@ -21,7 +21,9 @@
 #include <string.h>
 #include <strings.h>
 
+#include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
+#include <libavutil/avutil.h>
 
 #include "../siren.h"
 
@@ -510,7 +512,7 @@ static int
 ip_ffmpeg_open(struct track *t)
 {
 	struct ip_ffmpeg_ipdata	*ipd;
-	AVCodec			*codec;
+	const AVCodec		*codec;
 	int			 ret;
 
 	ipd = xmalloc(sizeof *ipd);
