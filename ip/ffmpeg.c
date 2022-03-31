@@ -49,7 +49,7 @@
 struct ip_ffmpeg_ipdata {
 	AVFormatContext	*fmtctx;
 	AVCodecContext	*codecctx;
-	AVPacket	 packet;
+	AVPacket	*packet;
 	AVFrame		*frame;
 	int64_t		 timestamp;
 	int		 stream;	/* Audio stream index		*/
@@ -141,11 +141,11 @@ ip_ffmpeg_read_packet(struct track *t, struct ip_ffmpeg_ipdata *ipd)
 	int ret;
 
 	for (;;) {
-		ret = av_read_frame(ipd->fmtctx, &ipd->packet);
+		ret = av_read_frame(ipd->fmtctx, ipd->packet);
 		if (ret == AVERROR_EOF) {
 			/* Prepare a flush packet */
-			ipd->packet.data = NULL;
-			ipd->packet.size = 0;
+			ipd->packet->data = NULL;
+			ipd->packet->size = 0;
 			return IP_FFMPEG_EOF;
 		}
 		if (ret < 0) {
@@ -153,11 +153,11 @@ ip_ffmpeg_read_packet(struct track *t, struct ip_ffmpeg_ipdata *ipd)
 			IP_FFMPEG_MSG("Cannot read from file");
 			return IP_FFMPEG_ERROR;
 		}
-		if (ipd->packet.stream_index == ipd->stream)
+		if (ipd->packet->stream_index == ipd->stream)
 			return IP_FFMPEG_OK;
 
 		/* Packet from wrong stream; unref it and try again */
-		av_packet_unref(&ipd->packet);
+		av_packet_unref(ipd->packet);
 	}
 }
 
@@ -177,9 +177,9 @@ ip_ffmpeg_decode_frame(struct track *t, struct ip_ffmpeg_ipdata *ipd)
 			ipd->have_packet = 1;
 		}
 
-		ret = avcodec_send_packet(ipd->codecctx, &ipd->packet);
+		ret = avcodec_send_packet(ipd->codecctx, ipd->packet);
 		if (ret != AVERROR(EAGAIN)) {
-			av_packet_unref(&ipd->packet);
+			av_packet_unref(ipd->packet);
 			ipd->have_packet = 0;
 			if (ret < 0 && ret != AVERROR_EOF) {
 				IP_FFMPEG_LOG("avcodec_send_packet");
@@ -208,7 +208,7 @@ ip_ffmpeg_decode_frame(struct track *t, struct ip_ffmpeg_ipdata *ipd)
 	for (;;) {
 		if (ipd->pdatalen == 0) {
 			/* Free the previous packet */
-			av_packet_unref(&ipd->packet);
+			av_packet_unref(ipd->packet);
 
 			ret = ip_ffmpeg_read_packet(t, ipd);
 			if (ret == IP_FFMPEG_ERROR)
@@ -216,11 +216,11 @@ ip_ffmpeg_decode_frame(struct track *t, struct ip_ffmpeg_ipdata *ipd)
 			if (ret == IP_FFMPEG_EOF)
 				eof = 1;
 
-			ipd->pdatalen = ipd->packet.size;
+			ipd->pdatalen = ipd->packet->size;
 		}
 
 		ret = avcodec_decode_audio4(ipd->codecctx, ipd->frame,
-		    &got_frame, &ipd->packet);
+		    &got_frame, ipd->packet);
 		if (ret < 0) {
 			IP_FFMPEG_LOG("avcodec_decode_audio4");
 			IP_FFMPEG_MSG("Decoding error");
@@ -437,6 +437,7 @@ ip_ffmpeg_close(struct track *t)
 
 	ipd = t->ipdata;
 	av_frame_free(&ipd->frame);
+	av_packet_free(&ipd->packet);
 	avcodec_close(ipd->codecctx);
 #ifdef IP_FFMPEG_AVSTREAM_CODEC_DEPRECATED
 	avcodec_free_context(&ipd->codecctx);
@@ -515,9 +516,7 @@ ip_ffmpeg_open(struct track *t)
 	ipd = xmalloc(sizeof *ipd);
 	ipd->fmtctx = NULL;
 	ipd->codecctx = NULL;
-	av_init_packet(&ipd->packet);
-	ipd->packet.data = NULL;
-	ipd->packet.size = 0;
+	ipd->packet = NULL;
 	ipd->frame = NULL;
 	ipd->timestamp = 0;
 #ifdef IP_FFMPEG_AVCODEC_DECODE_AUDIO4_DEPRECATED
@@ -610,6 +609,13 @@ ip_ffmpeg_open(struct track *t)
 	t->format.nchannels = ipd->codecctx->channels;
 	t->format.rate = ipd->codecctx->sample_rate;
 
+	ipd->packet = av_packet_alloc();
+	if (ipd->packet == NULL) {
+		LOG_ERRX("%s: av_packet_alloc() failed", t->path);
+		msg_errx("%s: Cannot allocate packet", t->path);
+		goto error;
+	}
+
 	ipd->frame = av_frame_alloc();
 	if (ipd->frame == NULL) {
 		LOG_ERRX("%s: av_frame_alloc() failed", t->path);
@@ -621,6 +627,8 @@ ip_ffmpeg_open(struct track *t)
 	return 0;
 
 error:
+	if (ipd->packet != NULL)
+		av_packet_free(&ipd->packet);
 #ifdef IP_FFMPEG_AVSTREAM_CODEC_DEPRECATED
 	if (ipd->codecctx != NULL)
 		avcodec_free_context(&ipd->codecctx);
