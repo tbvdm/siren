@@ -250,7 +250,6 @@ ip_ffmpeg_read_interleaved(struct track *t, struct ip_ffmpeg_ipdata *ipd,
 	size_t	 bufsize, len;
 	int	 ret;
 
-	ipd = t->ipdata;
 	buf = (char *)sb->data;
 	bufsize = sb->size_b;
 
@@ -313,8 +312,6 @@ ip_ffmpeg_read_planar(struct track *t, struct ip_ffmpeg_ipdata *ipd,
 	size_t		  i;
 	unsigned int	  j;
 	int		  ret;
-
-	ipd = t->ipdata;
 
 	i = 0;
 	while (i + t->format.nchannels <= sb->size_s) {
