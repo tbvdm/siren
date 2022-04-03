@@ -541,7 +541,7 @@ if [ "$enable_oss" != no ]; then
 	if [ "$enable_oss" != no ]; then
 		makefile_append OP oss
 		if check_library ossaudio; then
-			makefile_append LDFLAGS_oss -lossaudio
+			makefile_assign LDFLAGS_oss -lossaudio
 		fi
 		enabled_ops="$enabled_ops oss"
 	fi
