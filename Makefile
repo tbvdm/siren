@@ -91,7 +91,7 @@ cppcheck:
 depend: .depend
 
 dist:
-	git archive --prefix=${DIST}/ -o ${DIST}.tar.gz ${DIST}
+	git archive --prefix=${DIST}/ -o ${DIST}.tar.gz v${VERSION}
 	sha256 ${DIST}.tar.gz > ${DIST}.tar.gz.sha256
 	gpg -b ${DIST}.tar.gz
 
