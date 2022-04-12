@@ -29,8 +29,9 @@
 
 /*
  * This value must be equal to or larger than the largest possible MPEG audio
- * frame size, which, according to <https://marc.info/?m=113584709618786>, is
- * 2880 bytes.
+ * frame size, which is 2880 bytes (Layer II, 8000 Hz, 160 kbps), according to
+ * Rob Leslie in an email to the mad-dev mailing list on 2002-11-17 06:42 UTC
+ * (see <https://marc.info/?m=113584709618786>).
  */
 #define IP_MAD_BUFSIZE		65536
 
