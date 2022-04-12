@@ -3,11 +3,11 @@ name: build
 on: push
 
 jobs:
-  build:
+  ubuntu:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-18.04, ubuntu-20.04, macos-10.15, macos-11]
+        os: [ubuntu-18.04, ubuntu-20.04]
 
     runs-on: ${{ matrix.os }}
 
@@ -16,7 +16,6 @@ jobs:
       uses: actions/checkout@v2
 
     - name: install dependencies
-      if: startsWith(matrix.os, 'ubuntu')
       run: >
         sudo apt-get update &&
         sudo apt-get install
@@ -37,9 +36,30 @@ jobs:
         libpulse-dev
         libsndio-dev
 
+    - name: configure
+      run: ./configure
+
+    - name: build
+      run: make
+
+    - name: install
+      run: sudo make install
+
+  macos:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-10.15, macos-11]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - name: checkout
+      uses: actions/checkout@v2
+
     - name: install dependencies
-      if: startsWith(matrix.os, 'macos')
       run: >
+        brew update &&
         brew install
         pkg-config
         faad2 mp4v2
@@ -63,3 +83,38 @@ jobs:
 
     - name: install
       run: sudo make install
+
+  freebsd:
+    runs-on: macos-10.15
+
+    steps:
+    - name: checkout
+      uses: actions/checkout@v2
+
+    - name: run vm
+      uses: vmactions/freebsd-vm@v0.1.5
+      with:
+        usesh: true
+        prepare: >
+          pkg update &&
+          pkg install -y
+          pkgconf
+          faad2 mp4v2
+          ffmpeg
+          flac
+          libid3tag libmad
+          mpg123
+          opusfile
+          libsndfile
+          libvorbis
+          wavpack
+          libao
+          portaudio
+          pulseaudio
+          sndio
+        run: |
+          uname -a
+          CPPFLAGS=-I/usr/local/include LDFLAGS=-L/usr/local/lib \
+            ./configure
+          make
+          make install
