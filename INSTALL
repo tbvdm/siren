@@ -29,8 +29,7 @@ debug=yes|no (no)
 aac=yes|no (yes)
 	Whether to build the aac input plug-in. This plug-in provides support
 	for the MPEG-2/4 AAC audio format. It requires the libfaad and libmp4v2
-	libraries. For more information, see <http://www.audiocoding.com/> and
-	<https://code.google.com/p/mp4v2/>.
+	libraries.
 
 ffmpeg=yes|no (yes)
 	Whether to build the ffmpeg input plug-in. This plug-in provides
@@ -47,12 +46,12 @@ mad=yes|no (yes)
 	Whether to build the mad input plug-in. This plug-in provides support
 	for the MPEG-1/2/2.5 audio layer I/II/III formats such as MP3. It
 	requires the libmad and libid3tag libraries. For more information, see
-	<http://www.underbit.com/products/mad/>.
+	<https://www.underbit.com/products/mad/>.
 
 mpg123=yes|no (yes)
 	Whether to build the mpg123 input plug-in. This plug-in is an
 	alternative to the mad input plug-in. It requires the libmpg123
-	library. For more information, see <http://www.mpg123.org/>.
+	library. For more information, see <https://www.mpg123.org/>.
 
 opus=yes|no (yes)
 	Whether to build the opus input plug-in. This plug-in provides support
@@ -63,7 +62,7 @@ sndfile=yes|no (yes)
 	Whether to build the sndfile input plug-in. This plug-in provides
 	support for a variety of audio formats including WAVE and AIFF. It
 	requires the libsndfile library. For more information, see
-	<http://www.mega-nerd.com/libsndfile/>.
+	<https://libsndfile.github.io/libsndfile/>.
 
 vorbis=yes|no (yes)
 	Whether to build the vorbis input plug-in. This plug-in provides
@@ -73,12 +72,12 @@ vorbis=yes|no (yes)
 wavpack=yes|no (yes)
 	Whether to build the wavpack input plug-in. This plug-in provides
 	support for the WavPack audio format. It requires the libwavpack
-	library. For more information, see <http://www.wavpack.com/>.
+	library. For more information, see <https://www.wavpack.com/>.
 
 alsa=yes|no (yes)
 	Whether to build the alsa output plug-in. This plug-in provides support
 	for ALSA. It requires the libasound library. For more information, see
-	<http://www.alsa-project.org/>.
+	<https://www.alsa-project.org/>.
 
 ao=yes|no (yes)
 	Whether to build the ao output plug-in. This plug-in provides support
@@ -101,12 +100,13 @@ portaudio=yes|no (yes)
 pulse=yes|no (yes)
 	Whether to build the pulse output plug-in. This plug-in provides
 	support for PulseAudio. It requires the libpulse-simple library. For
-	more information, see <http://www.pulseaudio.org/>.
+	more information, see
+	<https://www.freedesktop.org/wiki/Software/PulseAudio/>.
 
 sndio=yes|no (yes)
 	Whether to build the sndio output plug-in. This plug-in provides
 	support for sndio. For more information, see the OpenBSD sndio(7)
-	manual page and <http://www.sndio.org/>.
+	manual page and <https://sndio.org/>.
 
 sun=yes|no (yes)
 	Whether to build the sun output plug-in. This plug-in provides support

@@ -42,8 +42,8 @@ static int		 ip_sndfile_read(struct track *,
 static void		 ip_sndfile_seek(struct track *, unsigned int);
 
 /*
- * Based on <http://www.mega-nerd.com/libsndfile/> and src/command.c in the
- * libsndfile distribution.
+ * Based on <https://libsndfile.github.io/libsndfile/formats.html> and
+ * src/command.c in the libsndfile repository.
  */
 static const char	*ip_sndfile_extensions[] = {
 	"8svx", "iff", "svx",	/* Commodore Amiga IFF/8SVX */

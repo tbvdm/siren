@@ -45,7 +45,7 @@ static const char *ip_mpg123_extensions[] = { "mp1", "mp2", "mp3", NULL };
 
 static const char *ip_mpg123_genres[] = {
 	/*
-	 * ID3v1 genres (based on http://id3.org/id3v2.4.0-frames)
+	 * ID3v1 genres (based on https://id3.org/id3v2.4.0-frames)
 	 */
 
 	"Blues",
