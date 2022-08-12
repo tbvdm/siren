@@ -84,6 +84,41 @@ jobs:
     - name: install
       run: sudo make install
 
+  dragonfly:
+    runs-on: macos-12
+
+    steps:
+    - name: checkout
+      uses: actions/checkout@v2
+
+    - name: run vm
+      uses: vmactions/dragonflybsd-vm@v0
+      with:
+        usesh: true
+        prepare: >
+          pkg install -y
+          pkgconf
+          faad2 mp4v2
+          ffmpeg
+          flac
+          libid3tag libmad
+          mpg123
+          opusfile
+          libsndfile
+          libvorbis
+          wavpack
+          libao
+          portaudio
+          sndio
+        run: |
+          uname -a
+          sed -i '' s,curses.h,ncurses/ncurses.h, compat.h configure screen.c
+          sed -i '' s,-lcurses,-lncurses, configure
+          CPPFLAGS=-I/usr/local/include LDFLAGS=-L/usr/local/lib \
+            ./configure
+          make
+          make install
+
   freebsd:
     runs-on: macos-12
 
@@ -96,7 +131,6 @@ jobs:
       with:
         usesh: true
         prepare: >
-          pkg update &&
           pkg install -y
           pkgconf
           faad2 mp4v2
@@ -115,6 +149,46 @@ jobs:
         run: |
           uname -a
           CPPFLAGS=-I/usr/local/include LDFLAGS=-L/usr/local/lib \
+            ./configure
+          make
+          make install
+
+  netbsd:
+    strategy:
+      fail-fast: false
+      matrix:
+        ffmpeg: [ffmpeg3, ffmpeg4, ffmpeg5]
+
+    runs-on: macos-12
+
+    steps:
+    - name: checkout
+      uses: actions/checkout@v2
+
+    - name: run vm
+      uses: vmactions/netbsd-vm@v0
+      with:
+        prepare: >
+          pkg_add
+          pkg-config
+          faad2 mp4v2
+          flac
+          libid3tag libmad
+          mpg123
+          opusfile
+          libsndfile
+          libvorbis
+          wavpack
+          alsa-lib
+          libao
+          portaudio
+          pulseaudio
+          ${{ matrix.ffmpeg }}
+        run: |
+          uname -a
+          CPPFLAGS='-I/usr/pkg/include -I/usr/pkg/include/faad2' \
+            LDFLAGS='-L/usr/pkg/lib -Wl,-R/usr/pkg/lib' \
+            PKG_CONFIG_PATH=/usr/pkg/lib/${{ matrix.ffmpeg }}/pkgconfig \
             ./configure
           make
           make install
