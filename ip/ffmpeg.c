@@ -39,6 +39,10 @@
 #define IP_FFMPEG_AV_REGISTER_ALL_DEPRECATED
 #endif
 
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(59, 24, 100)
+#define IP_FFMPEG_AVCODECCONTEXT_CHANNELS_DEPRECATED
+#endif
+
 #define IP_FFMPEG_ERROR	-1
 #define IP_FFMPEG_EOF	0
 #define IP_FFMPEG_OK	1
@@ -248,7 +252,7 @@ ip_ffmpeg_read_interleaved(struct track *t, struct ip_ffmpeg_ipdata *ipd,
 {
 	char	*buf;
 	size_t	 bufsize, len;
-	int	 ret;
+	int	 channels, ret;
 
 	buf = (char *)sb->data;
 	bufsize = sb->size_b;
@@ -261,9 +265,14 @@ ip_ffmpeg_read_interleaved(struct track *t, struct ip_ffmpeg_ipdata *ipd,
 			if (ret == IP_FFMPEG_ERROR)
 				return -1;
 
-			ret = av_samples_get_buffer_size(NULL,
-			    ipd->codecctx->channels, ipd->frame->nb_samples,
-			    ipd->codecctx->sample_fmt, 1);
+#ifdef IP_FFMPEG_AVCODECCONTEXT_CHANNELS_DEPRECATED
+			channels = ipd->codecctx->ch_layout.nb_channels;
+#else
+			channels = ipd->codecctx->channels;
+#endif
+			ret = av_samples_get_buffer_size(NULL, channels,
+			    ipd->frame->nb_samples, ipd->codecctx->sample_fmt,
+			    1);
 			if (ret < 0) {
 				IP_FFMPEG_LOG("av_samples_get_buffer_size");
 				IP_FFMPEG_MSG("Decoding error");
@@ -605,7 +614,11 @@ ip_ffmpeg_open(struct track *t)
 		goto error;
 	}
 
+#ifdef IP_FFMPEG_AVCODECCONTEXT_CHANNELS_DEPRECATED
+	t->format.nchannels = ipd->codecctx->ch_layout.nb_channels;
+#else
 	t->format.nchannels = ipd->codecctx->channels;
+#endif
 	t->format.rate = ipd->codecctx->sample_rate;
 
 	ipd->packet = av_packet_alloc();
