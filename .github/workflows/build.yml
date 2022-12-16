@@ -13,7 +13,7 @@ jobs:
 
     steps:
     - name: checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: install dependencies
       run: >
@@ -55,7 +55,7 @@ jobs:
 
     steps:
     - name: checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: install dependencies
       run: >
@@ -89,7 +89,7 @@ jobs:
 
     steps:
     - name: checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: run vm
       uses: vmactions/dragonflybsd-vm@v0
@@ -124,7 +124,7 @@ jobs:
 
     steps:
     - name: checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: run vm
       uses: vmactions/freebsd-vm@v0
@@ -163,7 +163,7 @@ jobs:
 
     steps:
     - name: checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: run vm
       uses: vmactions/netbsd-vm@v0
