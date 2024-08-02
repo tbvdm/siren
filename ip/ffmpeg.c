@@ -446,9 +446,10 @@ ip_ffmpeg_close(struct track *t)
 	ipd = t->ipdata;
 	av_frame_free(&ipd->frame);
 	av_packet_free(&ipd->packet);
-	avcodec_close(ipd->codecctx);
 #ifdef IP_FFMPEG_AVSTREAM_CODEC_DEPRECATED
 	avcodec_free_context(&ipd->codecctx);
+#else
+	avcodec_close(ipd->codecctx);
 #endif
 	avformat_close_input(&ipd->fmtctx);
 	free(ipd);
