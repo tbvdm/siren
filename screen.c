@@ -45,7 +45,7 @@
 #define SCREEN_TITLE_ROW	0
 #define SCREEN_VIEW_ROW		1
 
-static short int		 screen_get_colour(const char *, int);
+static short int		 screen_get_colour(const char *, enum colour);
 static void			 screen_msg_vprintf(int, const char *,
 				    va_list);
 static void			 screen_print_row(const char *);
