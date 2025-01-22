@@ -218,7 +218,7 @@ static int
 track_cmp_string(const char *s1, const char *s2)
 {
 	if (s1 == NULL)
-		return (s2 == NULL) ? 0: -1;
+		return (s2 == NULL) ? 0 : -1;
 	if (s2 == NULL)
 		return 1;
 	return strcasecmp(s1, s2);
