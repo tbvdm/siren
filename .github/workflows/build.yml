@@ -62,7 +62,7 @@ jobs:
         brew update &&
         brew upgrade &&
         brew install
-        pkg-config
+        pkgconf
         faad2 mp4v2
         ffmpeg
         flac
